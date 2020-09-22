@@ -1,19 +1,25 @@
 # Jobs
-# VP of Global Communications
-- company: Springfield International Human Rights Outreach
-  position: VP of Global Communications
-  duration: Oct, 2013 &mdash; Present
-  summary: Write about your core competencies in one or two sentences describing your position. If you held the position for a long time, it could be a longer section, including a couple bullet points	<ul class="resume-item-list"><li>A project you are proud of</li><li>Another awesome project</li><li>or a team or department you worked with</li></ul>
+- company: Salesforce.com
+  position: Lead Member of Technical Staff
+  duration: Apr, 2019 &mdash; Present
+  summary: Engineering lead for Einstein AI infrastructure<ul class="resume-item-list"><li>Lead architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Container orchestration & automation (Helm, Kubernetes, OpenShift, Docker Swarm)</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet, Salt)</li><li>DevOps & systems engineering (Network, Storage & Compute)</li></ul>
 
-# Director of Digital Stratgy
-- company: United Nations Human Rights Council
-  position: Director of Digital Strategy
-  duration:  Jun, 2010 &mdash; Sept, 2013
-  summary: If your stint was shorter, feel free to be brief and just call out the most meaningful points of your role. Be concise, and be meaninful. The person reading just needs enough to want to talk to you more about your experience.
+- company: Tesla
+  position: Lead Software Engineer
+  duration:  Jun, 2018 &mdash; Apr, 2019
+  summary: Lead engineer instrumental in designing, building & operating Tesla’s next-gen API driven networking stack<ul class="resume-item-list"><li>Lead engineer for car networks build & management automation</li><li>Lead engineer & architect for a custom network orchestration system</li><li>Lead engineer for network telemetry & analytics</li><li>Mentored 6+ interns on engineering teams</li>
 
+- company: Juniper Networks
+  position: Software Engineer 4
+  duration:  May, 2016 &mdash; Jun, 2018
+  summary: Senior engineer on Juniper's Contrail SDN engineering team (Office of CTO)<ul class="resume-item-list"><li>Architect for Contrail's integration with OpenShift, Netronome (10/25/40GbE cards)</li><li>Built single-click provisioners using CloudFormation, Ansible & Terraform</li><li>Prototyped some of the earliest “Self-Driving Network” initiatives at Juniper</li><li>Contribute to data-plane acceleration technologies such as DPDK/SR-IOV</li>
 
-# Communications Coordinator
-- company: Springfield Women & Children's Center
-  position: Communications Coordinator
-  duration:   Jun, 2008  &mdash; May, 2010
-  summary: Led communication efforts across digital and traditional media channels for marketing and public relations, internal communication strategies, and coordinated support programs for the recipients of the center's services.
+- company: Comcast Corporation
+  position: Network Orchestration Developer, Intern
+  duration:  Nov, 2015 &mdash; May, 2016
+  summary: Worked on the high-impact/high-visibility network automation team responsible for provisioning edge sites (PoPs)<ul class="resume-item-list"><li>Develop network services through model-driven architecture (YANG/XML/JSON)</li><li>Deploy service models using NetConf, RESTConf, gRPC, RESTful APIs</li>
+
+- company: The Walt Disney Company
+  position: Network Engineer, Intern
+  duration:  May, 2015 &mdash; Aug, 2015
+  summary: Intern on the Network Design & Architecture team responsible for designing the networks for Disney parks & resorts<ul class="resume-item-list"><li>Network automation for Disney World, Disney Land, Disney Resorts</li><li>Performance & feature test network devices (Juniper, Cisco, F5, PAN)</li>

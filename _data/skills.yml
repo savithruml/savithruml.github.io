@@ -1,12 +1,15 @@
 # Skills
-# Organizational leadership
-- skill: Organizational leadership
-  description: I have several years of experience leading organziations from community groups to business departments. From public speaking, to mentoring, to coordination of people and events, I can lead in any context.
+- skill: Orchestration
+  description: Kubernetes, OpenShift, Docker, Ansible, Terraform, Chef, Puppet, Jenkins, Swagger, Vagrant, Packer, NoSQL
 
-# Communications strategy
-- skill: Communications strategy
-  description: Content and marketing strategy,
+- skill: Cloud
+  description: Amazon Web Services (AWS), Google Cloud Platform (GCP), Microsoft Azure, OpenStack, VMware
 
-# Digital content development and creation
-- skill: Digital content development and creation
-  description: Copy writing, graphic design, web design, front-end web development, print design
+- skill: Programming & scripting
+  description: Python, Golang, P4, Bash, Perl, Groovy
+
+- skill: Networking
+  description: TCP/IP, UDP, BGP, OSPF, MPLS, VPN, IPSec, VoIP, DNS, DHCP, IPv4/v6, BIRD, Quagga
+
+- skill: Monitoring
+  description: Netflow, SNMP, Telemetry, Prometheus, Graphana, Influx, Telegraf, ELK
