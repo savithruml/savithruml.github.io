@@ -1,0 +1,7 @@
+# top
+
+- url: "https://medium.com/@savvythrough/notary-a-certificate-lifecycle-management-controller-36edb6f2a917?source=friends_link&sk=3814fb20c0e1da95d6e94809165bed8a"
+  description: "Project Notary: A Kubernetes controller for certificate lifecycle management"
+
+- url: "https://medium.com/@savvythrough/agumbe-a-kubernetes-operator-to-create-globalsecrets-f73c19103141?source=friends_link&sk=ea432e64dba40cecbe17618e58e4c656"
+  description: "Project Agumbe: A Kubernetes controller to replicate objects"

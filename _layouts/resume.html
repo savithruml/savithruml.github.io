@@ -48,24 +48,24 @@
 
       </header>
       
-      {% if site.resume_section_links %}
-      <!-- begin Links -->
+      {% if site.resume_section_top %}
+      <!-- begin Tops -->
       <section class="content-section">
 
         <header class="section-header">
-          <h2>OpenSource</h2>
+          <h2>Latest</h2>
         </header>
 
         <div class="resume-item">
           <ul class="resume-item-list">
-            {% for link in site.data.links %}
-            <li><a href={{ link.url }} target="_blank" itemprop="url">{{ link.description }}</a></li>
+            {% for top in site.data.top %}
+            <li><a href={{ top.url }} target="_blank" itemprop="url">{{ top.description }}</a></li>
             {% endfor %}
           </ul>
         </div>
 
       </section>
-      <!-- end Links -->
+      <!-- end Top -->
       {% endif %}
 
       {% if site.resume_section_experience %}
