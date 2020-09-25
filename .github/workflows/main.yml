@@ -17,12 +17,8 @@ jobs:
       - uses: actions/checkout@master
 
       - name: Trigger night mode
+        shell: bash
         run: |
           git config --local user.email github-actions@github.com
           git config --local user.name github-actions
-          which sed
-          cat $GITHUB_WORKSPACE/_sass/_base.scss
-          /bin/sed -i 's/white/black/g' $GITHUB_WORKSPACE/_sass/_base.scss
-          /bin/sed -i 's/black;/white;/g' $GITHUB_WORKSPACE/_sass/_base.scss
-          git commit -m "Trigger night mode" -a
-          git push
+          sed -i 's/white/black/g' $GITHUB_WORKSPACE/_sass/_base.scss
