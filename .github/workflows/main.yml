@@ -2,28 +2,27 @@
 
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the gh-pages branch
 on:
   schedule:
     - cron: "*/1 * * * *"
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
   build:
-    # The type of runner that the job will run on
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    
     steps:
-
-      # Runs a single command using the runners shell
       - name: Run a one-line script
         run: echo Hello, world!
+      
+      - uses: actions/checkout@master
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
+      - name: Trigger night mode
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+          git config --local user.email github-actions@github.com
+          git config --local user.name github-actions
+          which sed
+          cat $GITHUB_WORKSPACE/_sass/_base.scss
+          sed -i 's/white/black/g' $GITHUB_WORKSPACE/_sass/_base.scss
+          sed -i 's/black;/white;/g' $GITHUB_WORKSPACE/_sass/_base.scss
+          git commit -m "Trigger night mode" -a
+          git push
