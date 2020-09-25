@@ -1,29 +1,23 @@
-# This is a basic workflow to help you get started with Actions
+# This will toggle white ---> black (night mode)
 
-name: CI
+name: toggle-night-mode
 
 on:
   schedule:
-    - cron: "*/1 * * * *"
+    - cron: "0 1 * * *"
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    
     steps:
-      - name: Run a one-line script
-        run: echo Hello, world!
-      
       - uses: actions/checkout@master
 
-      - name: Trigger night mode
+      - name: Toggle night mode
         shell: bash
         run: |
           git config --local user.email github-actions@github.com
           git config --local user.name github-actions
           sed -i 's/white;/black;/g' $GITHUB_WORKSPACE/_sass/_base.scss
-          cat $GITHUB_WORKSPACE/_sass/_base.scss
           sed -i 's/black;/white;/g' $GITHUB_WORKSPACE/_sass/_variables.scss
-          cat $GITHUB_WORKSPACE/_sass/_variables.scss
-          git commit -m "Trigger night mode" -a
+          git commit -m "Toggle night mode" -a
           git push
