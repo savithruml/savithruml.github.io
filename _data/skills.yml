@@ -12,4 +12,4 @@
   description: TCP/IP, UDP, BGP, OSPF, MPLS, VPN, IPSec, VoIP, DNS, DHCP, IPv4/v6, BIRD, Quagga
 
 - skill: Monitoring
-  description: Netflow, SNMP, Telemetry, Prometheus, Graphana, Influx, Telegraf, ELK
+  description: Netflow, SNMP, Telemetry, Prometheus, Graphana, Influx, Telegraf, ELK, OpenBPF
