@@ -1,5 +1,11 @@
 # links
 
+- url: "https://engineering.salesforce.com/project-agumbe-share-objects-across-namespaces-in-kubernetes-1fc2e1ddb3eb"
+  description: "Project Agumbe: A Kubernetes controller to replicate objects"
+  
+- url: "https://engineering.salesforce.com/notary-a-certificate-lifecycle-management-controller-for-kubernetes-a24a53e26cbd"
+  description: "Project Notary: A Kubernetes controller for certificate lifecycle management"
+
 - url: "https://medium.com/@savvythrough/plugins-kubectl-your-tesla-59bccf0d4e88?source=friends_link&sk=bda702fbd406c51154eb6c756efd1fe2"
   description: "Kubectl your Tesla"
 
@@ -14,12 +20,6 @@
 
 - url: "https://medium.com/faun/aws-eks-auth-optimization-for-k8s-ae054be0a31b?source=friends_link&sk=351c924cc4c5fd12e68476f797c7792a"
   description: "AWS EKS: Auth optimization"
-
-- url: "https://medium.com/@savvythrough/notary-a-certificate-lifecycle-management-controller-36edb6f2a917?source=friends_link&sk=3814fb20c0e1da95d6e94809165bed8a"
-  description: "Project Notary: A Kubernetes controller for certificate lifecycle management"
-
-- url: "https://medium.com/@savvythrough/agumbe-a-kubernetes-operator-to-create-globalsecrets-f73c19103141?source=friends_link&sk=ea432e64dba40cecbe17618e58e4c656"
-  description: "Project Agumbe: A Kubernetes controller to replicate objects"
 
 - url: "https://medium.com/faun/injektor-a-kubernetes-controller-that-injects-on-init-b567409a3587?source=friends_link&sk=f29059f2afcbbe9d34cae88785a5ce1b"
   description: "Project Injektor: A Kubernetes controller to inject objects"
