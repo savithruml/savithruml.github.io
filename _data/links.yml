@@ -5,6 +5,9 @@
   
 - url: "https://engineering.salesforce.com/notary-a-certificate-lifecycle-management-controller-for-kubernetes-a24a53e26cbd"
   description: "Project Notary: A Kubernetes controller for certificate lifecycle management"
+  
+- url: "https://engineering.salesforce.com/optimizing-eks-networking-for-scale-1325706c8f6d"
+  description: "Optimizing EKS networking for scale"
 
 - url: "https://medium.com/@savvythrough/plugins-kubectl-your-tesla-59bccf0d4e88?source=friends_link&sk=bda702fbd406c51154eb6c756efd1fe2"
   description: "Kubectl your Tesla"
@@ -15,11 +18,5 @@
 - url: "https://medium.com/faun/helm-v3-a-tillerless-strategy-1bbc724e3480?source=friends_link&sk=91cd711cc4cab0f0fc00cfc6fb52cea5"
   description: "Helm v3: A tillerLess strategy"
 
-- url: "https://medium.com/faun/aws-eks-subnet-ip-optimization-67b7ac83124e?source=friends_link&sk=0caa0ec9752f319704efe5fb1e482408"
-  description: "AWS EKS: IP/Subnet optimization"
-
 - url: "https://medium.com/faun/aws-eks-auth-optimization-for-k8s-ae054be0a31b?source=friends_link&sk=351c924cc4c5fd12e68476f797c7792a"
   description: "AWS EKS: Auth optimization"
-
-- url: "https://medium.com/faun/injektor-a-kubernetes-controller-that-injects-on-init-b567409a3587?source=friends_link&sk=f29059f2afcbbe9d34cae88785a5ce1b"
-  description: "Project Injektor: A Kubernetes controller to inject objects"
