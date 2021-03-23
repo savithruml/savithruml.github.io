@@ -5,3 +5,6 @@
   
 - url: "https://engineering.salesforce.com/notary-a-certificate-lifecycle-management-controller-for-kubernetes-a24a53e26cbd"
   description: "Project Notary: A Kubernetes controller for certificate lifecycle management"
+  
+- url: "https://engineering.salesforce.com/optimizing-eks-networking-for-scale-1325706c8f6d"
+  description: "Optimizing EKS networking for scale"
