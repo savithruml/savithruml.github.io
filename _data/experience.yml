@@ -2,7 +2,7 @@
 - company: Salesforce.com
   position: Lead Member of Technical Staff
   duration: Apr, 2019 &mdash; Present
-  summary: Reliability engineering lead for Quip/Slack<p>Reliability engineering lead for Einstein AI<ul class="resume-item-list"><li>Lead architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Container orchestration & automation (Helm, Kubernetes, OpenShift, Docker Swarm)</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet, Salt)</li><li>DevOps & systems engineering (Network, Storage & Compute)</li></ul>
+  summary: Reliability engineering lead for Quip/Slack<br/>Reliability engineering lead for Einstein AI<ul class="resume-item-list"><li>Lead architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Container orchestration & automation (Helm, Kubernetes, OpenShift, Docker Swarm)</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet, Salt)</li><li>DevOps & systems engineering (Network, Storage & Compute)</li></ul>
 
 - company: Tesla
   position: Lead Software Engineer
