@@ -1,8 +1,13 @@
 # Jobs
+- company: Nvidia
+  position: Senior Software Engineer
+  duration: Mar, 2022 &mdash; Present
+  summary: Building infrastructure to power AI/ML use-cases such as Omniverse, Autonomous Vehicles (AV), High-Performance Computing (HPC), etc
+  
 - company: Salesforce.com
-  position: Lead Member of Technical Staff
-  duration: Apr, 2019 &mdash; Present
-  summary: Reliability engineering lead for Quip/Slack (Sep, 2021 - Present)<br/>Infrastructure engineering lead for Einstein AI (Apr, 2019 - Sep, 2021)<ul class="resume-item-list"><li>Architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Designed an enterprise notebooking & prototyping service</li><li>Led efforts to achieve HIPAA & SOC compliance for the platform</li><li>Container orchestration & automation (Helm, Kubernetes, OpenShift, Docker Swarm)</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet, Salt)</li><li>Led DevOps & SRE teams (Build/deploy/manage compute, network & storage)</li></ul>
+  position: Lead Software Engineer
+  duration: Apr, 2019 &mdash; Mar, 2022
+  summary: Infrastructure engineering lead for Slack (Sep, 2021 - Mar, 2022)<br/>Infrastructure engineering lead for Einstein AI (Apr, 2019 - Sep, 2021)<ul class="resume-item-list"><li>Architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Designed an enterprise notebooking & prototyping service</li><li>Led efforts to achieve HIPAA & SOC compliance for the platform</li><li>Container orchestration & automation (Helm, Kubernetes, OpenShift, Docker Swarm)</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet, Salt)</li><li>Led DevOps & SRE teams (Build/deploy/manage compute, network & storage)</li></ul>
 
 - company: Tesla
   position: Lead Software Engineer
