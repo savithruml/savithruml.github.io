@@ -1,21 +1,21 @@
 # Jobs
 - company: Nvidia
-  position: Senior Software Engineer
+  position: Software Engineer
   duration: Mar, 2022 &mdash; Present
-  summary: Building infrastructure to power AI/ML use-cases such as Omniverse, Autonomous Vehicles (AV), High-Performance Computing (HPC), etc
+  summary: Senior engineer building infrastructure to power AI/ML use-cases such as Omniverse, Autonomous Vehicles (AV), High-Performance Computing (HPC), etc
   
 - company: Salesforce.com
-  position: Lead Software Engineer
+  position: Software Engineer
   duration: Apr, 2019 &mdash; Mar, 2022
-  summary: Infrastructure engineering lead for Slack (Sep, 2021 - Mar, 2022)<br/>Infrastructure engineering lead for Einstein AI (Apr, 2019 - Sep, 2021)<ul class="resume-item-list"><li>Architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Designed an enterprise notebooking & prototyping service</li><li>Led efforts to achieve HIPAA & SOC compliance for the platform</li><li>Container orchestration & automation (Helm, Kubernetes, OpenShift, Docker Swarm)</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet, Salt)</li><li>Led DevOps & SRE teams (Build/deploy/manage compute, network & storage)</li></ul>
+  summary: Lead infrastructure engineer at Slack (Sep, 2021 - Mar, 2022)<br/>Lead infrastructure engineer at Einstein AI (Apr, 2019 - Sep, 2021)<ul class="resume-item-list"><li>Architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Designed an enterprise notebooking & prototyping service</li><li>Led efforts to achieve HIPAA & SOC compliance for the platform</li><li>Container orchestration & automation (Helm, Kubernetes, OpenShift, Docker Swarm)</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet, Salt)</li><li>Led DevOps & SRE teams (Build/deploy/manage compute, network & storage)</li></ul>
 
 - company: Tesla
-  position: Lead Software Engineer
+  position: Software Engineer
   duration:  Jun, 2018 &mdash; Apr, 2019
   summary: Lead engineer instrumental in designing, building & operating Tesla’s next-gen API driven networking stack<ul class="resume-item-list"><li>Led the team responsible for networks build & management automation</li><li>Led the team responsible for network telemetry & analytics</li><li>Built an orchestration system that touched 50k endpoints (push/pull)</li><li>Led a team of engineers/interns that built the NetOps suite of tools</li><li>Mentored 6+ interns & engineers</li>
 
 - company: Juniper Networks
-  position: Software Engineer 4
+  position: Software Engineer
   duration:  May, 2016 &mdash; Jun, 2018
   summary: Senior engineer on Juniper's Contrail SDN engineering team (Office of CTO)<ul class="resume-item-list"><li>Architect for Contrail's integration with OpenShift, Netronome (10/25/40GbE cards)</li><li>Built single-click provisioners using CloudFormation, Ansible & Terraform</li><li>Prototyped some of the earliest “Self-Driving Network” initiatives at Juniper</li><li>Contribute to data-plane acceleration technologies such as DPDK/SR-IOV</li>
 
