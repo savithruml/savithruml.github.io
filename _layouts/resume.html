@@ -115,6 +115,24 @@
       </section>
       <!-- end Education -->
       {% endif %}
+    
+      {% if site.patents %}
+      <!-- begin Skills -->
+      <section class="content-section">
+
+        <header class="section-header">
+          <h2>Skills</h2>
+        </header>
+        {% for patent in site.data.patents %}
+        <div class="resume-item">
+          <h4 class="resume-item-details">{{ patent.title }}</h4>
+          <p class="resume-item-copy">{{ patent.number }}</p>
+        </div>
+        {% endfor %}
+
+      </section>
+      <!-- end Skills -->
+      {% endif %}
 
 
       {% if site.resume_section_projects %}
