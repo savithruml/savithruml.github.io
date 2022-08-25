@@ -121,12 +121,12 @@
       <section class="content-section">
 
         <header class="section-header">
-          <h2>Skills</h2>
+          <h2>Patents</h2>
         </header>
         {% for patent in site.data.patents %}
         <div class="resume-item">
           <h4 class="resume-item-details">{{ patent.title }}</h4>
-          <p class="resume-item-copy">{{ patent.number }}</p>
+          <a class="resume-item-copy">href={{ patent.url }} target="_blank" itemprop="url">{{ patent.number }}</a></li>
         </div>
         {% endfor %}
 
