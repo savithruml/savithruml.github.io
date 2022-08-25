@@ -126,7 +126,7 @@
         {% for patent in site.data.patents %}
         <div class="resume-item">
           <h4 class="resume-item-details">{{ patent.title }}</h4>
-          <a class="resume-item-copy">href={{ patent.url }} target="_blank" itemprop="url">{{ patent.number }}</a>
+          <a class="resume-item-copy" href={{ patent.url }} target="_blank" itemprop="url">{{ patent.number }}</a>
         </div>
         {% endfor %}
 
