@@ -7,7 +7,7 @@
 - company: Salesforce.com
   position: Software Engineer
   duration: Apr, 2019 &mdash; Mar, 2022
-  summary: Lead infrastructure engineer at Slack (Sep, 2021 - Mar, 2022)<br/>Lead infrastructure engineer at Einstein AI (Apr, 2019 - Sep, 2021)<ul class="resume-item-list"><li>Architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Designed an enterprise notebooking & prototyping service</li><li>Led efforts to achieve HIPAA & SOC compliance for the platform</li><li>Container orchestration & automation (Helm, Kubernetes, OpenShift, Docker Swarm)</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet, Salt)</li><li>Led DevOps & SRE teams (Build/deploy/manage compute, network & storage)</li></ul>
+  summary: Tech-Lead at Slack / Einstein AI business units<ul class="resume-item-list"><li>Architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Designed an enterprise notebooking & prototyping service</li><li>Led efforts to achieve HIPAA & SOC compliance for the platform</li><li>Container orchestration & automation (Helm, Kubernetes, OpenShift, Docker Swarm)</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet, Salt)</li><li>Led DevOps & SRE teams (Build/deploy/manage compute, network & storage)</li></ul>
 
 - company: Tesla
   position: Software Engineer
