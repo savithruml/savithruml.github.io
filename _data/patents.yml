@@ -1,13 +1,13 @@
 # patents
 
-- title: "Systems, methods, and apparatuses for conducting transactions between bots using distributed ledger technology in a cloud based computing environment"
-  number: "US 16779518"
-  url: "https://patents.google.com/patent/US20210241241A1"
-  status: "Sep, 2022"
-  
 - title: "Sharing objects across namespaces in a container-orchestration system"
   number: "US 17131296"
   url: "https://patents.google.com/patent/US20220201073A1"
+  status: "Sep, 2022"
+
+- title: "Systems, methods, and apparatuses for conducting transactions between bots using distributed ledger technology in a cloud based computing environment"
+  number: "US 16779518"
+  url: "https://patents.google.com/patent/US20210241241A1"
   status: "Dec, 2022"
   
 - title: "Method and system for certificate management"
