@@ -15,7 +15,7 @@ resume_title:                   "Bits & bytes"
 resume_header_contact_info:     "San Francisco Bay Area, CA • savithru@colorado.edu"
 display_header_contact_info:    "true"
 
-resume_header_intro: "<p>I am an <em>engineer</em> solving technology problems at scale. When I'm not writing code, I'm probably wearing my <em>janitor</em> hat & plumbing networks.</p>"
+resume_header_intro: "<p>I am an <em>engineer</em> solving technology problems at scale. When I'm not writing code, I'm probably wearing my <em>janitor</em> hat & plumbing networks.</p><br>I have a new AI assistant, Kalpanika, with whom you can chat to know more about me! Use the chat window to start the conversation, she's wityy."
 
 resume_section_experience:      true
 resume_section_education:       true
