@@ -7,4 +7,4 @@
   description: "How to rename a Helm release with zero downtime"
 
 - url: "https://engineering.salesforce.com/project-agumbe-share-objects-across-namespaces-in-kubernetes-1fc2e1ddb3eb"
-  description: "Project Agumbe: A Kubernetes controller to replicate objects"
+  description: "Agumbe: A Kubernetes controller to replicate objects"
