@@ -1,6 +1,10 @@
 <!-- and guess where these are defined? Yup, you guessed it: the _config.yml file -->
 {% if site.resume_print_social_links %}
 <ul>
+  <!-- Google Scholar link -->
+  {% if site.resume_social_links.resume_google_scholar_url %}
+  <li><strong>Google Scholar</strong>: {{ site.resume_social_links.resume_google_scholar_url }}</li>
+  {% endif %}
 
   <!-- GitHub link -->
   {% if site.resume_social_links.resume_github_url %}
@@ -36,6 +40,5 @@
   {% if site.resume_social_links.resume_website_url %}
   <li><strong>Website</strong>: {{ site.resume_social_links.resume_website_url }}</li>
   {% endif %}
-
 </ul>
 {% endif %}
