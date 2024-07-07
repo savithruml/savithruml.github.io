@@ -1,6 +1,10 @@
 <!-- and guess where these are defined? Yup, you guessed it: the _config.yml file -->
 {% if site.resume_social_links %}
 <ul class="icon-links">
+  <!-- Google scholar link -->
+  {% if site.resume_social_links.resume_google_scholar_url %}
+  <li class="icon-link-item"><a href="{{ site.resume_social_links.resume_google_scholar_url }}" target="_blank" class="icon-link" itemprop="sameAs">{% include icons/icon-google-scholar.html %}</a></li>
+  {% endif %}
 
   <!-- GitHub link -->
   {% if site.resume_social_links.resume_github_url %}
