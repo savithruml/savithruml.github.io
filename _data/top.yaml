@@ -1,10 +1,7 @@
 # top
 
-- url: "https://savvythrough.medium.com/the-chutney-bot-f94d5da56f56"
-  description: "The Chutney Bot: A dosa's best companion"
-
-- url: "https://engineering.salesforce.com/how-to-rename-a-helm-release-6fdcd7526ac7"
-  description: "How to rename a Helm release with zero downtime"
+- url: "https://notebooklm.google.com/notebook/99d2896c-2d08-4bd8-8f7d-67a21e1f2a4c/audio"
+  description: "LLM Podcast: Conducting transactions between bots using distributed ledger technology"
 
 - url: "https://engineering.salesforce.com/project-agumbe-share-objects-across-namespaces-in-kubernetes-1fc2e1ddb3eb"
   description: "Project Agumbe: A Kubernetes controller to replicate objects"
