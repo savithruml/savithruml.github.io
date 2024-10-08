@@ -60,6 +60,14 @@
           <ul class="resume-item-list">
             {% for top in site.data.top %}
             <li><a href={{ top.url }} target="_blank" itemprop="url">{{ top.description }}</a></li>
+              {% if podcast_url in top %}
+              <div class="audio-container" style="margin-top:15px;margin-bottom:15px;">
+                <audio controls>
+                  <source src={{ patent.podcast_url }} type="audio/wav">
+                  Your browser does not support the audio element.
+                </audio>
+              </div>
+              {% endif %}
             {% endfor %}
           </ul>
         </div>
@@ -127,12 +135,14 @@
         <div class="resume-item">
           <h4 class="resume-item-details">{{ patent.title }}</h4>
           <p class="resume-item-copy"><a href={{ patent.url }} target="_blank" itemprop="url">{{ patent.number }}</a>, {{ patent.status }}</p>
+          {% if podcast_url in patent %}
           <div class="audio-container" style="margin-top:15px;margin-bottom:15px;">
             <audio controls>
               <source src={{ patent.podcast_url }} type="audio/wav">
               Your browser does not support the audio element.
             </audio>
           </div>
+          {% endif %}
         </div>
         {% endfor %}
 
