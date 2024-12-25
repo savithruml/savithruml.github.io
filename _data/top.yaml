@@ -1,10 +1,13 @@
 # top
 
+- url: "https://savvythrough.medium.com/ideas-uno-dos-tres-51eb251ef7c4"
+  description: "Patents: Uno Dos Tres"
+  
 - url: "https://open.spotify.com/episode/6Dcl7ndzU07rrRtGyiyg5m?go=1&sp_cid=d12c8b14b46026b72d60273d8016e0fe&utm_source=embed_player_p&utm_medium=desktop&nd=1&dlsi=bffd250391d94500"
-  description: "Podcast: Conducting transactions between bots using distributed ledger technology (USPTO #US16779518)"
+  description: "Podcast: Conducting transactions between bots using distributed ledger technology"
 
 - url: "https://open.spotify.com/episode/6Dcl7ndzU07rrRtGyiyg5m?go=1&sp_cid=d12c8b14b46026b72d60273d8016e0fe&utm_source=embed_player_p&utm_medium=desktop&nd=1&dlsi=bffd250391d94500"
-  description: "Podcast: Sharing of objects across namespaces in a container orchestration system (USPTO #US17131296)"
+  description: "Podcast: Sharing of objects across namespaces in a container orchestration system"
 
 - url: "https://open.spotify.com/episode/4iSqU1H0PV0xUPOWVe7oIi?go=1&sp_cid=b4c09aac636683729f2a153fa261db89&utm_source=embed_player_p&utm_medium=desktop&nd=1&dlsi=6bc9f04243af4e84"
-  description: "Podcast: Method and system for certificate management (USPTO #US11764978)"
+  description: "Podcast: Method and system for certificate management"
