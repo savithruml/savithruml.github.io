@@ -1,5 +1,17 @@
 # patents
 
+- title: "Sharing objects across namespaces in a container-orchestration system (3)"
+  number: "US12301657"
+  url: "https://patentimages.storage.googleapis.com/f4/f7/94/c61f6adb9d2c95/US12301657B2.pdf"
+  podcast_url: "https://raw.githubusercontent.com/savithruml/savithruml.github.io/refs/heads/gh-pages/audio/US11445021.mp3"
+  status: "May, 2025"
+
+- title: "Sharing objects across namespaces in a container-orchestration system (2)"
+  number: "US11843662"
+  url: "https://patentimages.storage.googleapis.com/37/18/7c/1702f9dc308dd3/US11843662.pdf"
+  podcast_url: "https://raw.githubusercontent.com/savithruml/savithruml.github.io/refs/heads/gh-pages/audio/US11445021.mp3"
+  status: "Dec, 2023"
+
 - title: "Method and system for certificate management"
   number: "US11764978"
   url: "https://patentimages.storage.googleapis.com/e2/67/2e/b114e282aacec4/US11764978.pdf"
@@ -12,7 +24,7 @@
   podcast_url: "https://raw.githubusercontent.com/savithruml/savithruml.github.io/refs/heads/gh-pages/audio/US11538006.mp3"
   status: "Dec, 2022"
   
-- title: "Sharing objects across namespaces in a container-orchestration system"
+- title: "Sharing objects across namespaces in a container-orchestration system (1)"
   number: "US11445021"
   url: "https://patentimages.storage.googleapis.com/89/69/58/1c598260ec3493/US11445021.pdf"
   podcast_url: "https://raw.githubusercontent.com/savithruml/savithruml.github.io/refs/heads/gh-pages/audio/US11445021.mp3"
