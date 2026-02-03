@@ -1,8 +1,8 @@
 # Jobs
 - company: Nvidia
-  position: Tech-Lead Manager
+  position: Senior Engineering Manager / Principal Engineer
   duration: Mar, 2022 &mdash; Present
-  summary: Building observability software & control-plane tooling for AI factories (Grace-Blackwell, Hopper, Ampere platforms)
+  summary: Building control-plane & telemetry software for AI factories
   
 - company: Salesforce.com
   position: Software Engineer
