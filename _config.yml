@@ -15,7 +15,7 @@ resume_title:                   "Bits & bytes"
 resume_header_contact_info:     "San Francisco Bay Area, CA • savithru@colorado.edu"
 display_header_contact_info:    "true"
 
-resume_header_intro: "<p>Solving <em>technology</em> problems at scale."
+resume_header_intro: "<p>Making <em>GPUs</em> go brrr."
 
 resume_section_experience:      true
 resume_section_education:       true
