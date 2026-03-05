@@ -25,6 +25,6 @@
   summary: Intern on the network automation team responsible for provisioning edge sites (PoPs)<ul class="resume-item-list"><li>Develop network services through model-driven architecture (YANG/XML/JSON)</li><li>Deploy service models using NetConf, RESTConf, gRPC, RESTful APIs</li>
 
 - company: The Walt Disney Company
-  position: Network Engineer, Intern
+  position: Network Development Engineer, Intern
   duration:  May, 2015 &mdash; Aug, 2015
   summary: Intern on the network design & architecture team responsible for designing the networks for Disney parks & resorts<ul class="resume-item-list"><li>Network automation for Disney World, Disney Land, Disney Cruises</li><li>Performance & feature test network devices (Juniper, Cisco, F5, PAN)</li>
