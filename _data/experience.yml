@@ -1,30 +1,36 @@
 # Jobs
 - company: Nvidia
+  logo: https://logos-api.apistemic.com/domain:nvidia.com
   position: Sr Engineering Manager / Principal Engineer
   duration: Mar, 2022 &mdash; Present
   summary: Building control-plane & telemetry software for AI factories
   
 - company: Salesforce
+  logo: https://logos-api.apistemic.com/domain:salesforce.com
   position: Software Engineer
   duration: Apr, 2019 &mdash; Mar, 2022
   summary: Tech-Lead (Principal) at Slack / Einstein AI<ul class="resume-item-list"><li>Architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Designed an enterprise notebooking & prototyping service</li><li>Led efforts to achieve HIPAA & SOC compliance for the platform</li><li>Container orchestration & automation</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet)</li><li>Led DevOps & SRE teams (Build/deploy/manage compute, network & storage)</li></ul>
 
 - company: Tesla
+  logo: https://logos-api.apistemic.com/domain:tesla.com
   position: Software Engineer
   duration:  Jun, 2018 &mdash; Apr, 2019
   summary: Tech-Lead in the infrastructure group<ul class="resume-item-list"><li>Designed, built & operated Tesla’s API driven networking stack</li><li>Led the team responsible for networks build & management automation</li><li>Led the team responsible for network telemetry & analytics</li><li>Built an orchestration system that touched 50k endpoints (push/pull)</li><li>Led a team of engineers/interns that built the NetOps suite of tools</li><li>Mentored 6+ interns & engineers</li>
 
 - company: Juniper Networks
+  logo: https://logos-api.apistemic.com/domain:juniper.net
   position: Software Engineer
   duration:  May, 2016 &mdash; Jun, 2018
   summary: Senior engineer on Juniper's Contrail SDN engineering team (Office of CTO)<ul class="resume-item-list"><li>Architect for Contrail's integration with OpenShift, Netronome (10/25/40GbE cards)</li><li>Built single-click provisioners using CloudFormation, Ansible & Terraform</li><li>Prototyped some of the earliest “Self-Driving Network” initiatives at Juniper</li><li>Contribute to data-plane acceleration technologies such as DPDK/SR-IOV</li>
 
 - company: Comcast
+  logo: https://logos-api.apistemic.com/domain:comcast.com
   position: Network Orchestration Developer, Intern
   duration:  Nov, 2015 &mdash; May, 2016
   summary: Intern on the network automation team responsible for provisioning edge sites (PoPs)<ul class="resume-item-list"><li>Develop network services through model-driven architecture (YANG/XML/JSON)</li><li>Deploy service models using NetConf, RESTConf, gRPC, RESTful APIs</li>
 
 - company: The Walt Disney Company
+  logo: https://logos-api.apistemic.com/domain:disney.com
   position: Network Development Engineer, Intern
   duration:  May, 2015 &mdash; Aug, 2015
   summary: Intern on the network design & architecture team responsible for designing the networks for Disney parks & resorts<ul class="resume-item-list"><li>Network automation for Disney World, Disney Land, Disney Cruises</li><li>Performance & feature test network devices (Juniper, Cisco, F5, PAN)</li>
