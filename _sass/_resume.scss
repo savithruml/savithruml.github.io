@@ -148,10 +148,12 @@
     gap: 0.5rem;
 
     .company-logo {
-      height: 1em;
-      width: auto;
+      height: 0.9em;
+      width: 0.9em;
+      border-radius: 50%;
+      object-fit: cover;
       vertical-align: middle;
-      object-fit: contain;
+      flex-shrink: 0;
     }
   }
 
