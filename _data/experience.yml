@@ -1,21 +1,21 @@
 # Jobs
 - company: Nvidia
   logo: https://logos-api.apistemic.com/domain:nvidia.com
-  position: Sr Engineering Manager
+  position: Engineering Manager
   duration: Mar, 2022 &mdash; Present
-  summary: Tech-lead manager (Principal) building control-plane & telemetry software for AI factories
+  summary: Senior engineering manager (Principal) on DGX platform. Leading a team that builds control-plane & telemetry software for AI factories
   
 - company: Salesforce
   logo: https://logos-api.apistemic.com/domain:salesforce.com
   position: Software Engineer
   duration: Apr, 2019 &mdash; Mar, 2022
-  summary: Tech-lead (Principal) at Slack / Einstein AI<ul class="resume-item-list"><li>Architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Designed an enterprise notebooking & prototyping service</li><li>Led efforts to achieve HIPAA & SOC compliance for the platform</li><li>Container orchestration & automation</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet)</li><li>Led DevOps & SRE teams (Build/deploy/manage compute, network & storage)</li></ul>
+  summary: Tech-lead (Principal) on Slack / Einstein AI platform<ul class="resume-item-list"><li>Architect for custom K8s controllers (Notary, Agumbe, Injektor, Banavasi, etc)</li><li>Designed an enterprise notebooking & prototyping service</li><li>Led efforts to achieve HIPAA & SOC compliance for the platform</li><li>Container orchestration & automation</li><li>Cloud orchestration (Terraform, Cloudformation, Ansible, Puppet)</li><li>Led DevOps & SRE teams (Build/deploy/manage compute, network & storage)</li></ul>
 
 - company: Tesla
   logo: https://logos-api.apistemic.com/domain:tesla.com
   position: Software Engineer
   duration:  Jun, 2018 &mdash; Apr, 2019
-  summary: Tech-Lead in the infrastructure group<ul class="resume-item-list"><li>Designed, built & operated Tesla’s API driven networking stack</li><li>Led the team responsible for networks build & management automation</li><li>Led the team responsible for network telemetry & analytics</li><li>Built an orchestration system that touched 50k endpoints (push/pull)</li><li>Led a team of engineers/interns that built the NetOps suite of tools</li><li>Mentored 6+ interns & engineers</li>
+  summary: Tech-lead in the infrastructure group<ul class="resume-item-list"><li>Designed, built & operated Tesla’s API driven networking stack</li><li>Led the team responsible for networks build & management automation</li><li>Led the team responsible for network telemetry & analytics</li><li>Built an orchestration system that touched 50k endpoints (push/pull)</li><li>Led a team of engineers/interns that built the NetOps suite of tools</li><li>Mentored 6+ interns & engineers</li>
 
 - company: Juniper Networks
   logo: https://logos-api.apistemic.com/domain:juniper.net
