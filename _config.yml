@@ -12,7 +12,7 @@ resume_avatar:                  "true"
 resume_name:                    "Savithru Lokanath"
 resume_title:                   "Bits & bytes"
 
-resume_header_contact_info:     "San Francisco Bay Area, CA • savithru@colorado.edu"
+resume_header_contact_info:     "San Francisco Bay Area, CA"
 display_header_contact_info:    "true"
 
 resume_header_intro: "<p>Making <em>GPUs</em> go brrr."
