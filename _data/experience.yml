@@ -19,6 +19,9 @@
 
 - company: Juniper Networks
   logo: https://logos-api.apistemic.com/domain:juniper.net
+  position: Software Engineer
+  duration:  May, 2016 &mdash; Jun, 2018
+  summary: Senior engineer on Juniper's Contrail SDN engineering team (Office of CTO)<ul class="resume-item-list"><li>Architect for Contrail's integration with OpenShift, Netronome (10/25/40GbE cards)</li><li>Built single-click provisioners using CloudFormation, Ansible & Terraform</li><li>Prototyped some of the earliest “Self-Driving Network” initiatives at Juniper</li><li>Contribute to data-plane acceleration technologies such as DPDK/SR-IOV</li>
 
 - company: Comcast
   logo: https://logos-api.apistemic.com/domain:comcast.com
