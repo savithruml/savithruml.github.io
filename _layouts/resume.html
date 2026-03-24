@@ -238,11 +238,14 @@
       <section class="content-section">
 
         <header class="section-header">
-          <h2>Blog</h2>
+          <h2><a href="{{ '/blog/' | relative_url }}">Blog</a></h2>
         </header>
 
         <div class="resume-item">
           <ul class="resume-item-list">
+            {% for post in site.posts limit:3 %}
+            <li><a href="{{ post.url | relative_url }}" itemprop="url">{{ post.title }}</a></li>
+            {% endfor %}
             {% for link in site.data.links %}
             <li><a href={{ link.url }} target="_blank" itemprop="url">{{ link.description }}</a></li>
             {% endfor %}

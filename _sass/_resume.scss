@@ -1,6 +1,30 @@
 // Resume styles
 // ---------------------------------------/
 
+// Blog & post styles
+.post-content {
+  margin: 2rem 0;
+
+  .post-title {
+    @include sans_bold;
+    font-size: 2rem;
+    margin: 0 0 0.5rem;
+    letter-spacing: -.05rem;
+  }
+
+  .post-meta {
+    @include sans;
+    font-size: 0.95rem;
+    color: #999;
+    margin: 0 0 2rem;
+  }
+}
+
+.post-date {
+  font-size: 0.9rem;
+  color: #999;
+}
+
 // util
 
 .section-header {
@@ -148,8 +172,8 @@
     gap: 0.5rem;
 
     .company-logo {
-      height: 1em;
-      width: 1em;
+      height: 0.65em;
+      width: 0.65em;
       object-fit: cover;
       vertical-align: middle;
       flex-shrink: 0;
