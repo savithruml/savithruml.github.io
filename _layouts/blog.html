@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+  {% include head.html %}
+
+  <body class="theme-{% if site.resume_theme %}{{ site.resume_theme }}{% endif %}">
+
+    <div class="wrapper">
+
+      <header class="page-header">
+        <h1 class="header-name"><a href="{{ '/' | relative_url }}" itemprop="name">{{ site.resume_name }}</a></h1>
+        <div class="title-bar">
+          <h2 class="header-title">Blog</h2>
+        </div>
+      </header>
+
+      {{ content }}
+
+      <footer class="page-footer">
+        <p class="footer-line"><a href="{{ '/' | relative_url }}">← Home</a></p>
+      </footer>
+
+    </div>
+
+  </body>
+
+</html>

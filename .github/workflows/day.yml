@@ -1,0 +1,23 @@
+# This will toggle black ---> white (day mode)
+
+name: toggle-day-mode
+
+on:
+  schedule:
+    - cron: "0 13 * * *"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Toggle day mode
+        shell: bash
+        run: |
+          git config --local user.email github-actions@github.com
+          git config --local user.name github-actions
+          sed -i 's/black;/white;/g' $GITHUB_WORKSPACE/_sass/_base.scss
+          sed -i 's/white;/black;/g' $GITHUB_WORKSPACE/_sass/_variables.scss
+          git commit -m "Toggle day mode" -a
+          git push

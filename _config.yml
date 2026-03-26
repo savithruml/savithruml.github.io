@@ -1,0 +1,36 @@
+# Site settings
+
+permalink: /blog/:title/
+
+title: "Savithru Lokanath"
+description: ""
+
+markdown: kramdown
+sass:
+  sass_dir: _sass
+  style: compressed
+
+resume_avatar:                  "true"
+resume_name:                    "Savithru Lokanath"
+resume_title:                   "Bits & bytes"
+
+resume_header_contact_info:     "San Francisco Bay Area, CA • savithru@colorado.edu"
+display_header_contact_info:    "true"
+
+resume_header_intro: "<p>Making <em>GPUs</em> go brrr."
+
+resume_section_experience:      true
+resume_section_education:       true
+resume_section_skills:          true
+resume_section_links:           true
+resume_section_top:             true
+patents:                        true
+
+resume_social_links:
+  resume_linkedin_url:          "https://www.linkedin.com/in/savvythrough"
+  resume_medium_url:            "https://medium.com/@savvythrough"
+  resume_github_url:            "https://github.com/savithruml"
+  resume_google_scholar_url:    "https://scholar.google.com/citations?hl=en&user=QEA5OqoAAAAJ"
+resume_print_social_links:      true
+
+resume_theme:                   default

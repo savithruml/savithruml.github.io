@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blog — Savithru Lokanath</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta property="og:title" content="Blog — Savithru Lokanath" />
+    <meta property="og:type" content="website" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --bg: #0a0a0a;
+            --text: #b0b0b0;
+            --heading: #f0f0f0;
+            --subheading: #ddd;
+            --em: #888;
+            --strong: #ddd;
+            --border: #181818;
+            --border-bright: #555;
+            --link: #ddd;
+            --link-hover: #fff;
+            --date: #666;
+            --month: #888;
+            --copyright: #888;
+            --toggle-bg: #222;
+            --toggle-color: #f0f0f0;
+            --back-link: #888;
+        }
+
+        [data-theme="light"] {
+            --bg: #fafafa;
+            --text: #444;
+            --heading: #111;
+            --subheading: #222;
+            --em: #666;
+            --strong: #222;
+            --border: #e0e0e0;
+            --border-bright: #ccc;
+            --link: #222;
+            --link-hover: #000;
+            --date: #999;
+            --month: #888;
+            --copyright: #888;
+            --toggle-bg: #e8e8e8;
+            --toggle-color: #222;
+            --back-link: #888;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.85;
+            font-size: 17px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .header {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 2rem;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.3;
+            color: var(--heading);
+            margin-bottom: 0.3rem;
+        }
+        .header h1 a {
+            color: var(--heading);
+            text-decoration: none;
+        }
+        .header h1 a:hover { opacity: 0.8; }
+        .header h2 {
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: var(--em);
+        }
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 1.5rem 5rem;
+        }
+        .separator {
+            border: none;
+            border-top: 1px solid var(--border-bright);
+            margin: 0 0 2rem;
+        }
+        .year {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--subheading);
+            margin: 0 0 0.5rem;
+        }
+        .month {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--month);
+            margin: 1.25rem 0 0.5rem;
+            padding-left: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05rem;
+        }
+        .post-list {
+            list-style: none;
+            padding-left: 0.25rem;
+        }
+        .post-list li {
+            padding: 0.4rem 0;
+        }
+        .post-list a {
+            color: var(--link);
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .post-list a:hover {
+            color: var(--link-hover);
+            border-bottom-color: var(--border-bright);
+        }
+        .post-date {
+            color: var(--date);
+            font-size: 0.85rem;
+            margin-left: 0.3rem;
+        }
+        .theme-toggle {
+            background: var(--toggle-bg);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: background 0.3s;
+            color: var(--toggle-color);
+            position: absolute;
+            top: 3rem;
+            right: 1.5rem;
+        }
+        .theme-toggle:hover { opacity: 0.8; }
+        .footer {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+            text-align: center;
+        }
+        .footer a {
+            color: var(--back-link);
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+        .footer a:hover { color: var(--link-hover); }
+        .copyright {
+            color: var(--copyright);
+            font-size: 0.75rem;
+            margin-top: 1rem;
+        }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.6rem; }
+            body { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button>
+        <h1><a href="https://savithruml.github.io/">Savithru Lokanath</a></h1>
+        <h2>Blog</h2>
+    </div>
+    <div class="container">
+
+        <hr class="separator">
+
+        <p class="year">2026</p>
+
+        <p class="month">March</p>
+        <ul class="post-list">
+            <li>
+                <a href="/blog/a-signed-handshake/">A signed handshake</a>
+                <span class="post-date">— Mar 26</span>
+            </li>
+            <li>
+                <a href="/blog/the-ambient-mind/">The ambient mind</a>
+                <span class="post-date">— Mar 23</span>
+            </li>
+        </ul>
+
+    </div>
+
+    <div class="footer">
+        <a href="/">← Home</a>
+        <p class="copyright">Savithru Lokanath © 2026</p>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', next === 'dark' ? '' : 'light');
+            if (next === 'dark') html.removeAttribute('data-theme');
+            localStorage.setItem('theme', next);
+            updateToggleIcon(next);
+        }
+
+        function updateToggleIcon(theme) {
+            const btn = document.querySelector('.theme-toggle');
+            btn.textContent = theme === 'light' ? '☀️' : '🌙';
+        }
+
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            if (saved === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+            updateToggleIcon(saved);
+        })();
+    </script>
+</body>
+</html>

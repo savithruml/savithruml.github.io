@@ -1,0 +1,40 @@
+# links
+
+- url: "/blog/a-signed-handshake/"
+  description: "A signed handshake"
+
+- url: "/blog/the-ambient-mind/"
+  description: "The ambient mind"
+
+- url: "https://savvythrough.medium.com/kantara-ft-tesla-a1606d97676e"
+  description: "Tesla ft. xLights"
+
+- url: "https://savvythrough.medium.com/ideas-uno-dos-tres-51eb251ef7c4"
+  description: "Patents: Uno Dos Tres"
+  
+- url: "https://savvythrough.medium.com/the-chutney-bot-f94d5da56f56"
+  description: "The Chutney Bot: A dosa's best companion"
+
+- url: "https://engineering.salesforce.com/project-agumbe-share-objects-across-namespaces-in-kubernetes-1fc2e1ddb3eb"
+  description: "Project Agumbe: A Kubernetes controller to replicate objects"
+  
+- url: "https://engineering.salesforce.com/notary-a-certificate-lifecycle-management-controller-for-kubernetes-a24a53e26cbd"
+  description: "Project Notary: A Kubernetes controller for certificate lifecycle management"
+  
+- url: "https://engineering.salesforce.com/optimizing-eks-networking-for-scale-1325706c8f6d"
+  description: "Optimizing EKS networking for scale"
+  
+- url: "https://engineering.salesforce.com/how-to-rename-a-helm-release-6fdcd7526ac7"
+  description: "How to rename a Helm release with zero downtime"
+
+- url: "https://medium.com/@savvythrough/plugins-kubectl-your-tesla-59bccf0d4e88?source=friends_link&sk=bda702fbd406c51154eb6c756efd1fe2"
+  description: "Kubectl your Tesla"
+
+- url: "https://medium.com/faun/certified-kubernetes-a-ad-my-take-beb969532fa0?source=friends_link&sk=3ed834acce0ec3795189a18806fc25c5"
+  description: "Certified Kubernetes Developer/Admin: Tips & tricks"
+
+- url: "https://medium.com/faun/helm-v3-a-tillerless-strategy-1bbc724e3480?source=friends_link&sk=91cd711cc4cab0f0fc00cfc6fb52cea5"
+  description: "Helm v3: A tillerLess strategy"
+
+- url: "https://medium.com/faun/aws-eks-auth-optimization-for-k8s-ae054be0a31b?source=friends_link&sk=351c924cc4c5fd12e68476f797c7792a"
+  description: "AWS EKS: Auth optimization"
