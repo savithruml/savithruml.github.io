@@ -99,8 +99,25 @@
     .info-popover strong { color: var(--text); }
     .info-btn.active .info-popover { display: block; }
 
+    .link-btn {
+      background: none;
+      border: 1px solid #333;
+      border-radius: var(--radius);
+      color: #888;
+      font-size: 12px;
+      padding: 4px 10px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .link-btn.visible { display: flex; }
+    .link-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .link-btn.copied { color: var(--accent); border-color: var(--accent); }
+
     .status {
-      margin-left: auto;
       font-size: 12px;
       color: var(--muted);
       display: flex;
@@ -452,7 +469,7 @@
     <line x1="25" y1="17" x2="21" y2="21" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/>
   </svg>
   <h1>Slice</h1>
-<span class="status" id="status">ready</span>
+  <span class="status" id="status">ready</span>
 </header>
 
 <main>
@@ -472,7 +489,16 @@
 
   <div class="results" id="results">
 
-    <div class="section-label">Network</div>
+    <div style="display:flex; align-items:center; justify-content:space-between; padding: 0 0 10px;">
+      <span class="section-label" style="padding:0;">Network</span>
+      <button class="link-btn" id="linkBtn">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M5 7a3 3 0 0 0 4.5.4l1-1a3 3 0 0 0-4.2-4.3l-.6.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M7 5a3 3 0 0 0-4.5-.4l-1 1a3 3 0 0 0 4.2 4.3l.6-.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        Copy link
+      </button>
+    </div>
 
     <div class="row">
       <span class="row-label">CIDR</span>
@@ -706,6 +732,7 @@
       errorMsg.classList.remove('visible');
       input.classList.remove('error');
       setStatus('', 'ready');
+      updateHash('');
       return;
     }
     const info = calculate(val);
@@ -738,11 +765,36 @@
     results.classList.add('visible');
     setStatus('ok', 'ok');
     highlightRef(info.prefix);
+    updateHash(info.cidr);
   }
 
   function setStatus(cls, text) {
     statusEl.className = 'status ' + cls;
     statusEl.textContent = text || 'ready';
+  }
+
+  // Shareable URL via hash
+  const linkBtn = document.getElementById('linkBtn');
+
+  function updateHash(cidr) {
+    const hash = cidr ? '#' + encodeURIComponent(cidr) : '';
+    history.replaceState(null, '', window.location.pathname + window.location.search + hash);
+    linkBtn.classList.toggle('visible', !!cidr);
+  }
+
+  linkBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+      const orig = linkBtn.innerHTML;
+      linkBtn.classList.add('copied');
+      linkBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!`;
+      setTimeout(() => { linkBtn.classList.remove('copied'); linkBtn.innerHTML = orig; }, 1800);
+    });
+  });
+
+  // Load from hash on page open
+  if (window.location.hash) {
+    const cidr = decodeURIComponent(window.location.hash.slice(1));
+    if (cidr) { input.value = cidr; render(); }
   }
 
   let debounce;
