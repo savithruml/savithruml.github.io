@@ -1,0 +1,12 @@
+{
+  "name": "Slice",
+  "short_name": "Slice",
+  "description": "Subnet calculator",
+  "start_url": "/apps/slice/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#1a2e1e",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

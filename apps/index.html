@@ -26,7 +26,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      font-size: 13px;
+      font-size: 15px;
       color: #999;
       text-decoration: none;
       margin-bottom: 32px;
@@ -38,7 +38,7 @@
     .back svg { flex-shrink: 0; }
 
     .page-header h1 {
-      font-size: 2.4rem;
+      font-size: 3rem;
       font-weight: 900;
       letter-spacing: -0.04em;
       line-height: 1.1;
@@ -46,7 +46,7 @@
     }
 
     .page-header p {
-      font-size: 15px;
+      font-size: 17px;
       color: #888;
       line-height: 1.6;
     }
@@ -98,14 +98,14 @@
     .app-info { flex: 1; min-width: 0; }
 
     .app-name {
-      font-size: 16px;
+      font-size: 19px;
       font-weight: 700;
       letter-spacing: -0.01em;
       margin-bottom: 4px;
     }
 
     .app-desc {
-      font-size: 13px;
+      font-size: 15px;
       color: #888;
       line-height: 1.5;
     }
@@ -156,6 +156,26 @@
       <div class="app-info">
         <div class="app-name">Stencil</div>
         <div class="app-desc">Live Jinja template renderer. Paste a template, supply variables as JSON or YAML, and see the output instantly.</div>
+      </div>
+      <svg class="app-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </a>
+
+    <!-- Slice -->
+    <a class="app-card" href="/apps/slice/" target="_blank">
+      <div class="app-icon">
+        <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" width="56" height="56">
+          <rect width="56" height="56" rx="13" fill="#1a2e1e"/>
+          <rect x="1" y="1" width="54" height="54" rx="12" stroke="#6ee7b7" stroke-width="1.2" stroke-opacity="0.35" fill="none"/>
+          <line x1="33" y1="14" x2="23" y2="42" stroke="#6ee7b7" stroke-width="3.5" stroke-linecap="round"/>
+          <line x1="14" y1="21" x2="21" y2="28" stroke="#a7f3d0" stroke-width="3" stroke-linecap="round"/>
+          <line x1="42" y1="28" x2="35" y2="35" stroke="#a7f3d0" stroke-width="3" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="app-info">
+        <div class="app-name">Slice</div>
+        <div class="app-desc">Subnet calculator. Enter any CIDR prefix and get network address, broadcast, mask, host range, and a full subnet breakdown.</div>
       </div>
       <svg class="app-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
         <path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
