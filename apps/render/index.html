@@ -4,10 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Stencil</title>
-  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
-  <link rel="apple-touch-icon" href="favicon.svg"/>
-  <link rel="manifest" href="manifest.json"/>
-  <meta name="theme-color" content="#1e1e3a"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/nunjucks/3.2.4/nunjucks.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
   <style>
@@ -223,18 +219,6 @@
       border-color: #6b2e2e;
     }
 
-    /* Footer */
-    footer {
-      padding: 8px 20px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      font-size: 11px;
-      color: #606060;
-    }
-
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -308,10 +292,6 @@
     <div id="output" class="empty">Rendered output will appear here…</div>
   </div>
 </div>
-
-<footer>
-  <span>© 2026 Savithru Lokanath</span>
-</footer>
 
 <script>
   const templateEl = document.getElementById('template');

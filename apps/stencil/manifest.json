@@ -1,0 +1,12 @@
+{
+  "name": "Stencil",
+  "short_name": "Stencil",
+  "description": "Jinja template renderer",
+  "start_url": "/apps/stencil/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#1e1e3a",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
