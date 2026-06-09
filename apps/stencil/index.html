@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stencil</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/nunjucks/3.2.4/nunjucks.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0f;
+      --surface: #161616;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --muted: #666;
+      --accent: #7c8cf8;
+      --error: #f87171;
+      --success: #6ee7b7;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --radius: 6px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    header {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .logo {
+      width: 34px;
+      height: 34px;
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.01em;
+    }
+
+    .status {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--muted);
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .status.ok { color: var(--success); }
+    .status.ok::before { background: var(--success); }
+    .status.err { color: var(--error); }
+    .status.err::before { background: var(--error); }
+
+    /* ── Layout ── */
+    .workspace {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+      flex-direction: column;
+    }
+
+    .top-row {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* Vertical drag handle between left/right panes */
+    .v-handle {
+      width: 5px;
+      background: var(--border);
+      cursor: col-resize;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .v-handle:hover, .v-handle.dragging { background: var(--accent); }
+
+    /* Horizontal drag handle between top and bottom */
+    .h-handle {
+      height: 5px;
+      background: var(--border);
+      cursor: row-resize;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .h-handle:hover, .h-handle.dragging { background: var(--accent); }
+
+    .pane {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .pane-header {
+      padding: 9px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: #c0c0c0;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .pane-header .hint {
+      font-size: 10px;
+      color: #444;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 400;
+    }
+
+    textarea {
+      flex: 1;
+      background: var(--surface);
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.65;
+      padding: 16px;
+      resize: none;
+      width: 100%;
+      tab-size: 2;
+      -moz-tab-size: 2;
+      user-select: text;
+    }
+
+    textarea::placeholder { color: #3a3a3a; }
+    textarea:focus { background: #181818; }
+
+    .bottom-row {
+      display: flex;
+      flex-direction: column;
+      min-height: 60px;
+      flex-shrink: 0;
+    }
+
+    .bottom-row .pane-header {
+      border-bottom: 1px solid var(--border);
+    }
+
+    #output {
+      flex: 1;
+      overflow: auto;
+      padding: 16px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.65;
+      background: var(--surface);
+      white-space: pre-wrap;
+      word-break: break-all;
+      color: var(--text);
+      user-select: text;
+    }
+
+    #output.empty { color: #333; font-style: italic; }
+    #output.error { color: var(--error); }
+
+    /* ── Clear button ── */
+    .btn-clear {
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      border-radius: var(--radius);
+      color: #aaa;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 12px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .btn-clear svg { flex-shrink: 0; }
+
+    .btn-clear:hover {
+      background: #2a1a1a;
+      color: var(--error);
+      border-color: #6b2e2e;
+    }
+
+    /* Footer */
+    footer {
+      padding: 8px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+      color: #606060;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <!-- Stencil logo: a stencil plate (card with cutouts) -->
+  <svg class="logo" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <mask id="stencilMask">
+        <rect width="34" height="34" fill="white"/>
+        <!-- stencil letter cutouts: a bold "S" shape rendered as cut holes -->
+        <!-- top arc of S -->
+        <path d="M20.5 10 C20.5 10 13 10 13 13.5 C13 16.5 20.5 16 20.5 19.5 C20.5 23 13 23 13 23"
+              stroke="black" stroke-width="4.5" stroke-linecap="round" fill="none"/>
+        <!-- stencil bridge gaps (make it look like a real stencil cut) -->
+        <rect x="11" y="15.5" width="12" height="2" fill="black"/>
+      </mask>
+    </defs>
+    <!-- plate background -->
+    <rect width="34" height="34" rx="8" fill="#1e1e3a" mask="url(#stencilMask)"/>
+    <!-- subtle inner shadow/border -->
+    <rect x="0.75" y="0.75" width="32.5" height="32.5" rx="7.5" stroke="#7c8cf8" stroke-width="1" stroke-opacity="0.4" fill="none"/>
+    <!-- redraw the S stroke on top in accent so it glows -->
+    <path d="M20.5 10 C20.5 10 13 10 13 13.5 C13 16.5 20.5 16 20.5 19.5 C20.5 23 13 23 13 23"
+          stroke="#a5b4fc" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+  </svg>
+
+  <h1>Stencil</h1>
+
+  <span class="status" id="status">ready</span>
+</header>
+
+<div class="workspace">
+  <div class="top-row" id="topRow">
+    <div class="pane" id="leftPane" style="flex: 1;">
+      <div class="pane-header">
+        Template
+        <span class="hint">Jinja2 syntax</span>
+      </div>
+      <textarea id="template" placeholder="Hello, {{ name }}!&#10;&#10;{% for item in items %}&#10;- {{ item }}&#10;{% endfor %}" spellcheck="false"></textarea>
+    </div>
+
+    <div class="v-handle" id="vHandle"></div>
+
+    <div class="pane" id="rightPane" style="flex: 1;">
+      <div class="pane-header">
+        Variables
+        <span class="hint">JSON or YAML</span>
+      </div>
+      <textarea id="vars" placeholder='{&#10;  "name": "world",&#10;  "items": ["one", "two", "three"]&#10;}' spellcheck="false"></textarea>
+    </div>
+  </div>
+
+  <div class="h-handle" id="hHandle"></div>
+
+  <div class="bottom-row" id="bottomRow" style="height: 34vh;">
+    <div class="pane-header">
+      Output
+      <button class="btn-clear" id="clearBtn">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        Clear
+      </button>
+    </div>
+    <div id="output" class="empty">Rendered output will appear here…</div>
+  </div>
+</div>
+
+<footer>
+  <span>© 2026 Savithru Lokanath</span>
+</footer>
+
+<script>
+  const templateEl = document.getElementById('template');
+  const varsEl     = document.getElementById('vars');
+  const outputEl   = document.getElementById('output');
+  const statusEl   = document.getElementById('status');
+  const clearBtn   = document.getElementById('clearBtn');
+
+  const env = new nunjucks.Environment(null, { autoescape: false, throwOnUndefined: false });
+
+  // ── Render ──
+  function render() {
+    const tmpl = templateEl.value;
+    const rawVars = varsEl.value.trim();
+
+    if (!tmpl.trim()) {
+      outputEl.textContent = 'Rendered output will appear here…';
+      outputEl.className = 'empty';
+      setStatus('', 'ready');
+      return;
+    }
+
+    let ctx = {};
+    if (rawVars) {
+      try {
+        // Try YAML first (also parses valid JSON)
+        ctx = jsyaml.load(rawVars);
+        if (typeof ctx !== 'object' || ctx === null) ctx = {};
+      } catch (e) {
+        outputEl.textContent = 'Variables error: ' + e.message;
+        outputEl.className = 'error';
+        setStatus('err', 'invalid vars');
+        return;
+      }
+    }
+
+    try {
+      outputEl.textContent = env.renderString(tmpl, ctx);
+      outputEl.className = '';
+      setStatus('ok', 'ok');
+    } catch (e) {
+      outputEl.textContent = e.message;
+      outputEl.className = 'error';
+      setStatus('err', 'template error');
+    }
+  }
+
+  function setStatus(cls, text) {
+    statusEl.className = 'status ' + cls;
+    statusEl.textContent = text || 'ready';
+  }
+
+  let debounce;
+  function onInput() {
+    clearTimeout(debounce);
+    debounce = setTimeout(render, 120);
+  }
+
+  templateEl.addEventListener('input', onInput);
+  varsEl.addEventListener('input', onInput);
+
+  clearBtn.addEventListener('click', () => {
+    templateEl.value = '';
+    varsEl.value = '';
+    outputEl.textContent = 'Rendered output will appear here…';
+    outputEl.className = 'empty';
+    setStatus('', 'ready');
+  });
+
+  // Tab support
+  [templateEl, varsEl].forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const s = el.selectionStart, end = el.selectionEnd;
+        el.value = el.value.substring(0, s) + '  ' + el.value.substring(end);
+        el.selectionStart = el.selectionEnd = s + 2;
+      }
+    });
+  });
+
+  // ── Resize: vertical (left / right) ──
+  const vHandle   = document.getElementById('vHandle');
+  const leftPane  = document.getElementById('leftPane');
+  const rightPane = document.getElementById('rightPane');
+  const topRow    = document.getElementById('topRow');
+
+  vHandle.addEventListener('mousedown', e => {
+    e.preventDefault();
+    vHandle.classList.add('dragging');
+    const startX    = e.clientX;
+    const totalW    = topRow.getBoundingClientRect().width - vHandle.offsetWidth;
+    const startLeft = leftPane.getBoundingClientRect().width;
+
+    function onMove(e) {
+      const delta = e.clientX - startX;
+      const newLeft = Math.max(100, Math.min(totalW - 100, startLeft + delta));
+      leftPane.style.flex  = 'none';
+      rightPane.style.flex = 'none';
+      leftPane.style.width  = newLeft + 'px';
+      rightPane.style.width = (totalW - newLeft) + 'px';
+    }
+    function onUp() {
+      vHandle.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  // ── Resize: horizontal (top / bottom) ──
+  const hHandle   = document.getElementById('hHandle');
+  const bottomRow = document.getElementById('bottomRow');
+  const workspace = document.querySelector('.workspace');
+
+  hHandle.addEventListener('mousedown', e => {
+    e.preventDefault();
+    hHandle.classList.add('dragging');
+    const startY      = e.clientY;
+    const startBottom = bottomRow.getBoundingClientRect().height;
+    const totalH      = workspace.getBoundingClientRect().height - hHandle.offsetHeight;
+
+    function onMove(e) {
+      const delta = startY - e.clientY;
+      const newBottom = Math.max(60, Math.min(totalH - 80, startBottom + delta));
+      bottomRow.style.height = newBottom + 'px';
+    }
+    function onUp() {
+      hHandle.classList.remove('dragging');
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+</script>
+</body>
+</html>
