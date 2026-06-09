@@ -822,14 +822,6 @@
     URL.revokeObjectURL(a.href);
   });
 
-  // Info popover
-  const infoBtn = document.getElementById('infoBtn');
-  infoBtn.addEventListener('click', e => {
-    e.stopPropagation();
-    infoBtn.classList.toggle('active');
-  });
-  document.addEventListener('click', () => infoBtn.classList.remove('active'));
-
   const refToggle = document.getElementById('refToggle');
   const refWrap   = document.getElementById('refWrap');
   refToggle.addEventListener('click', () => {
@@ -839,7 +831,7 @@
 
   document.querySelectorAll('.example-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-      input.value = btn.textContent;
+      input.value = btn.textContent.trim();
       input.focus();
       render();
     });
