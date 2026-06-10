@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scale — Network Unit Converter</title>
+  <style>
+    :root {
+      --bg: #0f0f0f;
+      --surface: #161616;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --muted: #999;
+      --accent: #2dd4bf;
+      --error: #f87171;
+      --radius: 6px;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 16px;
+    }
+
+    header {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    header h1 {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .status {
+      font-size: 12px;
+      color: var(--muted);
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .status.ok {
+      color: var(--accent);
+    }
+
+    .status.ok::before {
+      background: var(--accent);
+    }
+
+    .status.err {
+      color: var(--error);
+    }
+
+    .status.err::before {
+      background: var(--error);
+    }
+
+    main {
+      flex: 1;
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+
+    /* Tab bar */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      font-size: 14px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      transition: color 0.15s, border-color 0.15s;
+      position: relative;
+      bottom: -1px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+    }
+
+    .tab-btn.active {
+      border-bottom: 2px solid var(--accent);
+      color: var(--text);
+    }
+
+    /* Input row */
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .input-row input[type="number"] {
+      flex: 1;
+      font-size: 22px;
+      font-family: var(--font-mono);
+      padding: 14px 18px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color 0.15s;
+      -moz-appearance: textfield;
+    }
+
+    .input-row input[type="number"]::-webkit-inner-spin-button,
+    .input-row input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+    }
+
+    .input-row input[type="number"]:focus {
+      border-color: var(--accent);
+    }
+
+    .input-row select {
+      font-size: 15px;
+      font-family: var(--font-mono);
+      padding: 14px 12px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      min-width: 110px;
+    }
+
+    .input-row select:focus {
+      border-color: var(--accent);
+    }
+
+    /* Result card */
+    .cert-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .cert-section-title {
+      padding: 7px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid var(--border);
+      background: rgba(45, 212, 191, 0.04);
+    }
+
+    .cert-row {
+      display: flex;
+      align-items: center;
+      padding: 8px 14px;
+      border-bottom: 1px solid #222;
+      gap: 10px;
+      border-left: 3px solid transparent;
+      transition: background 0.1s, border-color 0.1s;
+    }
+
+    .cert-row:last-child {
+      border-bottom: none;
+    }
+
+    .cert-row.active {
+      border-left: 3px solid var(--accent);
+      background: rgba(45, 212, 191, 0.05);
+    }
+
+    .cert-key {
+      font-size: 12px;
+      color: #888;
+      min-width: 80px;
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+    }
+
+    .cert-val {
+      font-size: 13px;
+      color: #ececec;
+      font-family: var(--font-mono);
+      flex: 1;
+    }
+
+    /* Empty state */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 60px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <!-- Logo SVG 34×34 -->
+  <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="34" height="34" rx="7" fill="#001a18"/>
+    <!-- Left arrow (down-left) -->
+    <polyline points="8,12 8,22 18,22" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <polyline points="8,22 12,18" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <!-- Right arrow (up-right) -->
+    <polyline points="26,22 26,12 16,12" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <polyline points="26,12 22,16" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+  <h1>Scale</h1>
+  <span class="status ok" id="status-span">Ready</span>
+</header>
+
+<main>
+  <!-- Tab bar -->
+  <div class="tab-bar" role="tablist">
+    <button class="tab-btn active" data-tab="datasize" role="tab" aria-selected="true">Data Size</button>
+    <button class="tab-btn" data-tab="datarate" role="tab" aria-selected="false">Data Rate</button>
+    <button class="tab-btn" data-tab="time" role="tab" aria-selected="false">Time</button>
+  </div>
+
+  <!-- Input row -->
+  <div class="input-row">
+    <input type="number" id="value-input" placeholder="0" step="any" aria-label="Value to convert" />
+    <select id="unit-select" aria-label="Unit"></select>
+  </div>
+
+  <!-- Results -->
+  <div id="results-container"></div>
+</main>
+
+<footer>© 2026 Savithru Lokanath</footer>
+
+<script>
+  // ─── Unit definitions ───────────────────────────────────────────────────────
+
+  const TABS = {
+    datasize: {
+      label: 'Data Size',
+      units: [
+        { key: 'bit',  label: 'bit',  factor: 0.125 },
+        { key: 'B',    label: 'Byte', factor: 1 },
+        { key: 'KB',   label: 'KB',   factor: 1000 },
+        { key: 'KiB',  label: 'KiB',  factor: 1024 },
+        { key: 'MB',   label: 'MB',   factor: 1e6 },
+        { key: 'MiB',  label: 'MiB',  factor: 1048576 },
+        { key: 'GB',   label: 'GB',   factor: 1e9 },
+        { key: 'GiB',  label: 'GiB',  factor: 1073741824 },
+        { key: 'TB',   label: 'TB',   factor: 1e12 },
+        { key: 'TiB',  label: 'TiB',  factor: 1099511627776 },
+        { key: 'PB',   label: 'PB',   factor: 1e15 },
+      ]
+    },
+    datarate: {
+      label: 'Data Rate',
+      units: [
+        { key: 'bps',   label: 'bps',   factor: 1 },
+        { key: 'Kbps',  label: 'Kbps',  factor: 1e3 },
+        { key: 'Mbps',  label: 'Mbps',  factor: 1e6 },
+        { key: 'Gbps',  label: 'Gbps',  factor: 1e9 },
+        { key: 'Tbps',  label: 'Tbps',  factor: 1e12 },
+        { key: 'KB/s',  label: 'KB/s',  factor: 8000 },
+        { key: 'MB/s',  label: 'MB/s',  factor: 8e6 },
+        { key: 'GB/s',  label: 'GB/s',  factor: 8e9 },
+      ]
+    },
+    time: {
+      label: 'Time',
+      units: [
+        { key: 'ns',  label: 'ns',  factor: 1 },
+        { key: 'μs',  label: 'μs',  factor: 1000 },
+        { key: 'ms',  label: 'ms',  factor: 1e6 },
+        { key: 's',   label: 's',   factor: 1e9 },
+        { key: 'min', label: 'min', factor: 6e10 },
+        { key: 'hr',  label: 'hr',  factor: 3.6e12 },
+        { key: 'day', label: 'day', factor: 8.64e13 },
+      ]
+    }
+  };
+
+  // ─── State ──────────────────────────────────────────────────────────────────
+
+  let activeTab = 'datasize';
+  let activeUnitKey = 'MB';
+
+  // ─── DOM refs ───────────────────────────────────────────────────────────────
+
+  const valueInput  = document.getElementById('value-input');
+  const unitSelect  = document.getElementById('unit-select');
+  const resultsEl   = document.getElementById('results-container');
+  const statusSpan  = document.getElementById('status-span');
+  const tabBtns     = document.querySelectorAll('.tab-btn');
+
+  // ─── Helpers ────────────────────────────────────────────────────────────────
+
+  function formatNumber(n) {
+    if (!isFinite(n)) return 'Infinity';
+
+    const abs = Math.abs(n);
+
+    // For very large or very small, add scientific notation parenthetical
+    let main;
+    if (abs === 0) {
+      main = '0';
+    } else if (abs >= 1e15 || (abs < 0.001 && abs > 0)) {
+      // Scientific only
+      const sci = n.toPrecision(6).replace(/\.?0+e/, 'e');
+      main = sci;
+    } else {
+      // Format with commas; keep up to 10 significant digits, strip trailing zeros
+      // Use toPrecision to avoid floating point garbage
+      let str;
+      if (Number.isInteger(n) || abs >= 1) {
+        // Round to avoid floating point noise
+        const rounded = parseFloat(n.toPrecision(12));
+        str = rounded.toLocaleString('en-US', { maximumFractionDigits: 10 });
+      } else {
+        // Small decimals
+        str = parseFloat(n.toPrecision(10)).toString();
+      }
+      main = str;
+
+      // Append scientific for large numbers (>= 1e6) as secondary info
+      if (abs >= 1e9) {
+        const sci = n.toExponential(4).replace(/\.?0+e/, 'e');
+        main = main + '  (' + sci + ')';
+      }
+    }
+
+    return main;
+  }
+
+  function populateSelect(tabKey, selectedKey) {
+    const units = TABS[tabKey].units;
+    unitSelect.innerHTML = '';
+    units.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.key;
+      opt.textContent = u.label;
+      if (u.key === selectedKey) opt.selected = true;
+      unitSelect.appendChild(opt);
+    });
+  }
+
+  function setStatus(type, text) {
+    statusSpan.className = 'status ' + type;
+    statusSpan.textContent = text;
+  }
+
+  // ─── Render results ─────────────────────────────────────────────────────────
+
+  function renderResults() {
+    const rawVal = valueInput.value.trim();
+
+    if (rawVal === '' || rawVal === null) {
+      renderEmpty();
+      setStatus('ok', 'Ready');
+      return;
+    }
+
+    const inputNum = parseFloat(rawVal);
+    if (isNaN(inputNum)) {
+      renderEmpty();
+      setStatus('err', 'Invalid input');
+      return;
+    }
+
+    setStatus('ok', 'Converting');
+
+    const tab = TABS[activeTab];
+    const selectedUnit = TABS[activeTab].units.find(u => u.key === unitSelect.value);
+    if (!selectedUnit) {
+      renderEmpty();
+      return;
+    }
+
+    // Convert input → base unit
+    const baseValue = inputNum * selectedUnit.factor;
+
+    // Build card
+    const section = document.createElement('div');
+    section.className = 'cert-section';
+
+    const title = document.createElement('div');
+    title.className = 'cert-section-title';
+    title.textContent = tab.label;
+    section.appendChild(title);
+
+    tab.units.forEach(u => {
+      const converted = baseValue / u.factor;
+
+      const row = document.createElement('div');
+      row.className = 'cert-row' + (u.key === selectedUnit.key ? ' active' : '');
+
+      const key = document.createElement('span');
+      key.className = 'cert-key';
+      key.textContent = u.label;
+
+      const val = document.createElement('span');
+      val.className = 'cert-val';
+      val.textContent = formatNumber(converted);
+
+      row.appendChild(key);
+      row.appendChild(val);
+      section.appendChild(row);
+    });
+
+    resultsEl.innerHTML = '';
+    resultsEl.appendChild(section);
+  }
+
+  function renderEmpty() {
+    resultsEl.innerHTML = `
+      <div class="empty-state">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polyline points="10,16 10,30 24,30" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <polyline points="10,30 15,25" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <polyline points="34,28 34,14 20,14" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <polyline points="34,14 29,19" stroke="#2dd4bf" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <span>Enter a value to convert</span>
+      </div>`;
+  }
+
+  // ─── Tab switching ───────────────────────────────────────────────────────────
+
+  function switchTab(tabKey) {
+    activeTab = tabKey;
+    // Pick a sensible default unit per tab
+    const defaults = { datasize: 'MB', datarate: 'Mbps', time: 's' };
+    activeUnitKey = defaults[tabKey] || TABS[tabKey].units[0].key;
+
+    tabBtns.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === tabKey);
+      btn.setAttribute('aria-selected', btn.dataset.tab === tabKey ? 'true' : 'false');
+    });
+
+    populateSelect(tabKey, activeUnitKey);
+    renderResults();
+  }
+
+  // ─── Event listeners ─────────────────────────────────────────────────────────
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  });
+
+  valueInput.addEventListener('input', renderResults);
+  unitSelect.addEventListener('change', renderResults);
+
+  // ─── Init ────────────────────────────────────────────────────────────────────
+
+  switchTab('datasize');
+</script>
+</body>
+</html>

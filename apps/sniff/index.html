@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sniff — curl response time decomposer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f0f;
+    --surface: #161616;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --muted: #999;
+    --accent: #e879f9;
+    --error: #f87171;
+    --radius: 6px;
+    --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  }
+
+  html { height: 100%; }
+
+  body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+    overflow: hidden;
+  }
+
+  /* Header */
+  header {
+    padding: 0 16px;
+    height: 48px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  #status {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #status::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+
+  #status.ok { color: var(--accent); }
+  #status.ok::before { background: var(--accent); }
+  #status.err { color: var(--error); }
+  #status.err::before { background: var(--error); }
+
+  /* Workspace */
+  .workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  #leftPane {
+    width: 340px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .v-handle {
+    width: 5px;
+    cursor: col-resize;
+    background: transparent;
+    flex-shrink: 0;
+    transition: background 0.12s, opacity 0.12s;
+  }
+
+  .v-handle:hover {
+    background: var(--accent);
+    opacity: 0.5;
+  }
+
+  #rightPane {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+
+  .pane-header {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #aaa;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  /* Left pane textarea */
+  #curlInput {
+    flex: 1;
+    resize: none;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 14px;
+    background: var(--bg);
+    color: var(--text);
+    border: none;
+    outline: none;
+    caret-color: var(--accent);
+  }
+
+  .pane-footer {
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+
+  .tool-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: #888;
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: color 0.12s, border-color 0.12s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .tool-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  /* Right pane content */
+  #rightContent {
+    flex: 1;
+    padding-bottom: 0;
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: var(--muted);
+    text-align: center;
+    padding: 32px;
+  }
+
+  .empty-state svg {
+    opacity: 0.3;
+  }
+
+  .empty-state p {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* Cert sections */
+  .cert-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin: 16px;
+    margin-bottom: 0;
+  }
+
+  .cert-section:last-child {
+    margin-bottom: 16px;
+  }
+
+  .cert-section-title {
+    padding: 7px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--border);
+    background: rgba(232, 121, 249, 0.04);
+  }
+
+  .cert-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 8px 14px;
+    border-bottom: 1px solid #222;
+    gap: 10px;
+  }
+
+  .cert-row:last-child {
+    border-bottom: none;
+  }
+
+  .cert-key {
+    font-size: 12px;
+    color: #888;
+    min-width: 140px;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+  }
+
+  .cert-val {
+    font-size: 12px;
+    color: #ececec;
+    font-family: var(--font-mono);
+    word-break: break-all;
+    flex: 1;
+    line-height: 1.55;
+  }
+
+  /* Waterfall */
+  .waterfall-bar-container {
+    padding: 14px;
+    padding-bottom: 0;
+  }
+
+  .waterfall-bar-track {
+    height: 28px;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+    background: #1e1e1e;
+    border: 1px solid var(--border);
+  }
+
+  .waterfall-segment {
+    height: 100%;
+    transition: opacity 0.12s;
+    position: relative;
+  }
+
+  .waterfall-segment:hover {
+    opacity: 0.8;
+    cursor: default;
+  }
+
+  .waterfall-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 18px;
+    margin-top: 12px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .waterfall-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 12px;
+    font-family: var(--font-mono);
+  }
+
+  .waterfall-table th {
+    text-align: left;
+    color: #666;
+    font-weight: 600;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 5px 10px 5px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .waterfall-table th:last-child,
+  .waterfall-table td:last-child {
+    text-align: right;
+    padding-right: 0;
+  }
+
+  .waterfall-table td {
+    padding: 6px 10px 6px 0;
+    border-bottom: 1px solid #1e1e1e;
+    color: #ccc;
+  }
+
+  .waterfall-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .waterfall-table tr.total-row td {
+    color: var(--text);
+    font-weight: 700;
+    border-top: 1px solid var(--border);
+    padding-top: 8px;
+    margin-top: 4px;
+  }
+
+  .phase-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    margin-right: 7px;
+    vertical-align: middle;
+  }
+
+  .timing-hint {
+    padding: 14px;
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .timing-hint code {
+    display: block;
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #ccc;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  /* Status badge */
+  .status-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .status-2xx { background: rgba(52, 211, 153, 0.15); color: #34d399; }
+  .status-3xx { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+  .status-4xx { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+  .status-5xx { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid var(--border);
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <!-- Logo SVG 34x34 -->
+  <svg width="34" height="34" viewBox="0 0 34 34" xmlns="http://www.w3.org/2000/svg">
+    <rect width="34" height="34" rx="7" fill="#1a0018"/>
+    <!-- Waveform / sniff icon -->
+    <g stroke="#e879f9" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="17" x2="8" y2="17" stroke-width="1.5"/>
+      <polyline points="8,17 10,12 12,22 14,10 16,24 18,14 20,20 22,17 29,17" stroke-width="1.5" fill="none"/>
+    </g>
+  </svg>
+  <h1>Sniff</h1>
+  <span id="status">Ready</span>
+</header>
+
+<div class="workspace">
+  <!-- Left Pane -->
+  <div id="leftPane">
+    <div class="pane-header">Input</div>
+    <textarea
+      id="curlInput"
+      spellcheck="false"
+      placeholder="Paste curl -v output here…&#10;&#10;For timing data, run:&#10;curl -v -w &quot;\ntime_namelookup: %{time_namelookup}\ntime_connect: %{time_connect}\ntime_appconnect: %{time_appconnect}\ntime_pretransfer: %{time_pretransfer}\ntime_starttransfer: %{time_starttransfer}\ntime_total: %{time_total}\n&quot; URL"
+    ></textarea>
+    <div class="pane-footer">
+      <button class="tool-btn" id="sampleBtn">Sample</button>
+      <button class="tool-btn" id="clearBtn" title="Clear input">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M10 2C8.9 0.8 7.3 0 5.5 0C2.5 0 0 2.5 0 5.5C0 8.5 2.5 11 5.5 11C8 11 10.1 9.4 10.8 7.2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          <polyline points="8,0 10,2 8,4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- Resize Handle -->
+  <div class="v-handle" id="vHandle"></div>
+
+  <!-- Right Pane -->
+  <div id="rightPane">
+    <div class="pane-header">Analysis</div>
+    <div id="rightContent">
+      <div class="empty-state" id="emptyState">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="10" fill="#1a0018"/>
+          <g stroke="#e879f9" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="7" y1="24" x2="12" y2="24" stroke-width="2"/>
+            <polyline points="12,24 15,16 18,32 21,12 24,36 27,20 30,28 33,24 41,24" stroke-width="2" fill="none"/>
+          </g>
+        </svg>
+        <p>Paste curl -v output in the left panel<br>to see a visual timing breakdown.</p>
+      </div>
+      <div id="analysisOutput" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 Savithru Lokanath</footer>
+
+<script>
+const SAMPLE = `* Trying 142.250.80.46:443...
+* Connected to google.com (142.250.80.46) port 443 (#0)
+* TLSv1.3 (OUT), TLS handshake, Client hello (1):
+* TLSv1.3 (IN), TLS handshake, Server hello (2):
+* SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384
+* Server certificate: google.com
+> GET / HTTP/2
+> Host: google.com
+> User-Agent: curl/7.88.1
+> Accept: */*
+< HTTP/2 200
+< content-type: text/html; charset=ISO-8859-1
+< date: Mon, 09 Jun 2025 12:00:00 GMT
+< server: gws
+< x-xss-protection: 0
+< x-frame-options: SAMEORIGIN
+
+time_namelookup: 0.004231
+time_connect: 0.021847
+time_appconnect: 0.058293
+time_pretransfer: 0.058341
+time_starttransfer: 0.124582
+time_total: 0.125103`;
+
+const PHASE_COLORS = {
+  dns:      '#60a5fa',
+  tcp:      '#34d399',
+  tls:      '#a78bfa',
+  pretrans: '#fbbf24',
+  ttfb:     '#f97316',
+  transfer: '#e879f9',
+};
+
+const PHASE_LABELS = {
+  dns:      'DNS Lookup',
+  tcp:      'TCP Connect',
+  tls:      'TLS Handshake',
+  pretrans: 'Pre-Transfer',
+  ttfb:     'Server Processing (TTFB)',
+  transfer: 'Content Transfer',
+};
+
+function parseInput(raw) {
+  const lines = raw.split('\n');
+  const result = {
+    timing: {},
+    url: null,
+    method: null,
+    httpVersion: null,
+    httpStatus: null,
+    httpStatusText: null,
+    serverIp: null,
+    tlsVersion: null,
+    responseHeaders: [],
+    requestHeaders: [],
+  };
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+
+    // Timing lines
+    const timingMatch = trimmed.match(/^time_(\w+):\s*([\d.]+)/);
+    if (timingMatch) {
+      result.timing[timingMatch[1]] = parseFloat(timingMatch[2]);
+      continue;
+    }
+
+    // Server IP from * Connected to
+    const connMatch = trimmed.match(/^\*\s+Connected to\s+(\S+)\s+\(([^)]+)\)\s+port\s+(\d+)/);
+    if (connMatch) {
+      if (!result.url) result.url = connMatch[1];
+      result.serverIp = `${connMatch[2]}:${connMatch[3]}`;
+      continue;
+    }
+
+    // Trying IP
+    const tryingMatch = trimmed.match(/^\*\s+Trying\s+([\d.:a-fA-F]+):(\d+)/);
+    if (tryingMatch && !result.serverIp) {
+      result.serverIp = `${tryingMatch[1]}:${tryingMatch[2]}`;
+      continue;
+    }
+
+    // TLS version
+    const tlsMatch = trimmed.match(/^\*\s+SSL connection using\s+(TLSv[\d.]+)/i) ||
+                     trimmed.match(/^\*\s+(TLSv[\d.]+)\s+\(OUT\)/i);
+    if (tlsMatch) {
+      result.tlsVersion = tlsMatch[1];
+      continue;
+    }
+
+    // Request line: > METHOD /path HTTP/x.y
+    const reqLineMatch = trimmed.match(/^>\s+(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE)\s+(\S+)\s+(HTTP\/[\d.]+)/i);
+    if (reqLineMatch) {
+      result.method = reqLineMatch[1];
+      result.requestPath = reqLineMatch[2];
+      result.httpVersion = reqLineMatch[3];
+      continue;
+    }
+
+    // HTTP/2 request line without version in usual place
+    const req2Match = trimmed.match(/^>\s+(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS|TRACE)\s+(\S+)\s*(HTTP\/\S+)?/i);
+    if (req2Match && !result.method) {
+      result.method = req2Match[1];
+      result.requestPath = req2Match[2];
+      if (req2Match[3]) result.httpVersion = req2Match[3];
+      continue;
+    }
+
+    // HTTP status: < HTTP/2 200 or < HTTP/1.1 200 OK
+    const statusMatch = trimmed.match(/^<\s+(HTTP\/[\d.]+)\s+(\d+)(.*)$/i);
+    if (statusMatch) {
+      result.httpVersion = statusMatch[1];
+      result.httpStatus = parseInt(statusMatch[2]);
+      result.httpStatusText = statusMatch[3].trim();
+      continue;
+    }
+
+    // Response headers: < Header-Name: value
+    const respHeaderMatch = trimmed.match(/^<\s+([^:]+):\s*(.*)$/);
+    if (respHeaderMatch) {
+      result.responseHeaders.push({ key: respHeaderMatch[1].trim(), val: respHeaderMatch[2].trim() });
+      continue;
+    }
+
+    // Request headers: > Header-Name: value (not the request line)
+    const reqHeaderMatch = trimmed.match(/^>\s+([A-Za-z][^:]+):\s*(.*)$/);
+    if (reqHeaderMatch) {
+      result.requestHeaders.push({ key: reqHeaderMatch[1].trim(), val: reqHeaderMatch[2].trim() });
+      continue;
+    }
+
+    // Extract host from Host header if URL not found
+    if (!result.url) {
+      const hostHeader = trimmed.match(/^>\s+[Hh]ost:\s*(.+)$/);
+      if (hostHeader) result.url = hostHeader[1].trim();
+    }
+  }
+
+  // Build full URL guess
+  if (result.url && result.requestPath) {
+    const proto = result.tlsVersion ? 'https' : 'http';
+    const port = result.serverIp ? result.serverIp.split(':')[1] : null;
+    const defaultPort = proto === 'https' ? '443' : '80';
+    const portStr = (port && port !== defaultPort) ? `:${port}` : '';
+    result.fullUrl = `${proto}://${result.url}${portStr}${result.requestPath}`;
+  }
+
+  return result;
+}
+
+function computePhases(t) {
+  const dns      = t.namelookup    || 0;
+  const tcp      = (t.connect      || 0) - dns;
+  const tls      = (t.appconnect   || 0) - (t.connect || 0);
+  const pretrans = (t.pretransfer  || 0) - (t.appconnect || t.connect || 0);
+  const ttfb     = (t.starttransfer|| 0) - (t.pretransfer || 0);
+  const transfer = (t.total        || 0) - (t.starttransfer || 0);
+  const total    = t.total         || 0;
+
+  return [
+    { id: 'dns',      label: PHASE_LABELS.dns,      ms: dns      * 1000, color: PHASE_COLORS.dns      },
+    { id: 'tcp',      label: PHASE_LABELS.tcp,       ms: tcp      * 1000, color: PHASE_COLORS.tcp      },
+    { id: 'tls',      label: PHASE_LABELS.tls,       ms: tls      * 1000, color: PHASE_COLORS.tls      },
+    { id: 'pretrans', label: PHASE_LABELS.pretrans,  ms: pretrans * 1000, color: PHASE_COLORS.pretrans  },
+    { id: 'ttfb',     label: PHASE_LABELS.ttfb,      ms: ttfb     * 1000, color: PHASE_COLORS.ttfb     },
+    { id: 'transfer', label: PHASE_LABELS.transfer,  ms: transfer * 1000, color: PHASE_COLORS.transfer  },
+  ].filter(p => p.ms > 0.001).map(p => ({ ...p, pct: total > 0 ? (p.ms / (total * 1000)) * 100 : 0 }));
+}
+
+function statusBadge(code) {
+  if (!code) return '';
+  let cls = 'status-2xx';
+  if (code >= 300 && code < 400) cls = 'status-3xx';
+  else if (code >= 400 && code < 500) cls = 'status-4xx';
+  else if (code >= 500) cls = 'status-5xx';
+  return `<span class="status-badge ${cls}">${code}</span>`;
+}
+
+function row(key, val) {
+  if (!val && val !== 0) return '';
+  return `<div class="cert-row"><span class="cert-key">${key}</span><span class="cert-val">${val}</span></div>`;
+}
+
+function section(title, content) {
+  if (!content.trim()) return '';
+  return `<div class="cert-section"><div class="cert-section-title">${title}</div>${content}</div>`;
+}
+
+function renderWaterfall(timing) {
+  const keys = ['namelookup','connect','appconnect','pretransfer','starttransfer','total'];
+  const hasAll = keys.slice(0,5).some(k => timing[k] !== undefined);
+  const hasTotal = timing['total'] !== undefined;
+
+  if (!hasAll && !hasTotal) {
+    return `<div class="cert-section">
+      <div class="cert-section-title">Timing Waterfall</div>
+      <div class="timing-hint">
+        Add <code>-w</code> timing flags to curl for waterfall data. Run:
+        <code>curl -v -w "\\ntime_namelookup: %{time_namelookup}\\ntime_connect: %{time_connect}\\ntime_appconnect: %{time_appconnect}\\ntime_pretransfer: %{time_pretransfer}\\ntime_starttransfer: %{time_starttransfer}\\ntime_total: %{time_total}\\n" URL</code>
+      </div>
+    </div>`;
+  }
+
+  const phases = computePhases(timing);
+  const total = timing.total || 0;
+
+  // Build bar segments
+  const segments = phases.map(p =>
+    `<div class="waterfall-segment" style="width:${p.pct.toFixed(4)}%;background:${p.color};" title="${p.label}: ${p.ms.toFixed(2)}ms (${p.pct.toFixed(1)}%)"></div>`
+  ).join('');
+
+  // Legend
+  const legend = phases.map(p =>
+    `<div class="legend-item"><span class="legend-dot" style="background:${p.color}"></span>${p.label}</div>`
+  ).join('');
+
+  // Table rows
+  const tableRows = phases.map(p =>
+    `<tr>
+      <td><span class="phase-dot" style="background:${p.color}"></span>${p.label}</td>
+      <td>${p.ms.toFixed(2)}</td>
+      <td>${p.pct.toFixed(1)}%</td>
+    </tr>`
+  ).join('');
+
+  const totalMs = total * 1000;
+
+  return `<div class="cert-section">
+    <div class="cert-section-title">Timing Waterfall</div>
+    <div class="waterfall-bar-container">
+      <div class="waterfall-bar-track">${segments}</div>
+      <div class="waterfall-legend">${legend}</div>
+      <table class="waterfall-table">
+        <thead>
+          <tr>
+            <th>Phase</th>
+            <th>Duration (ms)</th>
+            <th>% of Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+          <tr class="total-row">
+            <td>Total</td>
+            <td>${totalMs.toFixed(2)}</td>
+            <td>100%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>`;
+}
+
+function render(parsed) {
+  let html = '';
+
+  // 1. Request info card
+  const infoContent = [
+    parsed.fullUrl  ? row('URL', parsed.fullUrl) : (parsed.url ? row('Host', parsed.url) : ''),
+    parsed.method   ? row('Method', parsed.method) : '',
+    parsed.httpVersion ? row('HTTP Version', parsed.httpVersion) : '',
+    parsed.serverIp ? row('Server IP', parsed.serverIp) : '',
+    parsed.httpStatus ? row('Status', statusBadge(parsed.httpStatus) + (parsed.httpStatusText ? ` <span style="color:#888;font-size:11px;margin-left:6px;">${parsed.httpStatusText}</span>` : '')) : '',
+    parsed.tlsVersion ? row('TLS', parsed.tlsVersion) : '',
+  ].join('');
+
+  if (infoContent.trim()) {
+    html += section('Request Info', infoContent);
+  }
+
+  // 2. Timing waterfall (always show section)
+  html += renderWaterfall(parsed.timing);
+
+  // 3. Response headers
+  if (parsed.responseHeaders.length > 0) {
+    const respContent = parsed.responseHeaders.map(h => row(h.key, h.val)).join('');
+    html += section('Response Headers', respContent);
+  }
+
+  // 4. Request headers
+  if (parsed.requestHeaders.length > 0) {
+    const reqContent = parsed.requestHeaders.map(h => row(h.key, h.val)).join('');
+    html += section('Request Headers', reqContent);
+  }
+
+  return html;
+}
+
+function setStatus(msg, cls) {
+  const el = document.getElementById('status');
+  el.textContent = msg;
+  el.className = cls || '';
+}
+
+let debounceTimer = null;
+
+function processInput(value) {
+  const emptyState = document.getElementById('emptyState');
+  const analysisOutput = document.getElementById('analysisOutput');
+
+  if (!value.trim()) {
+    emptyState.style.display = '';
+    analysisOutput.style.display = 'none';
+    setStatus('Ready', '');
+    return;
+  }
+
+  const parsed = parseInput(value);
+
+  const hasAnyInfo = parsed.url || parsed.method || parsed.httpStatus ||
+                     parsed.responseHeaders.length > 0 || parsed.requestHeaders.length > 0 ||
+                     Object.keys(parsed.timing).length > 0;
+
+  if (!hasAnyInfo) {
+    emptyState.style.display = '';
+    analysisOutput.style.display = 'none';
+    setStatus('No curl data detected', 'err');
+    return;
+  }
+
+  const html = render(parsed);
+  analysisOutput.innerHTML = html;
+  emptyState.style.display = 'none';
+  analysisOutput.style.display = '';
+
+  const hasTiming = parsed.timing && parsed.timing.total !== undefined;
+  const statusCode = parsed.httpStatus;
+  let statusMsg = 'Parsed';
+  let statusCls = 'ok';
+
+  if (statusCode) {
+    statusMsg = `HTTP ${statusCode}`;
+    if (statusCode >= 400) statusCls = 'err';
+  }
+  if (hasTiming) {
+    statusMsg += ` · ${(parsed.timing.total * 1000).toFixed(0)}ms total`;
+  }
+
+  setStatus(statusMsg, statusCls);
+}
+
+// Input handler with debounce
+document.getElementById('curlInput').addEventListener('input', function() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => processInput(this.value), 300);
+});
+
+// Sample button
+document.getElementById('sampleBtn').addEventListener('click', function() {
+  const ta = document.getElementById('curlInput');
+  ta.value = SAMPLE;
+  processInput(SAMPLE);
+});
+
+// Clear button
+document.getElementById('clearBtn').addEventListener('click', function() {
+  const ta = document.getElementById('curlInput');
+  ta.value = '';
+  processInput('');
+});
+
+// Resizable pane
+(function() {
+  const handle = document.getElementById('vHandle');
+  const leftPane = document.getElementById('leftPane');
+  let dragging = false;
+  let startX = 0;
+  let startW = 0;
+
+  handle.addEventListener('mousedown', function(e) {
+    dragging = true;
+    startX = e.clientX;
+    startW = leftPane.offsetWidth;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!dragging) return;
+    const delta = e.clientX - startX;
+    const newW = Math.max(200, Math.min(600, startW + delta));
+    leftPane.style.width = newW + 'px';
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (dragging) {
+      dragging = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    }
+  });
+})();
+</script>
+</body>
+</html>

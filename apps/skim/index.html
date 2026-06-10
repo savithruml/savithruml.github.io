@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skim — OpenAPI Browser</title>
+<style>
+  :root {
+    --bg: #0f0f0f;
+    --surface: #161616;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --muted: #999;
+    --accent: #38bdf8;
+    --error: #f87171;
+    --radius: 6px;
+    --font-mono: 'SF Mono','Fira Code','Cascadia Code',monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 14px;
+  }
+
+  header {
+    padding: 0 16px;
+    height: 48px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+
+  header h1 {
+    font-size: 18px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+  }
+
+  .status {
+    margin-left: auto;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    flex-shrink: 0;
+  }
+
+  .status.ok { color: var(--accent); }
+  .status.ok::before { background: var(--accent); }
+  .status.err { color: var(--error); }
+  .status.err::before { background: var(--error); }
+
+  .workspace {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  #leftPane {
+    width: 340px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #rightPane {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  #rightPane::-webkit-scrollbar { width: 6px; }
+  #rightPane::-webkit-scrollbar-track { background: transparent; }
+  #rightPane::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  #rightPane::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+  .pane-header {
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #aaa;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .v-handle {
+    width: 5px;
+    cursor: col-resize;
+    background: transparent;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .v-handle:hover {
+    background: var(--accent);
+    opacity: 0.5;
+  }
+
+  #specInput {
+    flex: 1;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.6;
+    padding: 14px;
+    background: var(--bg);
+    color: var(--text);
+    border: none;
+    outline: none;
+    resize: none;
+    caret-color: var(--accent);
+    overflow-y: auto;
+  }
+
+  #specInput::placeholder { color: #555; }
+
+  #specInput::-webkit-scrollbar { width: 6px; }
+  #specInput::-webkit-scrollbar-track { background: transparent; }
+  #specInput::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  #specInput.drag-over {
+    outline: 2px dashed var(--accent);
+    outline-offset: -2px;
+  }
+
+  .pane-footer {
+    height: 38px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .tool-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: #888;
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    line-height: 1;
+  }
+
+  .tool-btn:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .file-label {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: #888;
+    border-radius: 5px;
+    padding: 4px 10px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    line-height: 1;
+  }
+
+  .file-label:hover {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+
+  #fileInput { display: none; }
+
+  /* Right pane */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: var(--muted);
+  }
+
+  .empty-state svg { opacity: 0.4; }
+
+  .empty-state p {
+    font-size: 14px;
+    color: var(--muted);
+  }
+
+  .empty-state small {
+    font-size: 12px;
+    color: #555;
+  }
+
+  .info-bar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    flex-shrink: 0;
+  }
+
+  .info-bar-title-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .info-title {
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .version-badge {
+    background: #1e2e3b;
+    color: var(--accent);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+  }
+
+  .info-description {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .info-baseurl {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .tag-header {
+    padding: 8px 16px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .endpoint-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-bottom: 1px solid #1e1e1e;
+    border-left: 3px solid transparent;
+    transition: background 0.1s;
+    user-select: none;
+  }
+
+  .endpoint-row:hover {
+    background: var(--surface);
+  }
+
+  .endpoint-row.expanded {
+    background: #111;
+  }
+
+  .method-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: white;
+    min-width: 52px;
+    text-align: center;
+    flex-shrink: 0;
+    text-transform: uppercase;
+  }
+
+  .method-get    { background: #10b981; }
+  .method-post   { background: #38bdf8; color: #001a2e; }
+  .method-put    { background: #f59e0b; color: #1a0e00; }
+  .method-patch  { background: #f97316; color: #1a0800; }
+  .method-delete { background: #ef4444; }
+  .method-head   { background: #888; }
+  .method-options { background: #888; }
+  .method-other  { background: #888; }
+
+  .endpoint-path {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text);
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .endpoint-summary {
+    font-size: 12px;
+    color: var(--muted);
+    margin-left: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+  }
+
+  .endpoint-detail {
+    background: #0d0d0d;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px 16px 28px;
+  }
+
+  .detail-description {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+    margin-bottom: 10px;
+  }
+
+  .detail-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 6px;
+    margin-top: 12px;
+  }
+
+  .detail-section-title:first-child { margin-top: 0; }
+
+  .params-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  .params-table td {
+    padding: 4px 8px 4px 0;
+    vertical-align: top;
+    border-bottom: 1px solid #1a1a1a;
+  }
+
+  .params-table tr:last-child td { border-bottom: none; }
+
+  .param-name {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .param-name.required {
+    color: var(--accent);
+  }
+
+  .param-name.required::after {
+    content: '*';
+    color: var(--accent);
+    margin-left: 2px;
+  }
+
+  .in-badge {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: #1a1a1a;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    white-space: nowrap;
+  }
+
+  .type-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #7ca;
+    white-space: nowrap;
+  }
+
+  .param-desc {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .response-status {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+  }
+
+  .status-2xx { background: #0d2a1e; color: #10b981; }
+  .status-3xx { background: #0d1f2a; color: #38bdf8; }
+  .status-4xx { background: #2a1a0d; color: #f97316; }
+  .status-5xx { background: #2a0d0d; color: #ef4444; }
+  .status-other { background: #1a1a1a; color: var(--muted); }
+
+  .content-type-text {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  .schema-prop {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 3px 0;
+    border-bottom: 1px solid #1a1a1a;
+    font-size: 12px;
+  }
+
+  .schema-prop:last-child { border-bottom: none; }
+
+  .schema-prop-name {
+    font-family: var(--font-mono);
+    color: var(--text);
+    min-width: 120px;
+  }
+
+  .schema-prop-type {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: #7ca;
+  }
+
+  .schema-prop-desc {
+    color: var(--muted);
+    font-size: 11px;
+    flex: 1;
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <!-- Logo -->
+  <svg width="34" height="34" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="34" height="34" rx="7" fill="#001220"/>
+    <!-- Open book icon -->
+    <path d="M17 10.5C17 10.5 14 9 10.5 9C9.5 9 9 9.4 9 10.3V22.3C9 23 9.5 23.5 10.5 23.5C14 23.5 17 25 17 25C17 25 20 23.5 23.5 23.5C24.5 23.5 25 23 25 22.3V10.3C25 9.4 24.5 9 23.5 9C20 9 17 10.5 17 10.5Z" stroke="#38bdf8" stroke-width="1.5" stroke-linejoin="round"/>
+    <line x1="17" y1="10.5" x2="17" y2="25" stroke="#38bdf8" stroke-width="1.5"/>
+    <line x1="11" y1="13" x2="15" y2="12.5" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/>
+    <line x1="11" y1="16" x2="15" y2="15.5" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/>
+    <line x1="11" y1="19" x2="15" y2="18.5" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/>
+    <line x1="19" y1="12.5" x2="23" y2="13" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/>
+    <line x1="19" y1="15.5" x2="23" y2="16" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/>
+    <line x1="19" y1="18.5" x2="23" y2="19" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/>
+  </svg>
+
+  <h1>Skim</h1>
+
+  <span class="status" id="statusIndicator">Ready</span>
+</header>
+
+<div class="workspace">
+  <!-- Left Pane -->
+  <div id="leftPane">
+    <div class="pane-header">Spec Input</div>
+    <textarea
+      id="specInput"
+      placeholder="Paste OpenAPI / Swagger JSON here…"
+      spellcheck="false"
+      autocorrect="off"
+      autocapitalize="off"
+    ></textarea>
+    <div class="pane-footer">
+      <label class="file-label" for="fileInput">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="17 8 12 3 7 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <line x1="12" y1="3" x2="12" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Upload file
+      </label>
+      <input type="file" id="fileInput" accept=".json,.yaml,.yml">
+      <button class="tool-btn" id="clearBtn" title="Clear">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 3v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 16H3v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- Resize Handle -->
+  <div class="v-handle" id="vHandle"></div>
+
+  <!-- Right Pane -->
+  <div id="rightPane">
+    <div class="empty-state" id="emptyState">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" color="#38bdf8">
+        <rect x="3" y="3" width="18" height="4" rx="1" fill="currentColor"/>
+        <rect x="3" y="10" width="18" height="4" rx="1" fill="currentColor"/>
+        <rect x="3" y="17" width="18" height="4" rx="1" fill="currentColor"/>
+      </svg>
+      <p>Paste an OpenAPI JSON spec to browse endpoints</p>
+      <small>Supports OpenAPI 2.0 (Swagger) and 3.0</small>
+    </div>
+    <div id="specView" style="display:none;"></div>
+  </div>
+</div>
+
+<footer>© 2026 Savithru Lokanath</footer>
+
+<script>
+(function() {
+  'use strict';
+
+  const specInput = document.getElementById('specInput');
+  const statusEl = document.getElementById('statusIndicator');
+  const emptyState = document.getElementById('emptyState');
+  const specView = document.getElementById('specView');
+  const clearBtn = document.getElementById('clearBtn');
+  const fileInput = document.getElementById('fileInput');
+  const vHandle = document.getElementById('vHandle');
+  const leftPane = document.getElementById('leftPane');
+
+  let parseTimer = null;
+  let expandedEndpoints = new Set();
+
+  // ─── Status helpers ───────────────────────────────────────────────────────
+  function setStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = 'status' + (cls ? ' ' + cls : '');
+  }
+
+  // ─── Method badge ─────────────────────────────────────────────────────────
+  function methodClass(method) {
+    const m = (method || '').toLowerCase();
+    const map = { get:'get', post:'post', put:'put', patch:'patch', delete:'delete', head:'head', options:'options' };
+    return 'method-' + (map[m] || 'other');
+  }
+
+  function methodColor(method) {
+    const m = (method || '').toLowerCase();
+    const colors = {
+      get: '#10b981', post: '#38bdf8', put: '#f59e0b',
+      patch: '#f97316', delete: '#ef4444'
+    };
+    return colors[m] || '#888';
+  }
+
+  // ─── Response status coloring ─────────────────────────────────────────────
+  function responseStatusClass(code) {
+    const s = String(code);
+    if (s.startsWith('2')) return 'status-2xx';
+    if (s.startsWith('3')) return 'status-3xx';
+    if (s.startsWith('4')) return 'status-4xx';
+    if (s.startsWith('5')) return 'status-5xx';
+    return 'status-other';
+  }
+
+  // ─── Schema extraction helpers ────────────────────────────────────────────
+  function getType(schema) {
+    if (!schema) return '';
+    if (schema.$ref) return schema.$ref.split('/').pop();
+    if (schema.type === 'array' && schema.items) return 'array[' + getType(schema.items) + ']';
+    return schema.type || '';
+  }
+
+  function getProperties(schema, spec) {
+    if (!schema) return null;
+    // Resolve $ref
+    if (schema.$ref) {
+      schema = resolveRef(schema.$ref, spec);
+    }
+    if (schema && schema.properties) return schema.properties;
+    if (schema && schema.type === 'array' && schema.items) {
+      const items = schema.items.$ref ? resolveRef(schema.items.$ref, spec) : schema.items;
+      if (items && items.properties) return items.properties;
+    }
+    return null;
+  }
+
+  function resolveRef(ref, spec) {
+    if (!ref || !ref.startsWith('#/')) return null;
+    const parts = ref.slice(2).split('/');
+    let obj = spec;
+    for (const part of parts) {
+      const key = part.replace(/~1/g, '/').replace(/~0/g, '~');
+      if (obj == null) return null;
+      obj = obj[key];
+    }
+    return obj;
+  }
+
+  // ─── Parsing ──────────────────────────────────────────────────────────────
+  function parseSpec(text) {
+    const spec = JSON.parse(text);
+
+    // Detect version
+    let version2 = false;
+    if (spec.swagger && spec.swagger.startsWith('2')) version2 = true;
+    else if (!spec.openapi) throw new Error('Unrecognized spec format (need swagger or openapi field)');
+
+    // Info
+    const info = spec.info || {};
+    const title = info.title || 'Untitled';
+    const version = info.version || '';
+    const description = info.description || '';
+
+    // Base URL
+    let baseUrl = '';
+    if (version2) {
+      const schemes = (spec.schemes && spec.schemes[0]) || 'https';
+      const host = spec.host || '';
+      const basePath = spec.basePath || '/';
+      if (host) baseUrl = schemes + '://' + host + basePath;
+    } else {
+      if (spec.servers && spec.servers.length > 0) {
+        baseUrl = spec.servers[0].url || '';
+      }
+    }
+
+    // Paths
+    const paths = spec.paths || {};
+    const groups = {}; // tag → array of endpoint objects
+    const tagOrder = [];
+
+    for (const [path, pathItem] of Object.entries(paths)) {
+      if (!pathItem || typeof pathItem !== 'object') continue;
+      const HTTP_METHODS = ['get','post','put','patch','delete','head','options','trace'];
+      for (const method of HTTP_METHODS) {
+        if (!pathItem[method]) continue;
+        const op = pathItem[method];
+
+        const tags = (op.tags && op.tags.length > 0) ? op.tags : ['Untagged'];
+        const tag = tags[0];
+
+        if (!groups[tag]) {
+          groups[tag] = [];
+          tagOrder.push(tag);
+        }
+
+        // Parameters: path-level + operation-level
+        const pathParams = pathItem.parameters || [];
+        const opParams = op.parameters || [];
+        const allParams = [...pathParams, ...opParams];
+        // Dedupe by name+in
+        const seenParams = new Set();
+        const params = allParams.filter(p => {
+          const key = (p.name || '') + '|' + (p.in || '');
+          if (seenParams.has(key)) return false;
+          seenParams.add(key);
+          return true;
+        });
+
+        // Request body
+        let requestBody = null;
+        if (version2) {
+          const bodyParam = params.find(p => p.in === 'body');
+          if (bodyParam) {
+            requestBody = {
+              contentType: 'application/json',
+              schema: bodyParam.schema,
+              description: bodyParam.description
+            };
+          }
+        } else {
+          if (op.requestBody) {
+            const rb = op.requestBody;
+            const content = rb.content || {};
+            const firstContentType = Object.keys(content)[0] || '';
+            const mediaObj = content[firstContentType] || {};
+            requestBody = {
+              contentType: firstContentType,
+              schema: mediaObj.schema,
+              description: rb.description
+            };
+          }
+        }
+
+        // Filter body params from params list (swagger 2.0)
+        const displayParams = version2 ? params.filter(p => p.in !== 'body') : params;
+
+        // Responses
+        const responses = [];
+        for (const [code, resp] of Object.entries(op.responses || {})) {
+          responses.push({
+            code,
+            description: resp.description || ''
+          });
+        }
+
+        groups[tag].push({
+          method,
+          path,
+          operationId: op.operationId || '',
+          summary: op.summary || '',
+          description: op.description || '',
+          params: displayParams,
+          requestBody,
+          responses,
+          spec
+        });
+      }
+    }
+
+    return { title, version, description, baseUrl, groups, tagOrder };
+  }
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+  function esc(str) {
+    return String(str || '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderSpec(data) {
+    const { title, version, description, baseUrl, groups, tagOrder } = data;
+
+    let html = '';
+
+    // Info bar
+    html += `<div class="info-bar">`;
+    html += `<div class="info-bar-title-row">`;
+    html += `<span class="info-title">${esc(title)}</span>`;
+    if (version) html += `<span class="version-badge">${esc(version)}</span>`;
+    html += `</div>`;
+    if (description) html += `<div class="info-description">${esc(description)}</div>`;
+    if (baseUrl) html += `<div class="info-baseurl">${esc(baseUrl)}</div>`;
+    html += `</div>`;
+
+    // Tags and endpoints
+    for (const tag of tagOrder) {
+      const endpoints = groups[tag];
+      html += `<div class="tag-header">${esc(tag)}</div>`;
+
+      for (let i = 0; i < endpoints.length; i++) {
+        const ep = endpoints[i];
+        const id = `ep-${tag}-${i}`.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_-]/g, '');
+        const isExpanded = expandedEndpoints.has(id);
+        const color = methodColor(ep.method);
+
+        html += `<div class="endpoint-row${isExpanded ? ' expanded' : ''}"
+          data-ep-id="${esc(id)}"
+          style="${isExpanded ? `border-left-color:${color}` : ''}"
+        >`;
+        html += `<span class="method-badge method-${esc(ep.method.toLowerCase())}">${esc(ep.method.toUpperCase())}</span>`;
+        html += `<span class="endpoint-path">${esc(ep.path)}</span>`;
+        if (ep.summary) html += `<span class="endpoint-summary">${esc(ep.summary)}</span>`;
+        html += `</div>`;
+
+        if (isExpanded) {
+          html += renderDetail(ep);
+        }
+      }
+    }
+
+    return html;
+  }
+
+  function renderDetail(ep) {
+    let html = `<div class="endpoint-detail">`;
+
+    if (ep.description) {
+      html += `<div class="detail-description">${esc(ep.description)}</div>`;
+    }
+
+    // Parameters
+    if (ep.params && ep.params.length > 0) {
+      html += `<div class="detail-section-title">Parameters</div>`;
+      html += `<table class="params-table">`;
+      for (const p of ep.params) {
+        const required = p.required === true;
+        const schema = p.schema || p;
+        const typeStr = getType(schema);
+        html += `<tr>`;
+        html += `<td><span class="param-name${required ? ' required' : ''}">${esc(p.name)}</span></td>`;
+        html += `<td><span class="in-badge">${esc(p.in)}</span></td>`;
+        if (typeStr) html += `<td><span class="type-text">${esc(typeStr)}</span></td>`;
+        else html += `<td></td>`;
+        html += `<td><span class="param-desc">${esc(p.description || '')}</span></td>`;
+        html += `</tr>`;
+      }
+      html += `</table>`;
+    }
+
+    // Request body
+    if (ep.requestBody) {
+      html += `<div class="detail-section-title">Request Body</div>`;
+      if (ep.requestBody.contentType) {
+        html += `<div class="content-type-text">${esc(ep.requestBody.contentType)}</div>`;
+      }
+      if (ep.requestBody.description) {
+        html += `<div class="param-desc" style="margin-bottom:6px">${esc(ep.requestBody.description)}</div>`;
+      }
+      const props = getProperties(ep.requestBody.schema, ep.spec);
+      if (props) {
+        const required = (ep.requestBody.schema && ep.requestBody.schema.required) || [];
+        for (const [propName, propSchema] of Object.entries(props)) {
+          const isReq = required.includes(propName);
+          const typeStr = getType(propSchema);
+          html += `<div class="schema-prop">`;
+          html += `<span class="schema-prop-name${isReq ? ' required' : ''}">${esc(propName)}${isReq ? '<span style="color:var(--accent)">*</span>' : ''}</span>`;
+          if (typeStr) html += `<span class="schema-prop-type">${esc(typeStr)}</span>`;
+          if (propSchema.description) html += `<span class="schema-prop-desc">${esc(propSchema.description)}</span>`;
+          html += `</div>`;
+        }
+      } else if (ep.requestBody.schema) {
+        const typeStr = getType(ep.requestBody.schema);
+        if (typeStr) html += `<div class="schema-prop"><span class="schema-prop-type">${esc(typeStr)}</span></div>`;
+      }
+    }
+
+    // Responses
+    if (ep.responses && ep.responses.length > 0) {
+      html += `<div class="detail-section-title">Responses</div>`;
+      html += `<table class="params-table">`;
+      for (const r of ep.responses) {
+        html += `<tr>`;
+        html += `<td><span class="response-status ${responseStatusClass(r.code)}">${esc(r.code)}</span></td>`;
+        html += `<td><span class="param-desc">${esc(r.description)}</span></td>`;
+        html += `</tr>`;
+      }
+      html += `</table>`;
+    }
+
+    html += `</div>`;
+    return html;
+  }
+
+  // ─── Parse and display ────────────────────────────────────────────────────
+  let lastParsedData = null;
+
+  function processInput(text) {
+    text = text.trim();
+    if (!text) {
+      emptyState.style.display = '';
+      specView.style.display = 'none';
+      specView.innerHTML = '';
+      lastParsedData = null;
+      setStatus('Ready');
+      return;
+    }
+
+    try {
+      const data = parseSpec(text);
+      lastParsedData = data;
+      const totalEndpoints = Object.values(data.groups).reduce((a, b) => a + b.length, 0);
+      setStatus(`${totalEndpoints} endpoint${totalEndpoints !== 1 ? 's' : ''} · ${data.tagOrder.length} tag${data.tagOrder.length !== 1 ? 's' : ''}`, 'ok');
+      emptyState.style.display = 'none';
+      specView.style.display = '';
+      rerenderSpecView(data);
+    } catch (e) {
+      lastParsedData = null;
+      setStatus('Parse error: ' + e.message, 'err');
+      emptyState.style.display = '';
+      specView.style.display = 'none';
+      specView.innerHTML = '';
+    }
+  }
+
+  function rerenderSpecView(data) {
+    const scrollTop = document.getElementById('rightPane').scrollTop;
+    specView.innerHTML = renderSpec(data);
+    document.getElementById('rightPane').scrollTop = scrollTop;
+    attachEndpointListeners();
+  }
+
+  function attachEndpointListeners() {
+    specView.querySelectorAll('.endpoint-row').forEach(row => {
+      row.addEventListener('click', function() {
+        const id = this.getAttribute('data-ep-id');
+        if (expandedEndpoints.has(id)) {
+          expandedEndpoints.delete(id);
+        } else {
+          expandedEndpoints.add(id);
+        }
+        if (lastParsedData) rerenderSpecView(lastParsedData);
+      });
+    });
+  }
+
+  // ─── Debounced input ──────────────────────────────────────────────────────
+  specInput.addEventListener('input', function() {
+    clearTimeout(parseTimer);
+    parseTimer = setTimeout(() => processInput(this.value), 400);
+  });
+
+  // ─── Clear ────────────────────────────────────────────────────────────────
+  clearBtn.addEventListener('click', function() {
+    specInput.value = '';
+    expandedEndpoints.clear();
+    processInput('');
+  });
+
+  // ─── File upload ──────────────────────────────────────────────────────────
+  fileInput.addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      specInput.value = e.target.result;
+      expandedEndpoints.clear();
+      processInput(e.target.result);
+    };
+    reader.readAsText(file);
+    this.value = '';
+  });
+
+  // ─── Drag and drop ────────────────────────────────────────────────────────
+  specInput.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    this.classList.add('drag-over');
+  });
+
+  specInput.addEventListener('dragleave', function() {
+    this.classList.remove('drag-over');
+  });
+
+  specInput.addEventListener('drop', function(e) {
+    e.preventDefault();
+    this.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+      specInput.value = ev.target.result;
+      expandedEndpoints.clear();
+      processInput(ev.target.result);
+    };
+    reader.readAsText(file);
+  });
+
+  // ─── Resizable pane ──────────────────────────────────────────────────────
+  let isResizing = false;
+  let startX = 0;
+  let startWidth = 0;
+
+  vHandle.addEventListener('mousedown', function(e) {
+    isResizing = true;
+    startX = e.clientX;
+    startWidth = leftPane.getBoundingClientRect().width;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+
+  document.addEventListener('mousemove', function(e) {
+    if (!isResizing) return;
+    const dx = e.clientX - startX;
+    const newWidth = Math.max(200, Math.min(700, startWidth + dx));
+    leftPane.style.width = newWidth + 'px';
+  });
+
+  document.addEventListener('mouseup', function() {
+    if (!isResizing) return;
+    isResizing = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+
+})();
+</script>
+</body>
+</html>
