@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The toolkit</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta property="og:title" content="The toolkit" />
+    <meta property="og:description" content="Single-purpose browser tools for developers. No accounts, no backends, no data leaving your machine." />
+    <meta property="og:url" content="https://savithruml.github.io/blog/the-toolkit/" />
+    <meta property="og:type" content="article" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="The toolkit" />
+    <meta name="twitter:description" content="Single-purpose browser tools for developers. No accounts, no backends, no data leaving your machine." />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --bg: #0a0a0a;
+            --text: #b0b0b0;
+            --heading: #f0f0f0;
+            --subheading: #ddd;
+            --em: #888;
+            --strong: #ddd;
+            --border: #181818;
+            --border-bright: #555;
+            --author-name: #f0f0f0;
+            --footer-text: #f0f0f0;
+            --copyright: #888;
+            --toggle-bg: #222;
+            --toggle-color: #f0f0f0;
+            --x-bg: #000;
+            --x-border: #333;
+            --img-opacity: 0.93;
+            --img-border: #222;
+            --card-bg: #111;
+            --card-border: #222;
+            --card-name: #f0f0f0;
+            --link: #7c8cf8;
+        }
+
+        [data-theme="light"] {
+            --bg: #fafafa;
+            --text: #444;
+            --heading: #111;
+            --subheading: #222;
+            --em: #666;
+            --strong: #222;
+            --border: #e0e0e0;
+            --border-bright: #ccc;
+            --author-name: #111;
+            --footer-text: #222;
+            --copyright: #888;
+            --toggle-bg: #e8e8e8;
+            --toggle-color: #222;
+            --x-bg: #f0f0f0;
+            --x-border: #ccc;
+            --img-opacity: 1;
+            --img-border: #ddd;
+            --card-bg: #f4f4f4;
+            --card-border: #e0e0e0;
+            --card-name: #111;
+            --link: #4f5fd4;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.85;
+            font-size: 17px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .header {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 4rem 2rem 2.5rem;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: var(--heading);
+            margin-bottom: 0.6rem;
+            line-height: 1.2;
+            letter-spacing: -0.03em;
+        }
+        .meta { font-size: 0.82rem; color: var(--em); margin-bottom: 0.1rem; }
+        .author-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.4rem;
+        }
+        .author-card img {
+            width: 36px; height: 36px;
+            border-radius: 50%; object-fit: cover;
+            opacity: 0.9;
+        }
+        .author-name {
+            color: var(--author-name);
+            font-size: 0.875rem; font-weight: 600;
+            text-decoration: none;
+        }
+        .author-name:hover { text-decoration: underline; }
+        .container {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 2rem 2rem 6rem;
+        }
+        .separator {
+            border: none;
+            border-top: 1px solid var(--border-bright);
+            margin: 0 0 2rem;
+        }
+        h2 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin: 3.2rem 0 0;
+            color: var(--subheading);
+            letter-spacing: -0.01em;
+        }
+        p { margin-bottom: 1.2rem; color: var(--text); }
+        p:last-of-type { margin-bottom: 0; }
+        strong { color: var(--strong); }
+        em { color: var(--em); font-style: normal; }
+        a { color: var(--link); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        .app-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 1.1rem 1.4rem;
+            margin: 1.1rem 0 1.4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            transition: border-color 0.2s;
+        }
+        .app-card:hover { border-color: var(--border-bright); }
+        .app-card-left { display: flex; align-items: center; gap: 1rem; flex: 1; min-width: 0; }
+        .app-logo { width: 44px; height: 44px; flex-shrink: 0; border-radius: 11px; overflow: hidden; display: flex; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+        .app-logo svg { width: 44px; height: 44px; }
+        .app-card-text { display: flex; flex-direction: column; min-width: 0; }
+        .app-card-name {
+            font-size: 0.95rem; font-weight: 700;
+            color: var(--card-name);
+            margin-bottom: 0.25rem;
+            letter-spacing: -0.01em;
+        }
+        .app-card-desc { font-size: 0.8rem; color: var(--em); line-height: 1.5; }
+        .app-link {
+            font-size: 0.78rem; font-weight: 600;
+            color: var(--link);
+            padding: 0.45rem 1rem;
+            border: 1px solid var(--link);
+            border-radius: 8px;
+            white-space: nowrap; flex-shrink: 0;
+            opacity: 0.75; transition: opacity 0.2s;
+            text-decoration: none;
+            letter-spacing: 0.01em;
+        }
+        .app-link:hover { opacity: 1; text-decoration: none; }
+        .blog-img {
+            width: 100%;
+            border-radius: 8px;
+            margin: 1.2rem 0 1.8rem;
+            opacity: var(--img-opacity);
+            border: 1px solid var(--img-border);
+            transition: opacity 0.3s;
+            display: block;
+        }
+        .theme-toggle {
+            background: var(--toggle-bg);
+            border: none; border-radius: 50%;
+            width: 36px; height: 36px;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem;
+            color: var(--toggle-color);
+            position: absolute; top: 4rem; right: 2rem;
+            transition: background 0.3s;
+        }
+        .theme-toggle:hover { opacity: 0.8; }
+        .blog-footer-text {
+            text-align: center;
+            margin: 4rem 0 1rem;
+            padding: 2rem;
+            border-top: 1px solid var(--border);
+        }
+        .blog-footer-text p { color: var(--em); font-size: 0.82rem; margin: 0; }
+        .share-section {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+        .share-section p { font-size: 0.8rem; margin-bottom: 0.9rem; color: var(--em); }
+        .share-buttons { display: flex; justify-content: center; gap: 0.7rem; flex-wrap: wrap; }
+        .share-btn {
+            display: inline-flex; align-items: center; gap: 0.4rem;
+            padding: 0.5rem 1.1rem; border-radius: 8px;
+            text-decoration: none; font-size: 0.78rem; font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .share-btn:hover { opacity: 0.85; }
+        .share-btn svg { width: 15px; height: 15px; fill: currentColor; }
+        .share-btn.x { background: var(--x-bg); color: var(--toggle-color); border: 1px solid var(--x-border); }
+        .share-btn.whatsapp { background: #25D366; color: #fff; }
+        .share-btn.linkedin { background: #0A66C2; color: #fff; }
+        .social-footer {
+            max-width: 680px; margin: 0 auto;
+            padding: 0 2rem 3rem; text-align: center;
+        }
+        .social-footer .copyright { color: var(--copyright); font-size: 0.72rem; }
+        @media (max-width: 640px) {
+            .header { padding: 3rem 1.25rem 2rem; }
+            .header h1 { font-size: 1.75rem; }
+            .container { padding: 1.5rem 1.25rem 5rem; }
+            body { font-size: 16px; }
+            .app-card { flex-direction: column; align-items: flex-start; }
+            .app-link { align-self: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button>
+        <h1>The toolkit</h1>
+        <p class="meta">June 9, 2026</p>
+        <div class="author-card">
+            <img src="/images/dp.jpeg" alt="Savithru Lokanath">
+            <div class="author-info">
+                <a href="https://savithruml.github.io/" class="author-name">Savithru Lokanath</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+
+        <hr class="separator">
+
+        <p>Browser tools that stay out of your way. No accounts, no installs, no data leaving the tab. Each one does exactly one thing.</p>
+
+        <h2>Suite</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#111"/><circle cx="10" cy="10" r="4" fill="#3fb950"/><circle cx="22" cy="10" r="4" fill="#38bdf8"/><circle cx="10" cy="22" r="4" fill="#fbbf24"/><circle cx="22" cy="22" r="4" fill="#fb7185"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Suite</span>
+                    <span class="app-card-desc">All tools in one place. Open any app in a tab and switch freely without leaving the page.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/suite/" target="_blank">Open →</a>
+        </div>
+
+        <p>Suite is the home base. Every tool opens as a tab inside a single page, so you can move between them without navigating away or losing your work. If you're reaching for more than one tool in a session, start here.</p>
+
+        <h2>Scale</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#001a18"/><path d="M6 12 L24 12 M20 8 L24 12 L20 16" stroke="#2dd4bf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M26 20 L8 20 M12 16 L8 20 L12 24" stroke="#2dd4bf" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Scale</span>
+                    <span class="app-card-desc">Unit converter for bits, bytes, data rates, time, and currency.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/scale/" target="_blank">Open →</a>
+        </div>
+
+        <p>Scale converts between data and time units instantly. Enter a value in any unit and get the full picture: bits to terabytes, Kbps to Gbps, milliseconds to days. Three tabs cover data size, transfer rates, and time, with a currency converter rounding it out. Handy when a spec says "1 Gbps" and you want to know how long a 500 GB transfer would actually take, or when you're sizing storage and need to think across units.</p>
+
+        <h2>Scaffold</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#1a1200"/><circle cx="16" cy="12" r="4" fill="#f59e0b"/><circle cx="8" cy="24" r="3" fill="#f59e0b" opacity="0.75"/><circle cx="16" cy="26" r="3" fill="#f59e0b" opacity="0.75"/><circle cx="24" cy="24" r="3" fill="#f59e0b" opacity="0.75"/><line x1="16" y1="16" x2="9.5" y2="21.5" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.85"/><line x1="16" y1="16" x2="16" y2="23" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.85"/><line x1="16" y1="16" x2="22.5" y2="21.5" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.85"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Scaffold</span>
+                    <span class="app-card-desc">Infrastructure diagram builder. Define nodes and connections in YAML, get an interactive canvas.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/scaffold/" target="_blank">Open →</a>
+        </div>
+
+        <p>Scaffold turns a YAML definition into an interactive diagram. Describe your nodes (services, databases, load balancers, hosts) and their connections, and the canvas arranges everything with a force simulation, updating live as you type. The canvas also works directly: double-click to add a node, shift-click two nodes to connect them, right-click for options. Diagrams share via URL and export as JPEG or PDF.</p>
+
+        <h2>Scout</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#001a18"/><circle cx="14" cy="14" r="7" fill="none" stroke="#2dd4bf" stroke-width="1.8"/><path d="M14 10 A4 4 0 0 1 18 14" stroke="#2dd4bf" stroke-width="1.2" stroke-linecap="round" opacity="0.55"/><path d="M14 7.5 A6.5 6.5 0 0 1 20.5 14" stroke="#2dd4bf" stroke-width="1.1" stroke-linecap="round" opacity="0.3"/><line x1="19.5" y1="19.5" x2="25" y2="25" stroke="#2dd4bf" stroke-width="2" stroke-linecap="round"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Scout</span>
+                    <span class="app-card-desc">DNS lookup tool. Enter a hostname and see every record type resolved and decoded.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/scout/" target="_blank">Open →</a>
+        </div>
+
+        <p>Scout performs DNS lookups via DNS-over-HTTPS, straight from the browser. Enter a hostname and it queries every standard record type (A, AAAA, MX, TXT, CNAME, NS), returning each result with its value and TTL. Toggle chips to filter by type. No local DNS client, no terminal required.</p>
+
+        <h2>Seal</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" rx="13" fill="#1a0a2e"/><rect x="1" y="1" width="54" height="54" rx="12" stroke="#a78bfa" stroke-width="1.2" stroke-opacity="0.35" fill="none"/><path d="M28 7 L41 13.5 L41 24.5 C41 33.5 28 42 28 42 C28 42 15 33.5 15 24.5 L15 13.5 Z" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linejoin="round"/><path d="M20.5 25.5 L25.5 31 L35.5 20" stroke="#c4b5fd" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Seal</span>
+                    <span class="app-card-desc">TLS certificate inspector. Paste any PEM and see every field decoded cleanly.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/seal/" target="_blank">Open →</a>
+        </div>
+
+        <p>Seal decodes PEM certificates entirely in the browser. Drop in a cert file and the inspector surfaces every field: subject, issuer, validity window, SANs, public key algorithm, serial number, SHA-256 fingerprint, and key usage extensions. A validity badge shows at a glance whether the certificate is current, expired, or not yet active.</p>
+
+        <h2>Sift</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" rx="13" fill="#1a1000"/><rect x="1" y="1" width="54" height="54" rx="12" stroke="#f59e0b" stroke-width="1.2" stroke-opacity="0.35" fill="none"/><path d="M12 16 H44 L31 29 V42 L25 39 V29 Z" fill="none" stroke="#f59e0b" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Sift</span>
+                    <span class="app-card-desc">Whois parser. Paste a raw dump and get a clean, structured view in seconds.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/sift/" target="_blank">Open →</a>
+        </div>
+
+        <p>Sift parses raw whois output into a structured inspector. Paste the dump and the right pane organises it into clean sections: domain details, registrar info, key dates (created, updated, expiry), registrant, and nameservers. Expiry dates come with a live countdown. No more scanning walls of unformatted text.</p>
+
+        <h2>Sigil</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" rx="13" fill="#1a0008"/><rect x="1" y="1" width="54" height="54" rx="12" stroke="#fb7185" stroke-width="1.2" stroke-opacity="0.35" fill="none"/><circle cx="21" cy="28" r="9" fill="none" stroke="#fb7185" stroke-width="2.4"/><circle cx="21" cy="28" r="4.5" fill="none" stroke="#fda4af" stroke-width="1.6"/><path d="M30 28 L46 28" stroke="#fb7185" stroke-width="2.4" stroke-linecap="round"/><path d="M40 28 L40 33" stroke="#fb7185" stroke-width="2.4" stroke-linecap="round"/><path d="M44 28 L44 31" stroke="#fb7185" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Sigil</span>
+                    <span class="app-card-desc">JWT decoder. Paste a token and inspect the header, claims, and expiry at a glance.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/sigil/" target="_blank">Open →</a>
+        </div>
+
+        <p>Sigil decodes JSON Web Tokens in the browser. The three parts of the token (header, payload, signature) are colour-coded in the input pane. The inspector breaks each section down cleanly: algorithm and type from the header, all payload claims with standard ones like <em>sub</em>, <em>iss</em>, <em>aud</em>, and <em>exp</em> called out prominently, and a validity badge showing whether the token is live, expired, or how long it has left.</p>
+
+        <h2>Skim</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#001220"/><rect x="6" y="6" width="20" height="20" rx="2" stroke="#38bdf8" stroke-width="1.8" fill="none"/><line x1="6" y1="12" x2="26" y2="12" stroke="#38bdf8" stroke-width="1.4"/><rect x="9" y="16" width="4" height="3" rx="1" fill="#10b981" opacity="0.9"/><line x1="16" y1="17.5" x2="23" y2="17.5" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/><rect x="9" y="21" width="4" height="3" rx="1" fill="#f97316" opacity="0.9"/><line x1="16" y1="22.5" x2="23" y2="22.5" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Skim</span>
+                    <span class="app-card-desc">OpenAPI spec viewer. Paste a swagger.json and browse every endpoint as a readable UI.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/skim/" target="_blank">Open →</a>
+        </div>
+
+        <p>Skim parses OpenAPI/Swagger specs and renders them as a browsable UI. Paste a swagger.json and every endpoint appears grouped by tag, with method badges (GET, POST, PUT, DELETE), parameter tables, request body schemas, and response codes with descriptions. Faster than reading raw JSON, lighter than running a full Swagger UI instance.</p>
+
+        <h2>Slice</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="34" height="34" rx="8" fill="#1a2e1e"/><rect x="0.75" y="0.75" width="32.5" height="32.5" rx="7.5" stroke="#6ee7b7" stroke-width="1" stroke-opacity="0.35" fill="none"/><line x1="20" y1="9" x2="14" y2="25" stroke="#6ee7b7" stroke-width="2.2" stroke-linecap="round"/><line x1="9" y1="13" x2="13" y2="17" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/><line x1="25" y1="17" x2="21" y2="21" stroke="#a7f3d0" stroke-width="2" stroke-linecap="round"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Slice</span>
+                    <span class="app-card-desc">Subnet calculator. Enter any CIDR prefix and get the complete breakdown.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/slice/" target="_blank">Open →</a>
+        </div>
+
+        <p>Slice takes a CIDR prefix and returns the full picture: network address, broadcast, subnet mask, wildcard mask, usable IP range, host count, IP class, and binary mask. Preset buttons cover the common private ranges. A separate section lets you carve the subnet into smaller prefixes and download the result as CSV. A reference table covers every prefix length from /0 to /32.</p>
+
+        <h2>Span</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="8" fill="#041a1e"/><circle cx="16" cy="7" r="3.5" fill="#22d3ee"/><circle cx="16" cy="16" r="3.5" fill="#22d3ee" opacity="0.75"/><circle cx="16" cy="25" r="3.5" fill="#22d3ee" opacity="0.5"/><line x1="16" y1="10.5" x2="16" y2="12.5" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round"/><line x1="16" y1="19.5" x2="16" y2="21.5" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="1.5,1.5"/><rect x="21" y="5.5" width="6" height="3" rx="1" fill="#22d3ee" opacity="0.8"/><rect x="21" y="14.5" width="9" height="3" rx="1" fill="#fbbf24" opacity="0.8"/><rect x="21" y="23.5" width="4" height="3" rx="1" fill="#10b981" opacity="0.8"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Span</span>
+                    <span class="app-card-desc">Traceroute visualizer. Paste output and see each hop annotated with latency.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/span/" target="_blank">Open →</a>
+        </div>
+
+        <p>Span converts raw traceroute output into a visual path diagram. Each hop becomes a node on a vertical path, with RTT colour-coded by latency band and the delta between consecutive hops shown as a badge on the connecting line. Five bands cover the range from under 10ms through to timeouts. The diagram exports as PNG.</p>
+
+        <h2>Split</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" rx="13" fill="#080820"/><rect x="1" y="1" width="54" height="54" rx="12" stroke="#818cf8" stroke-width="1.2" stroke-opacity="0.35" fill="none"/><line x1="28" y1="10" x2="28" y2="46" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-opacity="0.5"/><line x1="11" y1="18" x2="22" y2="18" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><line x1="11" y1="26" x2="22" y2="26" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/><line x1="11" y1="34" x2="22" y2="34" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/><line x1="11" y1="42" x2="22" y2="42" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="18" x2="45" y2="18" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/><line x1="34" y1="26" x2="45" y2="26" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="34" x2="45" y2="34" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/><line x1="34" y1="42" x2="45" y2="42" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Split</span>
+                    <span class="app-card-desc">Text diff. Paste or upload two versions and see exactly what changed.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/split/" target="_blank">Open →</a>
+        </div>
+
+        <p>Split shows a side-by-side diff of any two text inputs. Paste into the Before and After panes, or upload files directly. Changes are highlighted line-by-line with an LCS diff: deletions in red on the left, additions in green on the right. Works across any plain text: configs, code, logs, manifests.</p>
+
+        <h2>Stalk</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#0a1200"/><circle cx="16" cy="13" r="5" stroke="#84cc16" stroke-width="1.8" fill="none"/><circle cx="16" cy="13" r="2" fill="#84cc16" opacity="0.6"/><path d="M16 18 C16 18 11 22 11 27" stroke="#84cc16" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M16 18 C16 18 21 22 21 27" stroke="#84cc16" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Stalk</span>
+                    <span class="app-card-desc">IP lookup. Enter any address and see country, ASN, ISP, timezone, and location on a map.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/stalk/" target="_blank">Open →</a>
+        </div>
+
+        <p>Stalk looks up geolocation and network data for any IPv4 or IPv6 address. Enter an IP and get back country, city, ASN, ISP, timezone, and coordinates on a map. Useful when you need to understand where a request is coming from, or which organisation owns a given address block.</p>
+
+        <h2>Stencil</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="34" height="34" rx="8" fill="#1e1e3a"/><rect x="0.75" y="0.75" width="32.5" height="32.5" rx="7.5" stroke="#7c8cf8" stroke-width="1" stroke-opacity="0.4" fill="none"/><path d="M20.5 10 C20.5 10 13 10 13 13.5 C13 16.5 20.5 16 20.5 19.5 C20.5 23 13 23 13 23" stroke="#a5b4fc" stroke-width="2.2" stroke-linecap="round" fill="none"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Stencil</span>
+                    <span class="app-card-desc">Live Jinja2 renderer. Write a template, supply variables as JSON or YAML, see output instantly.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/stencil/" target="_blank">Open →</a>
+        </div>
+
+        <p>Stencil is a three-panel live renderer for Jinja2 templates. Write the template using standard syntax (variables, loops, conditionals, filters), supply values as JSON or YAML, and the rendered output updates as you type. Useful for generating environment-specific configs, templated manifests, or anything with a fixed shape and variable data.</p>
+
+        <h2>Sundial</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#1a1400"/><circle cx="16" cy="16" r="7" stroke="#fbbf24" stroke-width="1.8" fill="none"/><line x1="16" y1="5" x2="16" y2="8" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="24" x2="16" y2="27" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round"/><line x1="5" y1="16" x2="8" y2="16" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round"/><line x1="24" y1="16" x2="27" y2="16" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="16" x2="16" y2="11" stroke="#fbbf24" stroke-width="1.8" stroke-linecap="round"/><line x1="16" y1="16" x2="20" y2="18" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Sundial</span>
+                    <span class="app-card-desc">Timestamp converter. Paste any epoch or ISO string and get every format back at once.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/sundial/" target="_blank">Open →</a>
+        </div>
+
+        <p>Sundial converts Unix timestamps and date strings into every common format at once. Paste an epoch (seconds or milliseconds), an ISO 8601 string, or hit Now for the current time, and it returns UTC, local time, ISO 8601, RFC 2822, relative time, and more in a single view. Good for debugging log timestamps, reading API responses, or sanity-checking a number mid-incident.</p>
+
+        <h2>Swap</h2>
+
+        <div class="app-card">
+            <div class="app-card-left">
+                <div class="app-logo"><svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" rx="13" fill="#1e0f00"/><rect x="1" y="1" width="54" height="54" rx="12" stroke="#f97316" stroke-width="1.2" stroke-opacity="0.35" fill="none"/><path d="M10 19 L38 19 M32 12 L38 19 L32 26" stroke="#fb923c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><path d="M46 37 L18 37 M24 30 L18 37 L24 44" stroke="#f97316" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <div class="app-card-text">
+                    <span class="app-card-name">Swap</span>
+                    <span class="app-card-desc">JSON and YAML converter. Edit either format and the other updates in real time.</span>
+                </div>
+            </div>
+            <a class="app-link" href="/apps/swap/" target="_blank">Open →</a>
+        </div>
+
+        <p>Swap is a bidirectional JSON and YAML converter. Edit the JSON pane and the YAML follows. Edit the YAML and the JSON follows. Both panes auto-detect format, and a button flips which side is which. No submit button, no page reload. The conversion is live.</p>
+
+        <div class="blog-footer-text">
+            <p>All apps run entirely in the browser. No data leaves your machine. 🔒</p>
+        </div>
+
+    </div>
+
+    <div class="share-section">
+        <p>Share this post</p>
+        <div class="share-buttons">
+            <a class="share-btn x" href="https://x.com/intent/tweet?url=https://savithruml.github.io/blog/the-toolkit/&text=The%20toolkit" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                Post
+            </a>
+            <a class="share-btn whatsapp" href="https://wa.me/?text=The%20toolkit%20%E2%80%94%20https://savithruml.github.io/blog/the-toolkit/" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Share
+            </a>
+            <a class="share-btn linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https://savithruml.github.io/blog/the-toolkit/" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                Share
+            </a>
+        </div>
+    </div>
+
+    <div style="height:2rem;"></div>
+
+    <div class="social-footer">
+        <p class="copyright">Savithru Lokanath © 2026</p>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', next === 'dark' ? '' : 'light');
+            if (next === 'dark') html.removeAttribute('data-theme');
+            localStorage.setItem('theme', next);
+            updateToggleIcon(next);
+        }
+        function updateToggleIcon(theme) {
+            document.querySelector('.theme-toggle').textContent = theme === 'light' ? '☀️' : '🌙';
+        }
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+            updateToggleIcon(saved);
+        })();
+    </script>
+</body>
+</html>
