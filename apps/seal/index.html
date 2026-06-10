@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Seal</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="manifest" href="manifest.json"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/1.3.1/forge.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f0f0f;
+      --surface: #161616;
+      --border:  #222;
+      --text:    #d4d4d4;
+      --muted:   #666;
+      --accent:  #a78bfa;
+      --radius:  8px;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: Helvetica, Arial, sans-serif; font-size: 13px; overflow: hidden; }
+
+    /* ── Header ── */
+    header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .logo { flex-shrink: 0; }
+    header h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; color: #e8e8e8; }
+    .status-dot {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .status-dot.ok::before    { background: #10b981; }
+    .status-dot.warn::before  { background: #fbbf24; }
+    .status-dot.error::before { background: #ef4444; }
+
+    /* ── Workspace ── */
+    .workspace {
+      display: flex;
+      height: calc(100vh - 48px);
+      overflow: hidden;
+    }
+
+    /* ── Pane ── */
+    .pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+    #leftPane  { width: 300px; flex-shrink: 0; border-right: 1px solid var(--border); }
+    #rightPane { flex: 1; }
+
+    .pane-header {
+      height: 34px;
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #888;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+    .pane-header .hint {
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+      color: #555;
+      margin-left: auto;
+    }
+    .pane-header .canvas-tools { margin-left: auto; display: flex; gap: 4px; }
+
+    /* ── Editor ── */
+    #editor {
+      flex: 1;
+      resize: none;
+      border: none;
+      outline: none;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 11.5px;
+      line-height: 1.65;
+      padding: 14px;
+      caret-color: var(--accent);
+    }
+    #editor::placeholder { color: #3a3a3a; }
+
+    /* ── Tool buttons ── */
+    .pane-footer {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      gap: 6px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .tool-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: #888;
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s;
+    }
+    .tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .tool-btn.icon-btn { padding: 4px 6px; }
+
+    /* ── v-handle ── */
+    .v-handle {
+      width: 5px;
+      cursor: col-resize;
+      background: transparent;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+      transition: background 0.15s;
+    }
+    .v-handle:hover, .v-handle.dragging { background: var(--accent); opacity: 0.5; }
+
+    /* ── Cert display ── */
+    .cert-wrap {
+      flex: 1;
+      overflow-y: auto;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .cert-wrap::-webkit-scrollbar { width: 6px; }
+    .cert-wrap::-webkit-scrollbar-track { background: transparent; }
+    .cert-wrap::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+
+    .cert-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .cert-section-title {
+      padding: 7px 14px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid var(--border);
+      background: rgba(167, 139, 250, 0.04);
+    }
+    .cert-row {
+      display: flex;
+      align-items: flex-start;
+      padding: 8px 14px;
+      border-bottom: 1px solid #1a1a1a;
+      gap: 10px;
+    }
+    .cert-row:last-child { border-bottom: none; }
+    .cert-key {
+      font-size: 11px;
+      color: #555;
+      min-width: 130px;
+      flex-shrink: 0;
+      padding-top: 1px;
+      font-family: var(--font-mono);
+    }
+    .cert-val {
+      font-size: 11.5px;
+      color: #c8c8c8;
+      font-family: var(--font-mono);
+      word-break: break-all;
+      flex: 1;
+      line-height: 1.5;
+    }
+    .validity-badge {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .v-ok   { background: rgba(16,185,129,0.15); color: #10b981; }
+    .v-warn { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+    .v-exp  { background: rgba(239,68,68,0.15);   color: #ef4444; }
+
+    .san-list, .usage-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 14px;
+    }
+    .san-tag {
+      background: rgba(167,139,250,0.08);
+      border: 1px solid rgba(167,139,250,0.2);
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: #c4b5fd;
+      font-family: var(--font-mono);
+    }
+    .usage-tag {
+      background: #1c1c1c;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      padding: 2px 8px;
+      font-size: 11px;
+      color: #888;
+    }
+    .fp-val {
+      font-size: 10.5px;
+      line-height: 1.6;
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      gap: 10px;
+      pointer-events: none;
+      user-select: none;
+    }
+    .empty-state svg { opacity: 0.3; }
+    .empty-state p { font-size: 12px; color: #444; }
+
+    /* ── CA badge ── */
+    .ca-badge {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 8px;
+      vertical-align: middle;
+      background: rgba(167,139,250,0.15);
+      color: #a78bfa;
+    }
+
+    /* copy icon btn */
+    .icon-btn svg { display: block; }
+    .icon-btn.copied { color: #10b981; border-color: #10b981; }
+  </style>
+</head>
+<body>
+
+<header>
+  <!-- Logo -->
+  <svg class="logo" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="26" height="26" rx="6" fill="#1a0a2e"/>
+    <!-- Shield outline -->
+    <path d="M13 4 L20 7.5 L20 13.5 C20 17.5 13 22 13 22 C13 22 6 17.5 6 13.5 L6 7.5 Z"
+          fill="none" stroke="#a78bfa" stroke-width="1.4" stroke-linejoin="round"/>
+    <!-- Check mark -->
+    <path d="M9.5 13 L11.8 15.5 L16.5 10.5"
+          stroke="#c4b5fd" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </svg>
+  <h1>Seal</h1>
+  <span class="status-dot" id="statusDot">paste a PEM certificate</span>
+</header>
+
+<div class="workspace">
+  <!-- Left: PEM input -->
+  <div class="pane" id="leftPane">
+    <div class="pane-header">
+      Certificate
+      <span class="hint">PEM format</span>
+    </div>
+    <textarea id="editor" placeholder="-----BEGIN CERTIFICATE-----
+MIIFazCCA1OgAwIBAgIRAIIQz7DSQ...
+-----END CERTIFICATE-----
+
+Paste any X.509 PEM certificate here."></textarea>
+    <div class="pane-footer">
+      <button class="tool-btn" id="sampleBtn">Sample cert</button>
+      <button class="tool-btn" id="clearBtn">Clear</button>
+    </div>
+  </div>
+
+  <!-- v-handle -->
+  <div class="v-handle" id="vHandle"></div>
+
+  <!-- Right: Decoded fields -->
+  <div class="pane" id="rightPane">
+    <div class="pane-header">
+      Inspector
+      <div class="canvas-tools">
+        <button class="tool-btn icon-btn" id="copyBtn" title="Copy fields as text">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M3 9H2.5C1.67 9 1 8.33 1 7.5V2.5C1 1.67 1.67 1 2.5 1H7.5C8.33 1 9 1.67 9 2.5V3" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div id="certView">
+      <div class="empty-state">
+        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+          <path d="M20 3 L33 9.5 L33 20.5 C33 28 20 37 20 37 C20 37 7 28 7 20.5 L7 9.5 Z"
+                fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M13.5 20 L17.5 24 L26.5 15"
+                stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <p>Decoded certificate fields will appear here</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── v-handle drag ─────────────────────────────────────────────
+const vHandle = document.getElementById('vHandle');
+const leftPane = document.getElementById('leftPane');
+let dragging = false, startX = 0, startW = 0;
+vHandle.addEventListener('mousedown', e => {
+  dragging = true; startX = e.clientX; startW = leftPane.offsetWidth;
+  vHandle.classList.add('dragging'); e.preventDefault();
+});
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const w = Math.min(Math.max(startW + e.clientX - startX, 180), window.innerWidth - 300);
+  leftPane.style.width = w + 'px';
+});
+document.addEventListener('mouseup', () => { dragging = false; vHandle.classList.remove('dragging'); });
+
+// ── ISRG Root X1 sample cert ──────────────────────────────────
+const SAMPLE_PEM = `-----BEGIN CERTIFICATE-----
+MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
+TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
+cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
+WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu
+ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY
+MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoBggIBAK3oJHP0FDfzm54rVygc
+h77ct984kIxuPOZXoHj3dcKi/vVqbvYATyjb3miGbESTtrFj/RQSa78f0uoxmyF+
+0TM8ukj13Xnfs7j/EvEhmkvBioZxaUpmZmyPfjxwv60pIgbz5MDmgK7iS4+3mX6U
+A5/TR5d8mUgjU+g4rk8Kb4Mu0UlXjIB0ttov0DiNewNwIRt18jA8+o+u3dpjq+sW
+T8KOEUt+zwvo/7V3LvSye0rgTBIlDHCNAymg4VMk7BPZ7hm/ELNKjD+Jo2FR3qyH
+B5T0Y3HsLuJvW5iB4YlcNHlsdu87kGJ55tukmi8mxdAQ4Q7e2RCOFvu396j3x+UC
+B5iPNgiV5+I3lg02dZ77DnKxHZu8A/lJBdiB3QW0KtZB6awBdpUKD9jf1b0SHzUv
+KBds0pjBqAlkd25HN7rOrFleaJ1/ctaJxQZBKT5ZPt0m9STJEadao0xAH0ahmbWn
+OlFuhjuefXKnEgV4We0+UXgVCwOPjdAvBbI+e0ocS3MFEvzG6uBQE3xDk3SzynTn
+jh8BCNAw1FtxNrQHusEwMFxIt4I7mKZ9YIqioymCzLq9gwQbooMDQaHWBfEbwrbw
+qHyGO0aoSCqI3Haadr8faqU9GY/rOPNk3sgrDQoo//fb4hVC1CLQJ13hef4Y53CI
+rU7m2Ys6xt0nUW7/vGT1M0NPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV
+HRMBAf8EBTADAQH/MB0GA1UdDgQWBBR5tFnme7bl5AFzgAiIyBpY9umbbjANBgkq
+hkiG9w0BAQsFAAOCAgEAVR9YqbyyqFDQDLHYGmkgJykIrGF1XIpu+ILlaS/V9lZL
+ubhzEFnTIZd+50xx+7LSYK05qAvqFyFWhfFQDlnrzuBZ6brJFe+GnY+EgPbk6ZGQ
+3BebYhtF8GaV0nxvwuo77x/Py9auJ/GpsMiu/X1+mvoiBOv/2X/qkSsisRcOj/KK
+NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5
+ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur
+TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC
+jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc
+oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
+4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
+mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
+emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
+-----END CERTIFICATE-----`;
+
+// ── Helpers ───────────────────────────────────────────────────
+function getAttr(attrs, name) {
+  const a = attrs.find(a => a.shortName === name || a.name === name);
+  return a ? a.value : null;
+}
+
+function fmtDate(d) {
+  if (!d) return '—';
+  return d.toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC');
+}
+
+function daysUntil(d) {
+  return Math.round((d - new Date()) / 86400000);
+}
+
+function hexFingerprint(cert, mdAlgo) {
+  try {
+    const der = forge.asn1.toDer(forge.pki.certificateToAsn1(cert));
+    const md = mdAlgo.create();
+    md.update(der.bytes());
+    return md.digest().toHex().toUpperCase().match(/../g).join(':');
+  } catch(e) { return '—'; }
+}
+
+function fmtSerial(hex) {
+  if (!hex) return '—';
+  const upper = hex.toUpperCase();
+  return upper.match(/../g)?.join(':') || upper;
+}
+
+function h(tag, cls, content) {
+  return `<${tag}${cls ? ` class="${cls}"` : ''}>${content}</${tag}>`;
+}
+
+function row(key, val) {
+  return `<div class="cert-row">${h('span','cert-key',key)}${h('span','cert-val',val)}</div>`;
+}
+
+function section(title, inner) {
+  return `<div class="cert-section">${h('div','cert-section-title',title)}${inner}</div>`;
+}
+
+function subjRows(attrs) {
+  const fields = [
+    ['CN', 'Common Name'], ['O', 'Organization'], ['OU', 'Org Unit'],
+    ['L', 'Locality'], ['ST', 'State'], ['C', 'Country']
+  ];
+  return fields
+    .map(([sn, label]) => {
+      const v = getAttr(attrs, sn);
+      return v ? row(label, escHtml(v)) : '';
+    }).join('');
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Render cert ───────────────────────────────────────────────
+function renderCert(pem) {
+  // handle multiple certs — pick first
+  const certs = pem.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/g);
+  if (!certs) throw new Error('No valid PEM certificate block found');
+  const count = certs.length;
+
+  let cert;
+  try {
+    cert = forge.pki.certificateFromPem(certs[0]);
+  } catch(e) {
+    throw new Error('Failed to parse certificate: ' + e.message);
+  }
+
+  const html = [];
+
+  // ── Subject
+  const subjRows_ = subjRows(cert.subject.attributes);
+  if (subjRows_) html.push(section('Subject', subjRows_));
+
+  // ── Issuer
+  const isSelf = cert.subject.hash === cert.issuer.hash;
+  const issRowsHtml = subjRows(cert.issuer.attributes);
+  if (issRowsHtml) {
+    html.push(section('Issuer', issRowsHtml +
+      (isSelf ? row('Self-signed', '<span class="ca-badge">yes</span>') : '')
+    ));
+  }
+
+  // ── Validity
+  const days = daysUntil(cert.validity.notAfter);
+  const badge = days > 30
+    ? `<span class="validity-badge v-ok">${days} days left</span>`
+    : days >= 0
+    ? `<span class="validity-badge v-warn">${days} days left</span>`
+    : `<span class="validity-badge v-exp">expired ${-days} days ago</span>`;
+  html.push(section('Validity',
+    row('Not Before', escHtml(fmtDate(cert.validity.notBefore))) +
+    row('Not After',  escHtml(fmtDate(cert.validity.notAfter)) + badge)
+  ));
+
+  // ── Serial number
+  html.push(section('Serial Number',
+    row('Hex', `<span class="fp-val">${escHtml(fmtSerial(cert.serialNumber))}</span>`)
+  ));
+
+  // ── Public key
+  const pk = cert.publicKey;
+  let pkType = 'Unknown', pkInfo = '';
+  if (pk && pk.n) {
+    pkType = 'RSA';
+    try { pkInfo = pk.n.bitLength() + ' bits'; } catch(e) {}
+  } else if (pk && pk.curve) {
+    pkType = 'EC';
+    pkInfo = pk.curve;
+  }
+  html.push(section('Public Key',
+    row('Algorithm', escHtml(pkType)) +
+    (pkInfo ? row('Key Size', escHtml(pkInfo)) : '') +
+    row('Signature Alg', escHtml(cert.siginfo?.algorithmOid
+      ? (forge.pki.oids[cert.siginfo.algorithmOid] || cert.siginfo.algorithmOid)
+      : (cert.md?.algorithm ? cert.md.algorithm.replace('with','With').replace('sha','SHA').replace('rsa','RSA').replace('ecdsa','ECDSA') : '—')))
+  ));
+
+  // ── Fingerprints
+  const fp256 = hexFingerprint(cert, forge.md.sha256);
+  const fp1   = hexFingerprint(cert, forge.md.sha1);
+  html.push(section('Fingerprints',
+    row('SHA-256', `<span class="fp-val">${escHtml(fp256)}</span>`) +
+    row('SHA-1',   `<span class="fp-val">${escHtml(fp1)}</span>`)
+  ));
+
+  // ── Extensions
+  const extSAN = cert.extensions?.find(e => e.name === 'subjectAltName');
+  const extKU  = cert.extensions?.find(e => e.name === 'keyUsage');
+  const extEKU = cert.extensions?.find(e => e.name === 'extKeyUsage');
+  const extBC  = cert.extensions?.find(e => e.name === 'basicConstraints');
+
+  if (extSAN && extSAN.altNames && extSAN.altNames.length) {
+    const tags = extSAN.altNames.map(n => {
+      const val = n.value || n.ip || n.email || '';
+      const prefix = n.type === 7 ? '🌐 ' : n.type === 1 ? '✉ ' : '';
+      return `<span class="san-tag">${prefix}${escHtml(val)}</span>`;
+    }).join('');
+    html.push(section('Subject Alternative Names', `<div class="san-list">${tags}</div>`));
+  }
+
+  if (extKU) {
+    const usages = [];
+    const ku = extKU;
+    if (ku.digitalSignature) usages.push('Digital Signature');
+    if (ku.nonRepudiation)   usages.push('Non Repudiation');
+    if (ku.keyEncipherment)  usages.push('Key Encipherment');
+    if (ku.dataEncipherment) usages.push('Data Encipherment');
+    if (ku.keyAgreement)     usages.push('Key Agreement');
+    if (ku.keyCertSign)      usages.push('Cert Sign');
+    if (ku.cRLSign)          usages.push('CRL Sign');
+    if (usages.length) {
+      const tags = usages.map(u => `<span class="usage-tag">${escHtml(u)}</span>`).join('');
+      html.push(section('Key Usage', `<div class="usage-list">${tags}</div>`));
+    }
+  }
+
+  if (extEKU) {
+    const ekuNames = {
+      serverAuth:      'TLS Server Auth',
+      clientAuth:      'TLS Client Auth',
+      codeSigning:     'Code Signing',
+      emailProtection: 'Email Protection',
+      timeStamping:    'Time Stamping',
+      OCSPSigning:     'OCSP Signing',
+    };
+    const ekuTags = Object.entries(extEKU)
+      .filter(([k,v]) => v === true && ekuNames[k])
+      .map(([k]) => `<span class="usage-tag">${ekuNames[k]}</span>`)
+      .join('');
+    if (ekuTags) html.push(section('Extended Key Usage', `<div class="usage-list">${ekuTags}</div>`));
+  }
+
+  if (extBC) {
+    html.push(section('Basic Constraints',
+      row('CA', extBC.cA ? '<span class="ca-badge">true</span>' : 'false') +
+      (extBC.pathLenConstraint !== undefined ? row('Path Length', String(extBC.pathLenConstraint)) : '')
+    ));
+  }
+
+  if (count > 1) {
+    html.push(`<div style="text-align:center;font-size:11px;color:#555;padding:8px 0;">${count - 1} additional cert${count > 2 ? 's' : ''} in chain (showing leaf)</div>`);
+  }
+
+  return { html: html.join(''), cert };
+}
+
+// ── Update UI ─────────────────────────────────────────────────
+const editor    = document.getElementById('editor');
+const certView  = document.getElementById('certView');
+const statusDot = document.getElementById('statusDot');
+const copyBtn   = document.getElementById('copyBtn');
+
+let lastCert = null;
+let copyTimeout = null;
+
+const ICON_COPY  = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 9H2.5C1.67 9 1 8.33 1 7.5V2.5C1 1.67 1.67 1 2.5 1H7.5C8.33 1 9 1.67 9 2.5V3" stroke="currentColor" stroke-width="1.2"/></svg>`;
+const ICON_CHECK = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5L5.5 9.5L10.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+function setStatus(type, text) {
+  statusDot.className = 'status-dot ' + (type || '');
+  statusDot.textContent = text;
+}
+
+function update() {
+  const pem = editor.value.trim();
+  if (!pem) {
+    certView.innerHTML = `<div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+        <path d="M20 3 L33 9.5 L33 20.5 C33 28 20 37 20 37 C20 37 7 28 7 20.5 L7 9.5 Z"
+              fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M13.5 20 L17.5 24 L26.5 15"
+              stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
+      <p>Decoded certificate fields will appear here</p>
+    </div>`;
+    setStatus('', 'paste a PEM certificate');
+    lastCert = null;
+    return;
+  }
+
+  try {
+    const { html, cert } = renderCert(pem);
+    certView.innerHTML = `<div class="cert-wrap">${html}</div>`;
+    lastCert = cert;
+
+    const days = daysUntil(cert.validity.notAfter);
+    const cn = getAttr(cert.subject.attributes, 'CN') || 'certificate';
+    if (days > 30) {
+      setStatus('ok', `${escHtml(cn)} · ${days} days left`);
+    } else if (days >= 0) {
+      setStatus('warn', `${escHtml(cn)} · expiring soon`);
+    } else {
+      setStatus('error', `${escHtml(cn)} · expired`);
+    }
+  } catch(e) {
+    certView.innerHTML = `<div class="empty-state"><p style="color:#ef4444">${escHtml(e.message)}</p></div>`;
+    setStatus('error', 'parse error');
+    lastCert = null;
+  }
+}
+
+editor.addEventListener('input', update);
+
+// ── Buttons ───────────────────────────────────────────────────
+document.getElementById('sampleBtn').addEventListener('click', () => {
+  editor.value = SAMPLE_PEM.trim();
+  update();
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  editor.value = '';
+  update();
+});
+
+copyBtn.addEventListener('click', () => {
+  if (!lastCert) return;
+  // Build text representation
+  function getA(attrs, sn) { const a = attrs.find(x => x.shortName === sn || x.name === sn); return a ? a.value : null; }
+  const lines = [
+    '=== Subject ===',
+    'CN:  ' + (getA(cert_sub_attrs(), 'CN') || ''),
+    'O:   ' + (getA(cert_sub_attrs(), 'O')  || ''),
+    'C:   ' + (getA(cert_sub_attrs(), 'C')  || ''),
+    '',
+    '=== Issuer ===',
+    'CN:  ' + (getA(lastCert.issuer.attributes, 'CN') || ''),
+    '',
+    '=== Validity ===',
+    'Not Before: ' + fmtDate(lastCert.validity.notBefore),
+    'Not After:  ' + fmtDate(lastCert.validity.notAfter),
+    '',
+    '=== Serial ===',
+    fmtSerial(lastCert.serialNumber),
+    '',
+    '=== Fingerprint (SHA-256) ===',
+    hexFingerprint(lastCert, forge.md.sha256),
+  ];
+  function cert_sub_attrs() { return lastCert.subject.attributes; }
+  const text = [
+    '=== Subject ===',
+    ...lastCert.subject.attributes.map(a => `${a.shortName || a.name}: ${a.value}`),
+    '',
+    '=== Issuer ===',
+    ...lastCert.issuer.attributes.map(a => `${a.shortName || a.name}: ${a.value}`),
+    '',
+    '=== Validity ===',
+    'Not Before: ' + fmtDate(lastCert.validity.notBefore),
+    'Not After:  ' + fmtDate(lastCert.validity.notAfter),
+    '',
+    '=== Serial ===',
+    fmtSerial(lastCert.serialNumber),
+    '',
+    '=== SHA-256 Fingerprint ===',
+    hexFingerprint(lastCert, forge.md.sha256),
+  ].join('\n');
+  navigator.clipboard.writeText(text).then(() => {
+    copyBtn.innerHTML = ICON_CHECK;
+    copyBtn.classList.add('copied');
+    clearTimeout(copyTimeout);
+    copyTimeout = setTimeout(() => {
+      copyBtn.innerHTML = ICON_COPY;
+      copyBtn.classList.remove('copied');
+    }, 1600);
+  });
+});
+
+// init
+update();
+</script>
+</body>
+</html>

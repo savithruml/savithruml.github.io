@@ -1,0 +1,12 @@
+{
+  "name": "Swap",
+  "short_name": "Swap",
+  "description": "JSON ↔ YAML live converter with bidirectional sync",
+  "start_url": "/apps/swap/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#1e0f00",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
