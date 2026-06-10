@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scale — Network Unit Converter</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<title>Scale — Network Unit Converter</title>
   <style>
     :root {
       --bg: #0f0f0f;
@@ -168,6 +169,99 @@
       border-color: var(--accent);
     }
 
+    /* Custom dropdown (currency) */
+    .custom-select-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .custom-select-trigger {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 15px;
+      font-family: var(--font-mono);
+      padding: 14px 12px;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      min-width: 120px;
+      white-space: nowrap;
+      transition: border-color 0.15s;
+      user-select: none;
+    }
+
+    .custom-select-trigger:hover,
+    .custom-select-trigger.open {
+      border-color: var(--accent);
+    }
+
+    .custom-select-trigger svg {
+      margin-left: auto;
+      flex-shrink: 0;
+      transition: transform 0.15s;
+    }
+
+    .custom-select-trigger.open svg {
+      transform: rotate(180deg);
+    }
+
+    .custom-select-list {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0;
+      right: 0;
+      min-width: 220px;
+      max-height: 320px;
+      overflow-y: auto;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-radius: var(--radius);
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    }
+
+    .custom-select-list.open {
+      display: block;
+    }
+
+    .custom-select-list::-webkit-scrollbar { width: 6px; }
+    .custom-select-list::-webkit-scrollbar-track { background: transparent; }
+    .custom-select-list::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+
+    .custom-select-option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 12px;
+      font-size: 14px;
+      font-family: var(--font-mono);
+      cursor: pointer;
+      color: #e0e0e0;
+      border-bottom: 1px solid #1e1e1e;
+    }
+
+    .custom-select-option:last-child { border-bottom: none; }
+
+    .custom-select-option:hover {
+      background: rgba(45,212,191,0.08);
+      color: var(--accent);
+    }
+
+    .custom-select-option.selected {
+      background: rgba(45,212,191,0.1);
+      color: var(--accent);
+    }
+
+    .custom-select-option .opt-name {
+      font-size: 12px;
+      color: #888;
+      font-family: inherit;
+    }
+
     /* Result card */
     .cert-section {
       background: var(--surface);
@@ -267,12 +361,24 @@
     <button class="tab-btn active" data-tab="datasize" role="tab" aria-selected="true">Data Size</button>
     <button class="tab-btn" data-tab="datarate" role="tab" aria-selected="false">Data Rate</button>
     <button class="tab-btn" data-tab="time" role="tab" aria-selected="false">Time</button>
+    <button class="tab-btn" data-tab="currency" role="tab" aria-selected="false">Currency</button>
   </div>
 
   <!-- Input row -->
   <div class="input-row">
     <input type="number" id="value-input" placeholder="0" step="any" aria-label="Value to convert" />
+    <!-- Native select (used for non-currency tabs) -->
     <select id="unit-select" aria-label="Unit"></select>
+    <!-- Custom dropdown (used for currency tab) -->
+    <div class="custom-select-wrap" id="currency-select-wrap" style="display:none">
+      <div class="custom-select-trigger" id="currency-trigger">
+        <span id="currency-trigger-label">🇺🇸 USD</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <path d="M2 4l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="custom-select-list" id="currency-list"></div>
+    </div>
   </div>
 
   <!-- Results -->
@@ -472,19 +578,240 @@
       </div>`;
   }
 
+  // ─── Currency ────────────────────────────────────────────────────────────────
+
+  const CURRENCIES = [
+    { code: 'AED', name: 'UAE Dirham',           flag: '🇦🇪' },
+    { code: 'AUD', name: 'Australian Dollar',    flag: '🇦🇺' },
+    { code: 'BRL', name: 'Brazilian Real',       flag: '🇧🇷' },
+    { code: 'CAD', name: 'Canadian Dollar',      flag: '🇨🇦' },
+    { code: 'CHF', name: 'Swiss Franc',          flag: '🇨🇭' },
+    { code: 'CNY', name: 'Chinese Yuan',         flag: '🇨🇳' },
+    { code: 'DKK', name: 'Danish Krone',         flag: '🇩🇰' },
+    { code: 'EUR', name: 'Euro',                 flag: '🇪🇺' },
+    { code: 'GBP', name: 'British Pound',        flag: '🇬🇧' },
+    { code: 'HKD', name: 'Hong Kong Dollar',     flag: '🇭🇰' },
+    { code: 'IDR', name: 'Indonesian Rupiah',    flag: '🇮🇩' },
+    { code: 'ILS', name: 'Israeli Shekel',       flag: '🇮🇱' },
+    { code: 'INR', name: 'Indian Rupee',         flag: '🇮🇳' },
+    { code: 'JPY', name: 'Japanese Yen',         flag: '🇯🇵' },
+    { code: 'KRW', name: 'South Korean Won',     flag: '🇰🇷' },
+    { code: 'MXN', name: 'Mexican Peso',         flag: '🇲🇽' },
+    { code: 'MYR', name: 'Malaysian Ringgit',    flag: '🇲🇾' },
+    { code: 'NOK', name: 'Norwegian Krone',      flag: '🇳🇴' },
+    { code: 'NZD', name: 'New Zealand Dollar',   flag: '🇳🇿' },
+    { code: 'PHP', name: 'Philippine Peso',      flag: '🇵🇭' },
+    { code: 'PKR', name: 'Pakistani Rupee',      flag: '🇵🇰' },
+    { code: 'PLN', name: 'Polish Złoty',         flag: '🇵🇱' },
+    { code: 'SAR', name: 'Saudi Riyal',          flag: '🇸🇦' },
+    { code: 'SEK', name: 'Swedish Krona',        flag: '🇸🇪' },
+    { code: 'SGD', name: 'Singapore Dollar',     flag: '🇸🇬' },
+    { code: 'THB', name: 'Thai Baht',            flag: '🇹🇭' },
+    { code: 'TRY', name: 'Turkish Lira',         flag: '🇹🇷' },
+    { code: 'TWD', name: 'Taiwan Dollar',        flag: '🇹🇼' },
+    { code: 'USD', name: 'US Dollar',            flag: '🇺🇸' },
+    { code: 'ZAR', name: 'South African Rand',   flag: '🇿🇦' },
+  ];
+
+  // Cache: { base: { rates: {...}, fetched: timestamp } }
+  const rateCache = {};
+  let currencyFetchController = null;
+  let selectedCurrencyCode = 'USD';
+
+  const currencyWrap    = document.getElementById('currency-select-wrap');
+  const currencyTrigger = document.getElementById('currency-trigger');
+  const currencyLabel   = document.getElementById('currency-trigger-label');
+  const currencyList    = document.getElementById('currency-list');
+
+  function buildCurrencyList(selectedCode) {
+    currencyList.innerHTML = '';
+    CURRENCIES.forEach(c => {
+      const opt = document.createElement('div');
+      opt.className = 'custom-select-option' + (c.code === selectedCode ? ' selected' : '');
+      opt.dataset.code = c.code;
+      opt.innerHTML = `<span>${c.flag} ${c.code}</span><span class="opt-name">${c.name}</span>`;
+      opt.addEventListener('click', () => {
+        selectedCurrencyCode = c.code;
+        currencyLabel.textContent = `${c.flag} ${c.code}`;
+        closeCurrencyList();
+        renderCurrency();
+      });
+      currencyList.appendChild(opt);
+    });
+  }
+
+  function openCurrencyList() {
+    currencyList.classList.add('open');
+    currencyTrigger.classList.add('open');
+  }
+
+  function closeCurrencyList() {
+    currencyList.classList.remove('open');
+    currencyTrigger.classList.remove('open');
+  }
+
+  currencyTrigger.addEventListener('click', (e) => {
+    e.stopPropagation();
+    if (currencyList.classList.contains('open')) closeCurrencyList();
+    else openCurrencyList();
+  });
+
+  document.addEventListener('click', closeCurrencyList);
+
+  function populateCurrencySelect(selectedCode) {
+    selectedCurrencyCode = selectedCode;
+    const c = CURRENCIES.find(x => x.code === selectedCode) || CURRENCIES[0];
+    currencyLabel.textContent = `${c.flag} ${c.code}`;
+    buildCurrencyList(selectedCode);
+  }
+
+  async function fetchRates(base) {
+    // Return cached if fresh (< 10 min)
+    if (rateCache[base] && Date.now() - rateCache[base].fetched < 600000) {
+      return rateCache[base].rates;
+    }
+
+    // Abort any in-flight request
+    if (currencyFetchController) currencyFetchController.abort();
+    currencyFetchController = new AbortController();
+    const sig = currencyFetchController.signal;
+
+    const PROVIDERS = [
+      async () => {
+        const r = await fetch(`https://open.er-api.com/v6/latest/${base}`, { signal: sig });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const j = await r.json();
+        if (j.result !== 'success') throw new Error('API error');
+        return j.rates;
+      },
+      async () => {
+        const r = await fetch(`https://api.exchangerate-api.com/v4/latest/${base}`, { signal: sig });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const j = await r.json();
+        return j.rates;
+      },
+      async () => {
+        const r = await fetch(`https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/${base.toLowerCase()}.json`, { signal: sig });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const j = await r.json();
+        // Normalize: { usd: { eur: 0.92, ... } }
+        const inner = j[base.toLowerCase()];
+        const normalized = {};
+        for (const [k, v] of Object.entries(inner)) normalized[k.toUpperCase()] = v;
+        return normalized;
+      },
+    ];
+
+    for (const provider of PROVIDERS) {
+      try {
+        const rates = await provider();
+        rateCache[base] = { rates, fetched: Date.now() };
+        return rates;
+      } catch (e) {
+        if (e.name === 'AbortError') return null;
+      }
+    }
+    throw new Error('All rate providers failed');
+  }
+
+  function formatCurrency(n) {
+    if (!isFinite(n)) return '—';
+    if (Math.abs(n) >= 1000) {
+      return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+  }
+
+  async function renderCurrency() {
+    const rawVal = valueInput.value.trim();
+    const inputNum = parseFloat(rawVal);
+    const base = selectedCurrencyCode || 'USD';
+
+    if (rawVal === '' || isNaN(inputNum)) {
+      renderEmpty();
+      setStatus('ok', rawVal === '' ? 'Ready' : 'Invalid input');
+      return;
+    }
+
+    setStatus('ok', 'Fetching rates…');
+    resultsEl.innerHTML = `<div class="empty-state"><span style="color:var(--muted);font-size:13px">Fetching live rates…</span></div>`;
+
+    let rates;
+    try {
+      rates = await fetchRates(base);
+    } catch (e) {
+      setStatus('err', 'Rates unavailable');
+      resultsEl.innerHTML = `<div class="empty-state" style="color:var(--error);font-size:13px">Could not fetch exchange rates — check your network.</div>`;
+      return;
+    }
+    if (!rates) return; // aborted
+
+    const section = document.createElement('div');
+    section.className = 'cert-section';
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'cert-section-title';
+    const updatedStr = rateCache[base] ? new Date(rateCache[base].fetched).toLocaleTimeString() : '';
+    titleEl.textContent = `Currency  ·  ${inputNum.toLocaleString()} ${base}${updatedStr ? '  (rates at ' + updatedStr + ')' : ''}`;
+    section.appendChild(titleEl);
+
+    CURRENCIES.forEach(c => {
+      const rate = rates[c.code];
+      if (rate == null) return;
+      const converted = inputNum * rate;
+
+      const row = document.createElement('div');
+      row.className = 'cert-row' + (c.code === base ? ' active' : '');
+
+      const key = document.createElement('span');
+      key.className = 'cert-key';
+      key.textContent = `${c.flag} ${c.code}`;
+      key.style.cssText = 'min-width:80px;font-size:14px;color:#ccc;';
+
+      const nameEl = document.createElement('span');
+      nameEl.style.cssText = 'font-size:13px;color:#999;flex:1;font-family:inherit;';
+      nameEl.textContent = c.name;
+
+      const val = document.createElement('span');
+      val.className = 'cert-val';
+      val.style.cssText = 'text-align:right;flex-shrink:0;font-size:15px;color:#f0f0f0;';
+      val.textContent = formatCurrency(converted);
+
+      row.appendChild(key);
+      row.appendChild(nameEl);
+      row.appendChild(val);
+      section.appendChild(row);
+    });
+
+    resultsEl.innerHTML = '';
+    resultsEl.appendChild(section);
+    setStatus('ok', 'Live rates');
+  }
+
   // ─── Tab switching ───────────────────────────────────────────────────────────
 
   function switchTab(tabKey) {
     activeTab = tabKey;
-    // Pick a sensible default unit per tab
-    const defaults = { datasize: 'MB', datarate: 'Mbps', time: 's' };
-    activeUnitKey = defaults[tabKey] || TABS[tabKey].units[0].key;
 
     tabBtns.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tab === tabKey);
       btn.setAttribute('aria-selected', btn.dataset.tab === tabKey ? 'true' : 'false');
     });
 
+    if (tabKey === 'currency') {
+      unitSelect.style.display = 'none';
+      currencyWrap.style.display = '';
+      populateCurrencySelect(selectedCurrencyCode || 'USD');
+      renderCurrency();
+      return;
+    }
+
+    unitSelect.style.display = '';
+    currencyWrap.style.display = 'none';
+    closeCurrencyList();
+
+    const defaults = { datasize: 'MB', datarate: 'Mbps', time: 's' };
+    activeUnitKey = defaults[tabKey] || TABS[tabKey].units[0].key;
     populateSelect(tabKey, activeUnitKey);
     renderResults();
   }
@@ -495,8 +822,15 @@
     btn.addEventListener('click', () => switchTab(btn.dataset.tab));
   });
 
-  valueInput.addEventListener('input', renderResults);
-  unitSelect.addEventListener('change', renderResults);
+  valueInput.addEventListener('input', () => {
+    if (activeTab === 'currency') renderCurrency();
+    else renderResults();
+  });
+
+  unitSelect.addEventListener('change', () => {
+    if (activeTab === 'currency') renderCurrency();
+    else renderResults();
+  });
 
   // ─── Init ────────────────────────────────────────────────────────────────────
 

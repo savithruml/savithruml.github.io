@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
 <title>Sundial — Unix Timestamp Converter</title>
 <style>
   :root {
@@ -591,7 +592,38 @@
       ['ISO 8601', formatLocalISO(d)],
     ]);
 
-    // Card 4: Other formats
+    // Card 4: World Time
+    const US_ZONES = [
+      { label: 'UTC',           tz: 'UTC' },
+      { label: 'Eastern',       tz: 'America/New_York' },
+      { label: 'Central',       tz: 'America/Chicago' },
+      { label: 'Mountain',      tz: 'America/Denver' },
+      { label: 'Pacific',       tz: 'America/Los_Angeles' },
+      { label: 'Alaska',        tz: 'America/Anchorage' },
+      { label: 'Hawaii',        tz: 'Pacific/Honolulu' },
+    ];
+
+    function formatInZone(date, tz) {
+      try {
+        const datePart = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          weekday: 'short', month: 'short', day: '2-digit', year: 'numeric',
+        }).format(date);
+        const timePart = new Intl.DateTimeFormat('en-US', {
+          timeZone: tz,
+          hour: '2-digit', minute: '2-digit', second: '2-digit',
+          hour12: false, timeZoneName: 'short',
+        }).format(date);
+        return `${datePart}  ${timePart}`;
+      } catch (e) {
+        return '—';
+      }
+    }
+
+    const worldRows = US_ZONES.map(({ label, tz }) => [label, formatInZone(d, tz)]);
+    const worldCard = makeCard('World Time', worldRows);
+
+    // Card 5: Other formats
     const week = getWeekNumber(d);
     const doy = getDayOfYear(d);
     const daysInYear = getDaysInYear(d.getUTCFullYear());
@@ -606,6 +638,7 @@
     results.appendChild(unixCard);
     results.appendChild(utcCard);
     results.appendChild(localCard);
+    results.appendChild(worldCard);
     results.appendChild(otherCard);
   }
 
