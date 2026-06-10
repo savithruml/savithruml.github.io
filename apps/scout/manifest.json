@@ -1,0 +1,16 @@
+{
+  "name": "Scout",
+  "short_name": "Scout",
+  "description": "DNS record lookup tool",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#2dd4bf",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

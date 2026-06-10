@@ -1,0 +1,12 @@
+{
+  "name": "Sift",
+  "short_name": "Sift",
+  "description": "Whois dump parser — paste raw whois output and see all fields decoded",
+  "start_url": "/apps/sift/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#1a1000",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

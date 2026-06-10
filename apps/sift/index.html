@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sift</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="manifest" href="manifest.json"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f0f0f;
+      --surface: #1a1a1a;
+      --border:  #2a2a2a;
+      --text:    #ececec;
+      --muted:   #888;
+      --accent:  #f59e0b;
+      --radius:  8px;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    }
+
+    html { height: 100%; }
+    body { height: 100%; display: flex; flex-direction: column; background: var(--bg); color: var(--text); font-family: Helvetica, Arial, sans-serif; font-size: 14px; overflow: hidden; }
+
+    /* ── Header ── */
+    header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .logo { flex-shrink: 0; width: 35px; height: 35px; }
+    header h1 { font-size: 18px; font-weight: 400; letter-spacing: 0.01em; color: var(--text); }
+    .status-dot {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .status-dot.ok::before    { background: #10b981; }
+    .status-dot.warn::before  { background: #fbbf24; }
+    .status-dot.error::before { background: #ef4444; }
+
+    /* ── Workspace ── */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Footer ── */
+    footer {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ── Pane ── */
+    .pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+    #leftPane  { width: 300px; flex-shrink: 0; border-right: 1px solid var(--border); }
+    #rightPane { flex: 1; }
+
+    .pane-header {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #aaa;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    /* ── Editor ── */
+    #editor {
+      flex: 1;
+      resize: none;
+      border: none;
+      outline: none;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.65;
+      padding: 14px;
+      caret-color: var(--accent);
+    }
+    #editor::placeholder { color: #555; }
+
+    /* ── Tool buttons ── */
+    .pane-footer {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .tool-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: #aaa;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s;
+    }
+    .tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .tool-btn.icon-btn { padding: 6px 8px; }
+
+    /* ── v-handle ── */
+    .v-handle {
+      width: 5px;
+      cursor: col-resize;
+      background: transparent;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+      transition: background 0.15s;
+    }
+    .v-handle:hover, .v-handle.dragging { background: var(--accent); opacity: 0.5; }
+
+    /* ── Whois display ── */
+    #whoisView {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .cert-wrap {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    #whoisView::-webkit-scrollbar { width: 6px; }
+    #whoisView::-webkit-scrollbar-track { background: transparent; }
+    #whoisView::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+
+    .cert-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .cert-section-title {
+      padding: 7px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid var(--border);
+      background: rgba(245, 158, 11, 0.04);
+    }
+    .cert-row {
+      display: flex;
+      align-items: flex-start;
+      padding: 8px 14px;
+      border-bottom: 1px solid #222;
+      gap: 10px;
+    }
+    .cert-row:last-child { border-bottom: none; }
+    .cert-key {
+      font-size: 12px;
+      color: #888;
+      min-width: 160px;
+      flex-shrink: 0;
+      padding-top: 1px;
+      font-family: var(--font-mono);
+    }
+    .cert-val {
+      font-size: 13px;
+      color: #ececec;
+      font-family: var(--font-mono);
+      word-break: break-all;
+      flex: 1;
+      line-height: 1.55;
+    }
+
+    /* ── Tags (status / NS) ── */
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 14px;
+    }
+    .whois-tag {
+      background: rgba(245, 158, 11, 0.08);
+      border: 1px solid rgba(245, 158, 11, 0.22);
+      border-radius: 4px;
+      padding: 3px 9px;
+      font-size: 12px;
+      color: #fcd34d;
+      font-family: var(--font-mono);
+      word-break: break-all;
+    }
+    .ns-tag {
+      background: #1c1c1c;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      padding: 3px 9px;
+      font-size: 12px;
+      color: #aaa;
+      font-family: var(--font-mono);
+    }
+
+    /* ── Date badges ── */
+    .date-relative {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .rel-past    { background: rgba(136,136,136,0.12); color: #888; }
+    .rel-soon    { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+    .rel-expired { background: rgba(239,68,68,0.15);   color: #ef4444; }
+    .rel-future  { background: rgba(16,185,129,0.15);  color: #10b981; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      gap: 10px;
+      pointer-events: none;
+      user-select: none;
+    }
+    .empty-state svg { opacity: 0.3; }
+    .empty-state p { font-size: 13px; color: #666; }
+  </style>
+</head>
+<body>
+
+<header>
+  <!-- Logo: funnel / filter -->
+  <svg class="logo" width="35" height="35" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="26" height="26" rx="6" fill="#1a1000"/>
+    <!-- Funnel outline -->
+    <path d="M5 7 H21 L15.5 13.5 V19.5 L10.5 17.5 V13.5 Z"
+          fill="none" stroke="#f59e0b" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>
+  <h1>Sift</h1>
+  <span class="status-dot" id="statusDot">paste a whois dump</span>
+</header>
+
+<div class="workspace">
+  <!-- Left: whois input -->
+  <div class="pane" id="leftPane">
+    <div class="pane-header">Input</div>
+    <textarea id="editor" placeholder="Domain Name: EXAMPLE.COM
+Registry Domain ID: 2336799_DOMAIN_COM-VRSN
+Registrar WHOIS Server: whois.iana.org
+Registrar URL: https://www.iana.org
+Updated Date: 2023-08-14T07:01:38Z
+Creation Date: 1995-08-14T04:00:00Z
+...
+
+Paste raw whois output here."></textarea>
+    <div class="pane-footer">
+      <button class="tool-btn" id="sampleBtn">Sample</button>
+      <button class="tool-btn icon-btn" id="clearBtn" title="Clear">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+          <line x1="18" y1="6" x2="6" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <line x1="6" y1="6" x2="18" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- v-handle -->
+  <div class="v-handle" id="vHandle"></div>
+
+  <!-- Right: Parsed fields -->
+  <div class="pane" id="rightPane">
+    <div class="pane-header">Inspector</div>
+    <div id="whoisView">
+      <div class="empty-state" id="emptyState">
+        <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+          <!-- Funnel -->
+          <path d="M6 10 H38 L26 24 V36 L18 33 V24 Z"
+                fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+        </svg>
+        <p>Paste a whois dump to parse</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 Savithru Lokanath</footer>
+
+<script>
+// ── v-handle drag ─────────────────────────────────────────────
+const vHandle  = document.getElementById('vHandle');
+const leftPane = document.getElementById('leftPane');
+let dragging = false, startX = 0, startW = 0;
+vHandle.addEventListener('mousedown', e => {
+  dragging = true; startX = e.clientX; startW = leftPane.offsetWidth;
+  vHandle.classList.add('dragging'); e.preventDefault();
+});
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const w = Math.min(Math.max(startW + e.clientX - startX, 180), window.innerWidth - 300);
+  leftPane.style.width = w + 'px';
+});
+document.addEventListener('mouseup', () => { dragging = false; vHandle.classList.remove('dragging'); });
+
+// ── Helpers ───────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function h(tag, cls, content) {
+  return `<${tag}${cls ? ` class="${cls}"` : ''}>${content}</${tag}>`;
+}
+
+function row(key, val) {
+  return `<div class="cert-row">${h('span','cert-key',key)}${h('span','cert-val',val)}</div>`;
+}
+
+function section(title, inner) {
+  return `<div class="cert-section">${h('div','cert-section-title',title)}${inner}</div>`;
+}
+
+function setStatus(type, text) {
+  const dot = document.getElementById('statusDot');
+  dot.className = 'status-dot ' + (type || '');
+  dot.textContent = text;
+}
+
+// ── Date helpers ──────────────────────────────────────────────
+function parseDate(str) {
+  if (!str) return null;
+  // ISO 8601 and common whois formats
+  const d = new Date(str.trim().replace(' ', 'T'));
+  return isNaN(d.getTime()) ? null : d;
+}
+
+function fmtDate(d) {
+  if (!d) return null;
+  return d.toUTCString().replace(' GMT', ' UTC');
+}
+
+function relativeTime(d, isExpiry) {
+  const now = Date.now();
+  const diff = d.getTime() - now;
+  const abs  = Math.abs(diff);
+  const past = diff < 0;
+
+  const minutes = Math.floor(abs / 60000);
+  const hours   = Math.floor(abs / 3600000);
+  const days    = Math.floor(abs / 86400000);
+  const months  = Math.floor(days / 30.44);
+  const years   = Math.floor(days / 365.25);
+
+  let label;
+  if (years >= 1)        label = years + ' year' + (years > 1 ? 's' : '');
+  else if (months >= 1)  label = months + ' month' + (months > 1 ? 's' : '');
+  else if (days >= 1)    label = days + ' day' + (days > 1 ? 's' : '');
+  else if (hours >= 1)   label = hours + ' hour' + (hours > 1 ? 's' : '');
+  else                   label = minutes + ' min' + (minutes !== 1 ? 's' : '');
+
+  if (past) {
+    if (isExpiry) {
+      return { text: 'expired ' + label + ' ago', cls: 'rel-expired' };
+    }
+    return { text: label + ' ago', cls: 'rel-past' };
+  } else {
+    if (isExpiry) {
+      const cls = days <= 30 ? 'rel-soon' : 'rel-future';
+      return { text: 'expires in ' + label, cls };
+    }
+    return { text: 'in ' + label, cls: 'rel-future' };
+  }
+}
+
+function dateCell(raw, isExpiry) {
+  const d = parseDate(raw);
+  if (!d) return escHtml(raw);
+  const formatted = fmtDate(d);
+  const rel = relativeTime(d, isExpiry);
+  return escHtml(formatted) + `<span class="date-relative ${rel.cls}">${escHtml(rel.text)}</span>`;
+}
+
+// ── Whois parser ──────────────────────────────────────────────
+function parseWhois(text) {
+  // Normalize line endings
+  const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+
+  // We collect values case-insensitively. Multiple values for same key → array.
+  const raw = {}; // normalized key → array of values
+
+  function addVal(key, val) {
+    const k = key.trim().toLowerCase().replace(/\s+/g, ' ');
+    if (!raw[k]) raw[k] = [];
+    if (val && val.trim()) raw[k].push(val.trim());
+  }
+
+  for (const line of lines) {
+    // skip comment lines
+    if (/^\s*(>>>|%|#|;)/.test(line)) continue;
+    // key: value
+    const m = line.match(/^([^:]{1,60}):\s*(.*)$/);
+    if (m) addVal(m[1], m[2]);
+  }
+
+  // Extractor helper — tries multiple label variants
+  function get(...keys) {
+    for (const k of keys) {
+      const v = raw[k.toLowerCase()];
+      if (v && v.length) return v[0];
+    }
+    return null;
+  }
+  function getAll(...keys) {
+    for (const k of keys) {
+      const v = raw[k.toLowerCase()];
+      if (v && v.length) return v;
+    }
+    return [];
+  }
+
+  return {
+    // Domain
+    domainName:      get('domain name', 'domain'),
+    registryDomainId:get('registry domain id'),
+    dnssec:          get('dnssec'),
+    whoisUpdated:    get('last update of whois database', 'last update of the whois database', 'last updated on'),
+
+    // Registrar
+    registrar:       get('registrar'),
+    registrarIanaId: get('registrar iana id'),
+    registrarUrl:    get('registrar url', 'registrar whois server'),
+
+    // Dates
+    creationDate:    get('creation date', 'created', 'registered on', 'domain registered'),
+    updatedDate:     get('updated date', 'last updated', 'last modified'),
+    expiryDate:      get('registry expiry date', 'registrar registration expiration date', 'expiry date', 'expiration date', 'expires on', 'paid-till'),
+
+    // Registrant
+    registrantName:  get('registrant name', 'registrant'),
+    registrantOrg:   get('registrant organization', 'registrant org'),
+    registrantCountry: get('registrant country', 'registrant country/economy'),
+
+    // Multi-value
+    statuses:    getAll('domain status'),
+    nameServers: getAll('name server', 'nserver'),
+  };
+}
+
+// ── Render ────────────────────────────────────────────────────
+function renderWhois(data) {
+  const html = [];
+  let fieldCount = 0;
+
+  function counted(r) { fieldCount++; return r; }
+
+  // ── Domain section
+  {
+    let inner = '';
+    if (data.domainName)       inner += counted(row('Domain Name',       escHtml(data.domainName.toUpperCase())));
+    if (data.registryDomainId) inner += counted(row('Registry Domain ID', escHtml(data.registryDomainId)));
+    if (data.dnssec)           inner += counted(row('DNSSEC',             escHtml(data.dnssec)));
+    if (data.whoisUpdated)     inner += counted(row('WHOIS DB Updated',   dateCell(data.whoisUpdated, false)));
+    if (inner) html.push(section('Domain', inner));
+  }
+
+  // ── Registrar section
+  {
+    let inner = '';
+    if (data.registrar)       inner += counted(row('Registrar',      escHtml(data.registrar)));
+    if (data.registrarIanaId) inner += counted(row('IANA ID',         escHtml(data.registrarIanaId)));
+    if (data.registrarUrl)    inner += counted(row('Registrar URL',
+      `<a href="${escHtml(data.registrarUrl)}" target="_blank" rel="noopener" style="color:var(--accent);text-decoration:none;">${escHtml(data.registrarUrl)}</a>`
+    ));
+    if (inner) html.push(section('Registrar', inner));
+  }
+
+  // ── Dates section
+  {
+    let inner = '';
+    if (data.creationDate) inner += counted(row('Created',  dateCell(data.creationDate, false)));
+    if (data.updatedDate)  inner += counted(row('Updated',  dateCell(data.updatedDate,  false)));
+    if (data.expiryDate)   inner += counted(row('Expires',  dateCell(data.expiryDate,   true)));
+    if (inner) html.push(section('Dates', inner));
+  }
+
+  // ── Registrant section
+  {
+    let inner = '';
+    if (data.registrantName)    inner += counted(row('Name',    escHtml(data.registrantName)));
+    if (data.registrantOrg)     inner += counted(row('Org',     escHtml(data.registrantOrg)));
+    if (data.registrantCountry) inner += counted(row('Country', escHtml(data.registrantCountry)));
+    if (inner) html.push(section('Registrant', inner));
+  }
+
+  // ── Name Servers section
+  if (data.nameServers.length) {
+    fieldCount++;
+    // Deduplicate and lowercase
+    const unique = [...new Set(data.nameServers.map(ns => ns.toLowerCase().replace(/\.$/, '')))];
+    const tags = unique.map(ns => `<span class="ns-tag">${escHtml(ns)}</span>`).join('');
+    html.push(section('Name Servers', `<div class="tag-list">${tags}</div>`));
+  }
+
+  // ── Status section
+  if (data.statuses.length) {
+    fieldCount++;
+    // Deduplicate: strip the icann URL suffix
+    const cleaned = [...new Set(data.statuses.map(s => s.split(' ')[0]))];
+    const tags = cleaned.map(s => `<span class="whois-tag">${escHtml(s)}</span>`).join('');
+    html.push(section('Status', `<div class="tag-list">${tags}</div>`));
+  }
+
+  return { html: html.join(''), fieldCount };
+}
+
+// ── Master update ─────────────────────────────────────────────
+const editor    = document.getElementById('editor');
+const whoisView = document.getElementById('whoisView');
+
+const EMPTY_STATE_HTML = `<div class="empty-state" id="emptyState">
+  <svg width="44" height="44" viewBox="0 0 44 44" fill="none">
+    <path d="M6 10 H38 L26 24 V36 L18 33 V24 Z"
+          fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
+  </svg>
+  <p>Paste a whois dump to parse</p>
+</div>`;
+
+function update() {
+  const text = editor.value.trim();
+  if (!text) {
+    whoisView.innerHTML = EMPTY_STATE_HTML;
+    setStatus('', 'paste a whois dump');
+    return;
+  }
+
+  const data = parseWhois(text);
+  const { html, fieldCount } = renderWhois(data);
+
+  if (!html) {
+    whoisView.innerHTML = `<div class="empty-state"><p>no recognizable fields</p></div>`;
+    setStatus('error', 'no recognizable fields');
+    return;
+  }
+
+  whoisView.innerHTML = `<div class="cert-wrap">${html}</div>`;
+
+  const domainLabel = data.domainName ? data.domainName.toUpperCase() + ' · ' : '';
+  setStatus('ok', `${domainLabel}${fieldCount} field${fieldCount !== 1 ? 's' : ''} parsed`);
+}
+
+editor.addEventListener('input', update);
+
+// ── Buttons ───────────────────────────────────────────────────
+document.getElementById('clearBtn').addEventListener('click', () => {
+  editor.value = '';
+  update();
+});
+
+const SAMPLE_WHOIS = `Domain Name: EXAMPLE.COM
+Registry Domain ID: 2336799_DOMAIN_COM-VRSN
+Registrar WHOIS Server: whois.iana.org
+Registrar URL: https://www.iana.org
+Updated Date: 2023-08-14T07:01:38Z
+Creation Date: 1995-08-14T04:00:00Z
+Registry Expiry Date: 2024-08-13T04:00:00Z
+Registrar: RESERVED-Internet Assigned Numbers Authority
+Registrar IANA ID: 376
+Registrar Abuse Contact Email: abuse@iana.org
+Registrar Abuse Contact Phone: +1.3108239358
+Domain Status: clientDeleteProhibited https://icann.org/epp#clientDeleteProhibited
+Domain Status: clientTransferProhibited https://icann.org/epp#clientTransferProhibited
+Domain Status: clientUpdateProhibited https://icann.org/epp#clientUpdateProhibited
+Registry Registrant ID: C100-LROR
+Registrant Name: IANA Whois Service
+Registrant Organization: Internet Assigned Numbers Authority
+Registrant Country: US
+Name Server: A.IANA-SERVERS.NET
+Name Server: B.IANA-SERVERS.NET
+DNSSEC: signedDelegation
+Last update of WHOIS database: 2024-01-15T00:00:00Z <<<
+`;
+
+document.getElementById('sampleBtn').addEventListener('click', () => {
+  editor.value = SAMPLE_WHOIS;
+  update();
+});
+
+// ── Init ──────────────────────────────────────────────────────
+update();
+</script>
+</body>
+</html>

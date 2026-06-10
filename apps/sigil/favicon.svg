@@ -1,0 +1,12 @@
+<svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg" width="56" height="56">
+  <rect width="56" height="56" rx="13" fill="#1a0008"/>
+  <rect x="1" y="1" width="54" height="54" rx="12" stroke="#fb7185" stroke-width="1.2" stroke-opacity="0.35" fill="none"/>
+  <!-- Key body (horizontal) -->
+  <circle cx="21" cy="28" r="9" fill="none" stroke="#fb7185" stroke-width="2.4"/>
+  <circle cx="21" cy="28" r="4.5" fill="none" stroke="#fda4af" stroke-width="1.6"/>
+  <!-- Key shaft -->
+  <path d="M30 28 L46 28" stroke="#fb7185" stroke-width="2.4" stroke-linecap="round"/>
+  <!-- Key teeth -->
+  <path d="M40 28 L40 33" stroke="#fb7185" stroke-width="2.4" stroke-linecap="round"/>
+  <path d="M44 28 L44 31" stroke="#fb7185" stroke-width="2.4" stroke-linecap="round"/>
+</svg>

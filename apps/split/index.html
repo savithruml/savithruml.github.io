@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Split</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="manifest" href="manifest.json"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0f0f0f;
+      --surface:   #1a1a1a;
+      --border:    #2a2a2a;
+      --text:      #ececec;
+      --muted:     #888;
+      --accent:    #818cf8;
+      --radius:    8px;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --red-bg:    rgba(239,68,68,0.12);
+      --red-border:#ef4444;
+      --green-bg:  rgba(16,185,129,0.1);
+      --green-border:#10b981;
+    }
+
+    html { height: 100%; }
+    body {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .logo { flex-shrink: 0; width: 35px; height: 35px; }
+    header h1 { font-size: 18px; font-weight: 400; letter-spacing: 0.01em; color: var(--text); }
+    .status-dot {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .status-dot.ok::before      { background: #10b981; }
+    .status-dot.warn::before    { background: #f59e0b; }
+    .status-dot.accent::before  { background: var(--accent); }
+
+    /* ── Main layout ── */
+    .main-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Workspace (two panes) ── */
+    .workspace {
+      display: flex;
+      flex-shrink: 0;
+      height: 45%;
+      min-height: 120px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Pane ── */
+    .pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .pane-header {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #aaa;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      position: relative;
+    }
+    .pane-header .copy-btn {
+      position: absolute;
+      right: 10px;
+    }
+
+    /* ── Pane editor ── */
+    .pane-editor {
+      flex: 1;
+      resize: none;
+      border: none;
+      outline: none;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.65;
+      padding: 14px;
+      caret-color: var(--accent);
+    }
+    .pane-editor::placeholder { color: #777; font-size: 14px; }
+    .pane-editor:focus { background: #0c0c0c; }
+    #afterEl { border-left: 1px solid var(--border); }
+
+    /* ── Pane footer ── */
+    .pane-footer {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--surface);
+    }
+
+    /* ── v-handle ── */
+    .v-handle {
+      width: 5px;
+      cursor: col-resize;
+      background: transparent;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+      transition: background 0.15s;
+    }
+    .v-handle:hover, .v-handle.dragging { background: var(--accent); opacity: 0.5; }
+
+    /* ── Diff panel ── */
+    .diff-panel {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: var(--bg);
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.6;
+    }
+
+    .diff-empty {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #888;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 14px;
+      letter-spacing: 0.01em;
+      user-select: none;
+    }
+
+    /* ── Diff table (side-by-side) ── */
+    .diff-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    .diff-table tr { display: flex; }
+    .diff-table td {
+      padding: 0;
+      white-space: pre;
+      overflow: hidden;
+    }
+
+    /* Line number cells */
+    .diff-ln {
+      width: 44px;
+      min-width: 44px;
+      text-align: right;
+      padding: 0 8px 0 4px;
+      font-size: 11px;
+      color: #444;
+      flex-shrink: 0;
+      user-select: none;
+    }
+
+    /* Code content cells */
+    .diff-code {
+      flex: 1;
+      padding: 0 10px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+
+    /* Center divider */
+    .diff-divider {
+      width: 1px;
+      min-width: 1px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    /* Side variants */
+    .side-removed {
+      background: var(--red-bg);
+    }
+    .side-removed.diff-ln  { color: var(--red-border); opacity: 0.9; border-left: 3px solid var(--red-border); }
+    .side-removed.diff-code { color: #fca5a5; }
+
+    .side-added {
+      background: var(--green-bg);
+    }
+    .side-added.diff-ln  { color: var(--green-border); opacity: 0.9; border-left: 3px solid var(--green-border); }
+    .side-added.diff-code { color: #6ee7b7; }
+
+    .side-same .diff-code { color: #999; }
+    .side-same .diff-ln   { }
+
+    .side-empty {
+      background: #080808;
+    }
+    .side-empty.diff-ln  { border-left: 3px solid transparent; }
+
+    td.side-removed { background: var(--red-bg); }
+    td.side-added   { background: var(--green-bg); }
+    td.side-empty   { background: #080808; }
+    td.side-same    { background: transparent; }
+
+    /* ── Tool buttons ── */
+    .tool-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: #888;
+      border-radius: 5px;
+      padding: 4px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s;
+    }
+    .tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .tool-btn.icon-btn { padding: 6px 10px; }
+    .tool-btn.icon-btn.copied { color: #10b981; border-color: #10b981; }
+
+    /* ── Footer ── */
+    footer {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ── Scrollbar ── */
+    .diff-panel::-webkit-scrollbar { width: 6px; }
+    .diff-panel::-webkit-scrollbar-track { background: transparent; }
+    .diff-panel::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+    .diff-panel::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg class="logo" width="35" height="35" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="56" height="56" rx="13" fill="#080820"/>
+    <rect x="1" y="1" width="54" height="54" rx="12" stroke="#818cf8" stroke-width="1.2" stroke-opacity="0.35" fill="none"/>
+    <line x1="28" y1="10" x2="28" y2="46" stroke="#818cf8" stroke-width="2" stroke-linecap="round" stroke-opacity="0.5"/>
+    <line x1="11" y1="18" x2="22" y2="18" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="11" y1="26" x2="22" y2="26" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/>
+    <line x1="11" y1="34" x2="22" y2="34" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/>
+    <line x1="11" y1="42" x2="22" y2="42" stroke="#ef4444" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="34" y1="18" x2="45" y2="18" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/>
+    <line x1="34" y1="26" x2="45" y2="26" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="34" y1="34" x2="45" y2="34" stroke="#10b981" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="34" y1="42" x2="45" y2="42" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-opacity="0.5"/>
+  </svg>
+  <h1>Split</h1>
+  <span class="status-dot" id="statusDot">ready</span>
+</header>
+
+<div class="main-col">
+
+  <!-- ── Two-pane workspace ── -->
+  <div class="workspace">
+
+    <!-- BEFORE pane -->
+    <div class="pane" id="beforePane">
+      <div class="pane-header">
+        Before
+        <button class="tool-btn icon-btn copy-btn" id="copyBeforeBtn" title="Copy">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M3 9H2.5C1.67 9 1 8.33 1 7.5V2.5C1 1.67 1.67 1 2.5 1H7.5C8.33 1 9 1.67 9 2.5V3" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </button>
+      </div>
+      <textarea class="pane-editor" id="beforeEl" spellcheck="false" placeholder="Paste or upload original text here…"></textarea>
+      <div class="pane-footer">
+        <label class="tool-btn icon-btn" title="Upload file" style="cursor:pointer;display:flex;align-items:center;gap:5px">
+          <svg width="15" height="15" viewBox="0 0 13 13" fill="none">
+            <path d="M6.5 9V3M6.5 3L4 5.5M6.5 3L9 5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 10.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          Upload file
+          <input type="file" id="uploadBeforeFile" accept="text/*,.json,.yaml,.yml,.md,.csv,.xml,.log,.ts,.js,.py,.sh,.toml,.ini,.conf" style="display:none"/>
+        </label>
+        <button class="tool-btn icon-btn" id="clearBeforeBtn" title="Clear">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 3v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 16H3v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- v-handle -->
+    <div class="v-handle" id="vHandle"></div>
+
+    <!-- AFTER pane -->
+    <div class="pane" id="afterPane">
+      <div class="pane-header">
+        After
+        <button class="tool-btn icon-btn copy-btn" id="copyAfterBtn" title="Copy">
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/>
+            <path d="M3 9H2.5C1.67 9 1 8.33 1 7.5V2.5C1 1.67 1.67 1 2.5 1H7.5C8.33 1 9 1.67 9 2.5V3" stroke="currentColor" stroke-width="1.2"/>
+          </svg>
+        </button>
+      </div>
+      <textarea class="pane-editor" id="afterEl" spellcheck="false" placeholder="Paste or upload modified text here…"></textarea>
+      <div class="pane-footer">
+        <label class="tool-btn icon-btn" title="Upload file" style="cursor:pointer;display:flex;align-items:center;gap:5px">
+          <svg width="15" height="15" viewBox="0 0 13 13" fill="none">
+            <path d="M6.5 9V3M6.5 3L4 5.5M6.5 3L9 5.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2 10.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+          Upload file
+          <input type="file" id="uploadAfterFile" accept="text/*,.json,.yaml,.yml,.md,.csv,.xml,.log,.ts,.js,.py,.sh,.toml,.ini,.conf" style="display:none"/>
+        </label>
+        <button class="tool-btn icon-btn" id="clearAfterBtn" title="Clear">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 3v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 16H3v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- /workspace -->
+
+  <!-- ── Diff panel ── -->
+  <div class="diff-panel" id="diffPanel">
+    <div class="diff-empty" id="diffEmpty">Paste or upload text in both panes to see the diff</div>
+    <table class="diff-table" id="diffTable" style="display:none"></table>
+  </div>
+
+</div><!-- /main-col -->
+
+<footer>© 2026 Savithru Lokanath</footer>
+
+<script>
+// ── LCS-based line diff ───────────────────────────────────────
+function lcs(a, b) {
+  const m = a.length, n = b.length;
+  // Use a flat Int32Array for performance on large inputs
+  const dp = new Int32Array((m + 1) * (n + 1));
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      dp[i * (n + 1) + j] = a[i - 1] === b[j - 1]
+        ? dp[(i - 1) * (n + 1) + (j - 1)] + 1
+        : Math.max(dp[(i - 1) * (n + 1) + j], dp[i * (n + 1) + (j - 1)]);
+    }
+  }
+  // Backtrack
+  const result = [];
+  let i = m, j = n;
+  while (i > 0 && j > 0) {
+    if (a[i - 1] === b[j - 1]) {
+      result.push([i - 1, j - 1]);
+      i--; j--;
+    } else if (dp[(i - 1) * (n + 1) + j] >= dp[i * (n + 1) + (j - 1)]) {
+      i--;
+    } else {
+      j--;
+    }
+  }
+  return result.reverse();
+}
+
+function computeDiff(textA, textB) {
+  const linesA = textA.split('\n');
+  const linesB = textB.split('\n');
+
+  // Guard against very large inputs (cap at 2000 lines for perf)
+  const a = linesA.slice(0, 2000);
+  const b = linesB.slice(0, 2000);
+
+  const common = lcs(a, b);
+  const result = [];
+
+  let ai = 0, bi = 0, ci = 0;
+  while (ci < common.length) {
+    const [ca, cb] = common[ci];
+    // Drain removed lines before this common pair
+    while (ai < ca) {
+      result.push({ type: 'removed', line: a[ai], ln: ai + 1 });
+      ai++;
+    }
+    // Drain added lines before this common pair
+    while (bi < cb) {
+      result.push({ type: 'added', line: b[bi], ln: bi + 1 });
+      bi++;
+    }
+    result.push({ type: 'unchanged', line: a[ai], ln: ai + 1, lnB: bi + 1 });
+    ai++; bi++; ci++;
+  }
+  // Drain remaining
+  while (ai < a.length) {
+    result.push({ type: 'removed', line: a[ai], ln: ai + 1 });
+    ai++;
+  }
+  while (bi < b.length) {
+    result.push({ type: 'added', line: b[bi], ln: bi + 1 });
+    bi++;
+  }
+  return result;
+}
+
+// ── Build side-by-side pairs ──────────────────────────────────
+function buildSideBySide(diff) {
+  const rows = [];
+  let i = 0;
+  while (i < diff.length) {
+    if (diff[i].type === 'unchanged') {
+      rows.push({ left: diff[i], right: { ...diff[i], type: 'unchanged' } });
+      i++;
+    } else {
+      // collect a block of removed/added lines
+      const removed = [], added = [];
+      while (i < diff.length && diff[i].type !== 'unchanged') {
+        if (diff[i].type === 'removed') removed.push(diff[i]);
+        else added.push(diff[i]);
+        i++;
+      }
+      const maxLen = Math.max(removed.length, added.length);
+      for (let j = 0; j < maxLen; j++) {
+        rows.push({ left: removed[j] || null, right: added[j] || null });
+      }
+    }
+  }
+  return rows;
+}
+
+// ── Render ────────────────────────────────────────────────────
+const beforeEl   = document.getElementById('beforeEl');
+const afterEl    = document.getElementById('afterEl');
+const diffPanel  = document.getElementById('diffPanel');
+const diffEmpty  = document.getElementById('diffEmpty');
+const diffTable  = document.getElementById('diffTable');
+const statusDot  = document.getElementById('statusDot');
+
+function escHtml(s) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+function renderDiff() {
+  const a = beforeEl.value;
+  const b = afterEl.value;
+
+  if (!a.trim() && !b.trim()) {
+    diffEmpty.style.display = 'flex';
+    diffTable.style.display = 'none';
+    setStatus('', 'ready');
+    return;
+  }
+
+  if (!a.trim() || !b.trim()) {
+    diffEmpty.style.display = 'flex';
+    diffEmpty.textContent = 'Paste or upload text in both panes to see the diff';
+    diffTable.style.display = 'none';
+    setStatus('', 'ready');
+    return;
+  }
+
+  diffEmpty.style.display = 'none';
+  diffTable.style.display = '';
+
+  const diff = computeDiff(a, b);
+  const pairs = buildSideBySide(diff);
+
+  let added = 0, removed = 0;
+  diff.forEach(e => {
+    if (e.type === 'added')   added++;
+    if (e.type === 'removed') removed++;
+  });
+
+  const rows = pairs.map(({ left, right }) => {
+    const leftCls  = left  ? (left.type  === 'removed'   ? 'side-removed' : 'side-same') : 'side-empty';
+    const rightCls = right ? (right.type === 'added'     ? 'side-added'   : 'side-same') : 'side-empty';
+
+    const leftLn  = left  ? left.ln  : '';
+    const rightLn = right ? (right.type === 'unchanged' ? right.lnB : right.ln) : '';
+    const leftTxt  = left  ? escHtml(left.line)  : '';
+    const rightTxt = right ? escHtml(right.line) : '';
+
+    return `<tr>` +
+      `<td class="diff-ln ${leftCls}">${leftLn}</td>` +
+      `<td class="diff-code ${leftCls}">${leftTxt}</td>` +
+      `<td class="diff-divider"></td>` +
+      `<td class="diff-ln ${rightCls}">${rightLn}</td>` +
+      `<td class="diff-code ${rightCls}">${rightTxt}</td>` +
+      `</tr>`;
+  });
+
+  diffTable.innerHTML = rows.join('');
+
+  if (added === 0 && removed === 0) {
+    diffTable.style.display = 'none';
+    diffEmpty.style.display = 'flex';
+    diffEmpty.textContent = 'No differences — the two texts are identical';
+    setStatus('ok', 'identical');
+  } else {
+    const parts = [];
+    if (added > 0)   parts.push(`+${added}`);
+    if (removed > 0) parts.push(`−${removed}`);
+    setStatus('accent', parts.join('  '));
+  }
+}
+
+function setStatus(type, text) {
+  statusDot.className = 'status-dot ' + (type || '');
+  statusDot.textContent = text;
+}
+
+beforeEl.addEventListener('input', renderDiff);
+afterEl.addEventListener('input', renderDiff);
+
+// ── v-handle resize ───────────────────────────────────────────
+const vHandle    = document.getElementById('vHandle');
+const beforePane = document.getElementById('beforePane');
+const afterPane  = document.getElementById('afterPane');
+let dragging = false, startX = 0, startRatio = 0.5;
+
+vHandle.addEventListener('mousedown', e => {
+  dragging = true;
+  startX = e.clientX;
+  const total = beforePane.offsetWidth + afterPane.offsetWidth;
+  startRatio = beforePane.offsetWidth / total;
+  vHandle.classList.add('dragging');
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const total = beforePane.offsetWidth + vHandle.offsetWidth + afterPane.offsetWidth;
+  const newW = Math.min(Math.max(startRatio * total + (e.clientX - startX), 180), total - 180);
+  beforePane.style.flex = 'none';
+  beforePane.style.width = newW + 'px';
+  afterPane.style.flex = '1';
+});
+document.addEventListener('mouseup', () => {
+  dragging = false;
+  vHandle.classList.remove('dragging');
+});
+
+// ── Copy buttons ──────────────────────────────────────────────
+const ICON_COPY  = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 9H2.5C1.67 9 1 8.33 1 7.5V2.5C1 1.67 1.67 1 2.5 1H7.5C8.33 1 9 1.67 9 2.5V3" stroke="currentColor" stroke-width="1.2"/></svg>`;
+const ICON_CHECK = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5L5.5 9.5L10.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+function copyBtn(srcEl, btn) {
+  const txt = srcEl.value.trim();
+  if (!txt) return;
+  navigator.clipboard.writeText(txt).then(() => {
+    btn.innerHTML = ICON_CHECK;
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = ICON_COPY; btn.classList.remove('copied'); }, 1600);
+  });
+}
+
+document.getElementById('copyBeforeBtn').addEventListener('click', function() {
+  copyBtn(beforeEl, this);
+});
+document.getElementById('copyAfterBtn').addEventListener('click', function() {
+  copyBtn(afterEl, this);
+});
+
+// ── Clear ──────────────────────────────────────────────────────
+document.getElementById('clearBeforeBtn').addEventListener('click', () => {
+  beforeEl.value = '';
+  renderDiff();
+});
+document.getElementById('clearAfterBtn').addEventListener('click', () => {
+  afterEl.value = '';
+  renderDiff();
+});
+
+// ── File upload ───────────────────────────────────────────────
+function readFile(input, targetEl) {
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      targetEl.value = e.target.result;
+      renderDiff();
+    };
+    reader.readAsText(file);
+    input.value = ''; // reset so same file can be re-uploaded
+  });
+}
+
+readFile(document.getElementById('uploadBeforeFile'), beforeEl);
+readFile(document.getElementById('uploadAfterFile'),  afterEl);
+</script>
+</body>
+</html>

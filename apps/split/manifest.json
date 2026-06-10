@@ -1,0 +1,12 @@
+{
+  "name": "Split",
+  "short_name": "Split",
+  "description": "Side-by-side text diff with live LCS-based line highlighting",
+  "start_url": "/apps/split/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#080820",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

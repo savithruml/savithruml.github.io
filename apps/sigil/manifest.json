@@ -1,0 +1,12 @@
+{
+  "name": "Sigil",
+  "short_name": "Sigil",
+  "description": "JWT decoder — paste a token and see header, payload, and signature decoded",
+  "start_url": "/apps/sigil/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#1a0008",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

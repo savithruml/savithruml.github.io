@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sigil</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="manifest" href="manifest.json"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0f0f0f;
+      --surface: #1a1a1a;
+      --border:  #2a2a2a;
+      --text:    #ececec;
+      --muted:   #888;
+      --accent:  #fb7185;
+      --radius:  8px;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+      /* JWT part colors */
+      --col-header:  #fb7185;
+      --col-payload: #fbbf24;
+      --col-sig:     #888;
+    }
+
+    html { height: 100%; }
+    body { height: 100%; display: flex; flex-direction: column; background: var(--bg); color: var(--text); font-family: Helvetica, Arial, sans-serif; font-size: 14px; overflow: hidden; }
+
+    /* ── Header ── */
+    header {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .logo { flex-shrink: 0; width: 35px; height: 35px; }
+    header h1 { font-size: 18px; font-weight: 400; letter-spacing: 0.01em; color: var(--text); }
+    .status-dot {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status-dot::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      flex-shrink: 0;
+    }
+    .status-dot.ok::before    { background: #10b981; }
+    .status-dot.warn::before  { background: #fbbf24; }
+    .status-dot.error::before { background: #ef4444; }
+
+    /* ── Workspace ── */
+    .workspace {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* ── Footer ── */
+    footer {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+
+    /* ── Pane ── */
+    .pane {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-width: 0;
+    }
+    #leftPane  { width: 300px; flex-shrink: 0; border-right: 1px solid var(--border); }
+    #rightPane { flex: 1; }
+
+    .pane-header {
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #aaa;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      gap: 8px;
+    }
+
+    /* ── v-handle ── */
+    .v-handle {
+      width: 5px;
+      cursor: col-resize;
+      background: transparent;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+      transition: background 0.15s;
+    }
+    .v-handle:hover, .v-handle.dragging { background: var(--accent); opacity: 0.5; }
+
+    /* ── Left pane: JWT input area ── */
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Colorized overlay <pre> */
+    #tokenOverlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.65;
+      padding: 14px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      pointer-events: none;
+      overflow: hidden;
+      color: transparent;
+      background: var(--bg);
+      user-select: none;
+      z-index: 1;
+    }
+    .part-header  { color: var(--col-header); }
+    .part-dot     { color: #444; }
+    .part-payload { color: var(--col-payload); }
+    .part-sig     { color: var(--col-sig); }
+
+    #editor {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      resize: none;
+      border: none;
+      outline: none;
+      background: transparent;
+      color: transparent;
+      caret-color: var(--accent);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.65;
+      padding: 14px;
+      white-space: pre-wrap;
+      word-break: break-all;
+      overflow: auto;
+      z-index: 2;
+    }
+    #editor::placeholder { color: #555; }
+
+    /* ── Pane footer ── */
+    .pane-footer {
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 14px;
+      gap: 8px;
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .tool-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: #aaa;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: color 0.12s, border-color 0.12s;
+    }
+    .tool-btn:hover { color: var(--accent); border-color: var(--accent); }
+    .tool-btn.icon-btn { padding: 6px 8px; }
+    .icon-btn svg { display: block; }
+
+    /* ── Right pane: decoded view ── */
+    #jwtView {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      overflow-y: auto;
+    }
+    #jwtView::-webkit-scrollbar { width: 6px; }
+    #jwtView::-webkit-scrollbar-track { background: transparent; }
+    #jwtView::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+
+    .cert-wrap {
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    .cert-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .cert-section-title {
+      padding: 7px 14px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border-bottom: 1px solid var(--border);
+      background: rgba(251, 113, 133, 0.04);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .cert-section-title.header-title  { color: var(--col-header); background: rgba(251,113,133,0.04); }
+    .cert-section-title.payload-title { color: var(--col-payload); background: rgba(251,191,36,0.04); }
+    .cert-section-title.sig-title     { color: var(--col-sig); background: rgba(136,136,136,0.04); }
+
+    .cert-row {
+      display: flex;
+      align-items: flex-start;
+      padding: 8px 14px;
+      border-bottom: 1px solid #222;
+      gap: 10px;
+    }
+    .cert-row:last-child { border-bottom: none; }
+    .cert-key {
+      font-size: 12px;
+      color: #888;
+      min-width: 140px;
+      flex-shrink: 0;
+      padding-top: 1px;
+      font-family: var(--font-mono);
+    }
+    .cert-val {
+      font-size: 13px;
+      color: #ececec;
+      font-family: var(--font-mono);
+      word-break: break-all;
+      flex: 1;
+      line-height: 1.55;
+    }
+
+    /* Prominent claims */
+    .claim-prominent {
+      font-size: 13px;
+      color: #ececec;
+      font-family: var(--font-mono);
+      word-break: break-all;
+      flex: 1;
+      line-height: 1.55;
+    }
+    .claim-iss { color: #a5f3fc; }
+    .claim-sub { color: #86efac; }
+    .claim-aud { color: #c4b5fd; }
+
+    /* Validity badge */
+    .validity-badge {
+      display: inline-block;
+      padding: 1px 8px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .v-ok   { background: rgba(16,185,129,0.15); color: #10b981; }
+    .v-warn { background: rgba(251,191,36,0.15);  color: #fbbf24; }
+    .v-exp  { background: rgba(239,68,68,0.15);   color: #ef4444; }
+
+    /* Array tags */
+    .tag-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 14px;
+    }
+    .tag-item {
+      background: rgba(251,113,133,0.08);
+      border: 1px solid rgba(251,113,133,0.2);
+      border-radius: 4px;
+      padding: 3px 9px;
+      font-size: 12px;
+      color: #fda4af;
+      font-family: var(--font-mono);
+    }
+
+    /* ── Empty state ── */
+    .empty-state {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #333;
+      gap: 10px;
+      pointer-events: none;
+      user-select: none;
+    }
+    .empty-state svg { opacity: 0.3; }
+    .empty-state p { font-size: 13px; color: #666; }
+  </style>
+</head>
+<body>
+
+<header>
+  <!-- Logo: key icon on dark rose background -->
+  <svg class="logo" width="35" height="35" viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="56" height="56" rx="13" fill="#1a0008"/>
+    <rect x="1" y="1" width="54" height="54" rx="12" stroke="#fb7185" stroke-width="1.2" stroke-opacity="0.35" fill="none"/>
+    <circle cx="21" cy="28" r="9" fill="none" stroke="#fb7185" stroke-width="2.4"/>
+    <circle cx="21" cy="28" r="4.5" fill="none" stroke="#fda4af" stroke-width="1.6"/>
+    <path d="M30 28 L46 28" stroke="#fb7185" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M40 28 L40 33" stroke="#fb7185" stroke-width="2.4" stroke-linecap="round"/>
+    <path d="M44 28 L44 31" stroke="#fb7185" stroke-width="2.4" stroke-linecap="round"/>
+  </svg>
+  <h1>Sigil</h1>
+  <span class="status-dot" id="statusDot">paste a JWT token</span>
+</header>
+
+<div class="workspace">
+  <!-- Left: JWT token input -->
+  <div class="pane" id="leftPane">
+    <div class="pane-header">Token</div>
+    <div class="input-wrapper">
+      <pre id="tokenOverlay" aria-hidden="true"></pre>
+      <textarea id="editor" spellcheck="false" autocomplete="off" autocorrect="off" autocapitalize="off"
+        placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
+Paste a JWT token here.
+Three base64url parts separated by dots."></textarea>
+    </div>
+    <div class="pane-footer">
+      <button class="tool-btn" id="sampleBtn">Sample</button>
+      <button class="tool-btn icon-btn" id="clearBtn" title="Clear">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 3v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 16H3v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- v-handle -->
+  <div class="v-handle" id="vHandle"></div>
+
+  <!-- Right: Decoded fields -->
+  <div class="pane" id="rightPane">
+    <div class="pane-header">Inspector</div>
+    <div id="jwtView">
+      <div class="empty-state" id="emptyState">
+        <svg width="44" height="44" viewBox="0 0 56 56" fill="none">
+          <circle cx="21" cy="28" r="12" fill="none" stroke="#fb7185" stroke-width="2.2"/>
+          <circle cx="21" cy="28" r="6" fill="none" stroke="#fda4af" stroke-width="1.8"/>
+          <path d="M33 28 L50 28" stroke="#fb7185" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M43 28 L43 35" stroke="#fb7185" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M48 28 L48 32" stroke="#fb7185" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+        <p>Paste a JWT token to decode</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 Savithru Lokanath</footer>
+
+<script>
+// ── v-handle drag ─────────────────────────────────────────────
+const vHandle  = document.getElementById('vHandle');
+const leftPane = document.getElementById('leftPane');
+let dragging = false, startX = 0, startW = 0;
+vHandle.addEventListener('mousedown', e => {
+  dragging = true; startX = e.clientX; startW = leftPane.offsetWidth;
+  vHandle.classList.add('dragging'); e.preventDefault();
+});
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const w = Math.min(Math.max(startW + e.clientX - startX, 180), window.innerWidth - 300);
+  leftPane.style.width = w + 'px';
+});
+document.addEventListener('mouseup', () => { dragging = false; vHandle.classList.remove('dragging'); });
+
+// ── Helpers ───────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function h(tag, cls, content) {
+  return `<${tag}${cls ? ` class="${cls}"` : ''}>${content}</${tag}>`;
+}
+
+function row(key, val) {
+  return `<div class="cert-row">${h('span','cert-key',key)}${h('span','cert-val',val)}</div>`;
+}
+
+// base64url decode → UTF-8 string
+function b64urlDecode(str) {
+  // Normalise: replace URL-safe chars, add padding
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = str.length % 4;
+  if (pad === 2) str += '==';
+  else if (pad === 3) str += '=';
+  const binary = atob(str);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
+// Format a Unix timestamp as readable date + relative time
+function fmtTimestamp(ts) {
+  const d = new Date(ts * 1000);
+  const abs = d.toISOString().replace('T', ' ').replace(/\.\d+Z$/, ' UTC');
+  const now  = Date.now();
+  const diff = ts * 1000 - now;
+  const abs_diff = Math.abs(diff);
+  const past = diff < 0;
+
+  let rel;
+  const secs  = Math.floor(abs_diff / 1000);
+  const mins  = Math.floor(secs / 60);
+  const hours = Math.floor(mins / 60);
+  const days  = Math.floor(hours / 24);
+
+  if (days > 1)        rel = `${days} days`;
+  else if (days === 1) rel = '1 day';
+  else if (hours > 1)  rel = `${hours} hours`;
+  else if (hours === 1) rel = '1 hour';
+  else if (mins > 1)   rel = `${mins} minutes`;
+  else if (mins === 1) rel = '1 minute';
+  else                 rel = `${secs} seconds`;
+
+  const relStr = past ? `${rel} ago` : `in ${rel}`;
+  return { abs, rel: relStr, past, secs, mins, hours, days };
+}
+
+// Validity badge for exp
+function expBadge(ts) {
+  const now = Date.now() / 1000;
+  const secsLeft = ts - now;
+  if (secsLeft < 0) {
+    return `<span class="validity-badge v-exp">EXPIRED</span>`;
+  } else if (secsLeft < 3600) {
+    return `<span class="validity-badge v-warn">EXPIRES SOON</span>`;
+  } else {
+    return `<span class="validity-badge v-ok">VALID</span>`;
+  }
+}
+
+// Render a single claim value as HTML
+function renderClaimVal(key, val) {
+  const TIME_CLAIMS = ['iat', 'exp', 'nbf'];
+
+  if (TIME_CLAIMS.includes(key) && typeof val === 'number') {
+    const { abs, rel, past } = fmtTimestamp(val);
+    let relLabel;
+    if (key === 'iat') relLabel = past ? `issued ${rel}` : `issues ${rel}`;
+    else if (key === 'exp') {
+      relLabel = past ? `<span style="color:#ef4444">EXPIRED ${rel}</span>` : `expires ${rel}`;
+    }
+    else if (key === 'nbf') relLabel = past ? `valid since ${rel}` : `valid ${rel}`;
+    else relLabel = rel;
+
+    const badge = key === 'exp' ? expBadge(val) : '';
+    return `<span style="color:#ececec">${escHtml(abs)}</span>${badge}<br><span style="font-size:11px;color:#666">${relLabel}</span>`;
+  }
+
+  if (key === 'iss') return `<span class="claim-iss">${escHtml(String(val))}</span>`;
+  if (key === 'sub') return `<span class="claim-sub">${escHtml(String(val))}</span>`;
+  if (key === 'aud') {
+    const arr = Array.isArray(val) ? val : [val];
+    if (arr.length === 1) return `<span class="claim-aud">${escHtml(String(arr[0]))}</span>`;
+    return arr.map(v => `<span class="claim-aud" style="display:block">${escHtml(String(v))}</span>`).join('');
+  }
+
+  if (Array.isArray(val)) {
+    const tags = val.map(v => `<span class="tag-item">${escHtml(String(v))}</span>`).join('');
+    return `<span class="cert-val" style="display:flex;flex-wrap:wrap;gap:6px;padding:0">${tags}</span>`;
+  }
+
+  if (typeof val === 'object' && val !== null) {
+    return `<span style="color:#aaa">${escHtml(JSON.stringify(val, null, 2))}</span>`;
+  }
+
+  if (typeof val === 'boolean') {
+    return `<span style="color:${val ? '#10b981' : '#ef4444'}">${val}</span>`;
+  }
+
+  return escHtml(String(val));
+}
+
+function section(titleHtml, titleClass, inner) {
+  return `<div class="cert-section"><div class="cert-section-title ${titleClass}">${titleHtml}</div>${inner}</div>`;
+}
+
+// ── Token colorizer overlay ───────────────────────────────────
+const editor       = document.getElementById('editor');
+const tokenOverlay = document.getElementById('tokenOverlay');
+
+function updateOverlay(raw) {
+  const token = raw.trim();
+  if (!token) { tokenOverlay.innerHTML = ''; return; }
+
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    // show plain muted
+    tokenOverlay.textContent = raw;
+    tokenOverlay.style.color = '#555';
+    return;
+  }
+
+  // preserve leading whitespace from raw value
+  const leading = raw.match(/^(\s*)/)[1];
+  const trailing = raw.match(/(\s*)$/)[1];
+
+  tokenOverlay.innerHTML =
+    escHtml(leading) +
+    `<span class="part-header">${escHtml(parts[0])}</span>` +
+    `<span class="part-dot">.</span>` +
+    `<span class="part-payload">${escHtml(parts[1])}</span>` +
+    `<span class="part-dot">.</span>` +
+    `<span class="part-sig">${escHtml(parts[2])}</span>` +
+    escHtml(trailing);
+  tokenOverlay.style.color = '';
+}
+
+// Sync overlay scroll with textarea scroll
+editor.addEventListener('scroll', () => {
+  tokenOverlay.scrollTop  = editor.scrollTop;
+  tokenOverlay.scrollLeft = editor.scrollLeft;
+});
+
+// ── Main decode + render ──────────────────────────────────────
+const jwtView  = document.getElementById('jwtView');
+const statusDot = document.getElementById('statusDot');
+
+function setStatus(type, text) {
+  statusDot.className = 'status-dot ' + (type || '');
+  statusDot.textContent = text;
+}
+
+function renderEmpty() {
+  jwtView.innerHTML = `<div class="empty-state">
+    <svg width="44" height="44" viewBox="0 0 56 56" fill="none">
+      <circle cx="21" cy="28" r="12" fill="none" stroke="#fb7185" stroke-width="2.2"/>
+      <circle cx="21" cy="28" r="6" fill="none" stroke="#fda4af" stroke-width="1.8"/>
+      <path d="M33 28 L50 28" stroke="#fb7185" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M43 28 L43 35" stroke="#fb7185" stroke-width="2.2" stroke-linecap="round"/>
+      <path d="M48 28 L48 32" stroke="#fb7185" stroke-width="2.2" stroke-linecap="round"/>
+    </svg>
+    <p>Paste a JWT token to decode</p>
+  </div>`;
+  setStatus('', 'paste a JWT token');
+}
+
+function update() {
+  const raw = editor.value;
+  updateOverlay(raw);
+  const token = raw.trim();
+
+  if (!token) { renderEmpty(); return; }
+
+  const parts = token.split('.');
+  if (parts.length !== 3) {
+    jwtView.innerHTML = `<div class="empty-state"><p style="color:#ef4444">Invalid JWT: expected 3 parts separated by dots</p></div>`;
+    setStatus('error', 'invalid JWT structure');
+    return;
+  }
+
+  let headerObj, payloadObj;
+
+  // ── Parse header
+  try {
+    const headerJson = b64urlDecode(parts[0]);
+    headerObj = JSON.parse(headerJson);
+  } catch(e) {
+    jwtView.innerHTML = `<div class="empty-state"><p style="color:#ef4444">Failed to decode header: ${escHtml(e.message)}</p></div>`;
+    setStatus('error', 'header parse error');
+    return;
+  }
+
+  // ── Parse payload
+  try {
+    const payloadJson = b64urlDecode(parts[1]);
+    payloadObj = JSON.parse(payloadJson);
+  } catch(e) {
+    jwtView.innerHTML = `<div class="empty-state"><p style="color:#ef4444">Failed to decode payload: ${escHtml(e.message)}</p></div>`;
+    setStatus('error', 'payload parse error');
+    return;
+  }
+
+  const html = [];
+
+  // ── Section 1: Header
+  {
+    const alg = headerObj.alg || '—';
+    const typ = headerObj.typ || '—';
+    let inner = '';
+    inner += row('alg', escHtml(alg));
+    inner += row('typ', escHtml(typ));
+    if (headerObj.kid) inner += row('kid', escHtml(headerObj.kid));
+    // any remaining header fields
+    Object.entries(headerObj).forEach(([k, v]) => {
+      if (!['alg','typ','kid'].includes(k)) {
+        inner += row(escHtml(k), escHtml(String(v)));
+      }
+    });
+    html.push(section(
+      `<span style="color:var(--col-header)">●</span> Header`,
+      'header-title',
+      inner
+    ));
+  }
+
+  // ── Section 2: Payload
+  {
+    // Order: iss, sub, aud first, then time claims, then rest
+    const PRIORITY = ['iss','sub','aud','exp','iat','nbf'];
+    const keys = [
+      ...PRIORITY.filter(k => k in payloadObj),
+      ...Object.keys(payloadObj).filter(k => !PRIORITY.includes(k))
+    ];
+
+    let inner = '';
+    keys.forEach(k => {
+      const val = payloadObj[k];
+      inner += `<div class="cert-row">${h('span','cert-key',escHtml(k))}` +
+               `<span class="cert-val">${renderClaimVal(k, val)}</span></div>`;
+    });
+
+    html.push(section(
+      `<span style="color:var(--col-payload)">●</span> Payload`,
+      'payload-title',
+      inner
+    ));
+  }
+
+  // ── Section 3: Signature
+  {
+    const sigRaw = parts[2];
+    const inner =
+      row('base64url', `<span style="color:var(--col-sig);word-break:break-all">${escHtml(sigRaw)}</span>`) +
+      row('verification', '<span style="color:#666;font-size:11px">Signature verification requires the secret or public key — not performed client-side</span>');
+    html.push(section(
+      `<span style="color:var(--col-sig)">●</span> Signature`,
+      'sig-title',
+      inner
+    ));
+  }
+
+  jwtView.innerHTML = `<div class="cert-wrap">${html.join('')}</div>`;
+
+  // ── Update status
+  const exp = payloadObj.exp;
+  const sub = payloadObj.sub || payloadObj.iss || 'JWT';
+  if (typeof exp === 'number') {
+    const { abs, rel, past } = fmtTimestamp(exp);
+    const secsLeft = exp - Date.now() / 1000;
+    if (secsLeft < 0) {
+      setStatus('error', `EXPIRED · ${escHtml(String(sub))}`);
+    } else if (secsLeft < 3600) {
+      setStatus('warn', `expires soon · ${rel}`);
+    } else {
+      setStatus('ok', `valid JWT · expires ${rel}`);
+    }
+  } else {
+    setStatus('ok', 'valid JWT · no expiry');
+  }
+}
+
+editor.addEventListener('input', update);
+
+// ── Sample JWT ────────────────────────────────────────────────
+// Hardcoded realistic sample — iat in the past, exp ~1hr after iat (expired)
+// iat: 2024-09-15T10:00:00Z → 1726390800
+// exp: 2024-09-15T11:00:00Z → 1726394400
+const SAMPLE_HEADER  = { alg: 'HS256', typ: 'JWT' };
+const SAMPLE_PAYLOAD = {
+  iss: 'https://auth.example.com',
+  sub: 'usr_7Kf3mNpQr9sT',
+  aud: 'api.example.com',
+  iat: 1726390800,
+  exp: 1726394400,
+  nbf: 1726390800,
+  name: 'Ada Lovelace',
+  email: 'ada@example.com',
+  roles: ['engineer', 'admin'],
+  org_id: 'org_XcB2nWsV',
+  jti: 'a3f8e1d2-7c40-4b9a-8e6f-1234abcd5678'
+};
+
+function b64urlEncode(str) {
+  return btoa(unescape(encodeURIComponent(str)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+function buildSampleJWT() {
+  const h = b64urlEncode(JSON.stringify(SAMPLE_HEADER));
+  const p = b64urlEncode(JSON.stringify(SAMPLE_PAYLOAD));
+  // Fake (non-verifiable) signature for demo
+  const sig = b64urlEncode('sample-signature-not-valid-for-demo-purposes-only');
+  return `${h}.${p}.${sig}`;
+}
+
+document.getElementById('sampleBtn').addEventListener('click', () => {
+  editor.value = buildSampleJWT();
+  update();
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  editor.value = '';
+  update();
+});
+
+// init
+update();
+</script>
+</body>
+</html>
