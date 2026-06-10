@@ -232,7 +232,7 @@
       z-index: 500;
       display: none;
       box-shadow: 0 4px 16px rgba(0,0,0,0.6);
-      min-width: 140px;
+      min-width: 210px;
     }
     .ctx-menu.visible { display: block; }
     .ctx-label {
@@ -258,6 +258,62 @@
       transition: background 0.12s;
     }
     .ctx-item:hover { background: #2a1414; }
+    .ctx-item.neutral { color: #bbb; }
+    .ctx-item.neutral:hover { background: #231c06; color: var(--accent); }
+    .ctx-edge-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-bottom: 1px solid #252525;
+    }
+    .ctx-edge-input {
+      flex: 1;
+      background: #131313;
+      border: 1px solid #333;
+      border-radius: 5px;
+      color: var(--text);
+      font-size: 12px;
+      padding: 5px 8px;
+      outline: none;
+      font-family: inherit;
+      min-width: 0;
+    }
+    .ctx-edge-input:focus { border-color: var(--accent); }
+    .ctx-set-btn {
+      background: #231c06;
+      border: 1px solid #4a3a10;
+      border-radius: 5px;
+      color: var(--accent);
+      font-size: 11px;
+      padding: 5px 9px;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .ctx-set-btn:hover { background: #2e2408; }
+
+    /* ── Inline rename ── */
+    .rename-wrap {
+      position: absolute;
+      display: none;
+      z-index: 400;
+      transform: translateX(-50%);
+    }
+    .rename-input {
+      background: #111;
+      border: 1.5px solid var(--accent);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 12px;
+      font-family: inherit;
+      padding: 5px 10px;
+      outline: none;
+      text-align: center;
+      width: 140px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.6), 0 0 0 3px rgba(245,158,11,0.15);
+    }
 
     /* ── Export dropdown ── */
     .export-wrap { position: relative; }
@@ -417,16 +473,38 @@
     }
 
     /* ── Canvas usage hint ── */
+    .info-btn {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1.5px solid #555;
+      background: #222;
+      color: #aaa;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 26px;
+      text-align: center;
+      cursor: pointer;
+      z-index: 100;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      user-select: none;
+    }
+    .info-btn:hover { border-color: #888; color: #ddd; background: #2a2a2a; }
     .canvas-usage {
       position: absolute;
-      top: 14px;
-      right: 14px;
+      top: 52px;
+      right: 16px;
       font-size: 11px;
-      color: #666;
+      color: #999;
       line-height: 1.8;
       pointer-events: none;
       text-align: right;
+      display: none;
     }
+    .canvas-usage.visible { display: block; }
 
     /* ── Footer ── */
     footer {
@@ -549,7 +627,20 @@ edges:
       <!-- Context menu -->
       <div id="ctxMenu" class="ctx-menu">
         <div class="ctx-label" id="ctxLabel">Node</div>
+        <!-- Edge-only actions -->
+        <div id="ctxEdgeItems" style="display:none">
+          <div class="ctx-edge-row">
+            <input id="ctxEdgeLabelInput" class="ctx-edge-input" placeholder="Edge label…"/>
+            <button class="ctx-set-btn" id="ctxEdgeLabelSet">Set</button>
+          </div>
+          <button class="ctx-item neutral" id="ctxToggleBidir">Toggle direction</button>
+        </div>
         <button class="ctx-item" id="ctxDelete">Delete</button>
+      </div>
+
+      <!-- Inline node rename -->
+      <div id="renameWrap" class="rename-wrap">
+        <input id="renameInput" class="rename-input"/>
       </div>
 
       <!-- Floating canvas controls (bottom-right) -->
@@ -570,8 +661,14 @@ edges:
         </button>
       </div>
 
-      <!-- Usage hint (bottom-left) -->
-      <div class="canvas-usage">Double-click to add node · Shift-click two nodes to connect<br>Group button to create region groups</div>
+      <!-- Info button + usage hint -->
+      <div id="infoBtn" class="info-btn" title="Keyboard shortcuts">i</div>
+      <div class="canvas-usage" id="canvasUsage">
+        Double-click canvas to add node<br>
+        Shift-click two nodes to connect<br>
+        Double-click node to rename<br>
+        Right-click node or edge for options
+      </div>
 
       <div class="legend" id="legend">
         <div class="legend-item"><div class="legend-dot" style="background:#818cf8;border-radius:50%"></div>router</div>
@@ -871,12 +968,28 @@ function renderGraph() {
     .data(linkData)
     .enter().append('g').attr('class', 'edge');
 
+  edgeGs.append('line') // invisible wide hit-area for easier right-click
+    .attr('stroke', 'transparent')
+    .attr('stroke-width', 14)
+    .attr('stroke-linecap', 'round');
+
   edgeGs.append('line')
     .attr('stroke',         '#585858')
     .attr('stroke-width',   1.5)
     .attr('stroke-linecap', 'butt')
     .attr('marker-end',     'url(#arrow)')
     .attr('marker-start',   d => d.bidir ? 'url(#arrow)' : null);
+
+  edgeGs.on('contextmenu', function(event, d) {
+    event.preventDefault();
+    event.stopPropagation();
+    const src = (d.source && d.source.id != null) ? String(d.source.id) : String(d.source ?? '');
+    const tgt = (d.target && d.target.id != null) ? String(d.target.id) : String(d.target ?? '');
+    showCtxMenu(event.clientX, event.clientY, {
+      type: 'edge', sourceId: src, targetId: tgt,
+      label: d.label, bidir: !!d.bidir
+    });
+  });
 
   edgeGs.filter(d => d.label)
     .append('text')
@@ -946,11 +1059,14 @@ function tick() {
 
     const arrowGap = 7; // pull back so arrowhead tip lands at node border
     const srcGap = d.bidir ? arrowGap : 0;
-    d3.select(this).select('line')
-      .attr('x1', src.x + (dx / dist) * (r1 + srcGap))
-      .attr('y1', src.y + (dy / dist) * (r1 + srcGap))
-      .attr('x2', tgt.x - (dx / dist) * (r2 + arrowGap))
-      .attr('y2', tgt.y - (dy / dist) * (r2 + arrowGap));
+    const lx1 = src.x + (dx / dist) * (r1 + srcGap);
+    const ly1 = src.y + (dy / dist) * (r1 + srcGap);
+    const lx2 = tgt.x - (dx / dist) * (r2 + arrowGap);
+    const ly2 = tgt.y - (dy / dist) * (r2 + arrowGap);
+    // Update all lines in the group (hit-area + visible line)
+    d3.select(this).selectAll('line')
+      .attr('x1', lx1).attr('y1', ly1)
+      .attr('x2', lx2).attr('y2', ly2);
 
     d3.select(this).select('text')
       .attr('x', (src.x + tgt.x) / 2)
@@ -1331,6 +1447,12 @@ function attachNodeInteractions(sel) {
       updateYAML(data => data.edges.push({ from: src, to: d.id }));
     }
   });
+
+  sel.on('dblclick', function(event, d) {
+    event.preventDefault();
+    event.stopPropagation();
+    showRename(String(d.id));
+  });
 }
 
 // Global Esc to cancel
@@ -1343,23 +1465,36 @@ document.addEventListener('keydown', e => {
 });
 
 // ── Context menu (right-click delete) ──
-const ctxMenu   = document.getElementById('ctxMenu');
-const ctxLabel  = document.getElementById('ctxLabel');
-const ctxDelete = document.getElementById('ctxDelete');
-let ctxTarget   = null; // { type: 'node'|'group', id, label }
+const ctxMenu          = document.getElementById('ctxMenu');
+const ctxLabel         = document.getElementById('ctxLabel');
+const ctxDelete        = document.getElementById('ctxDelete');
+const ctxEdgeItems     = document.getElementById('ctxEdgeItems');
+const ctxEdgeLabelInput= document.getElementById('ctxEdgeLabelInput');
+const ctxEdgeLabelSet  = document.getElementById('ctxEdgeLabelSet');
+const ctxToggleBidir   = document.getElementById('ctxToggleBidir');
+let ctxTarget = null; // { type: 'node'|'group'|'edge', ... }
 
 function showCtxMenu(clientX, clientY, target) {
   ctxTarget = target;
-  ctxLabel.textContent = target.type === 'node'
-    ? `Node: ${target.label}`
-    : `Group: ${target.label}`;
-  // Position, keeping inside viewport
+  const isEdge = target.type === 'edge';
+  ctxEdgeItems.style.display = isEdge ? 'block' : 'none';
+  if (isEdge) {
+    ctxLabel.textContent = `Edge: ${target.sourceId} → ${target.targetId}`;
+    ctxEdgeLabelInput.value = target.label || '';
+    ctxToggleBidir.textContent = target.bidir ? 'Make one-way' : 'Make bidirectional';
+  } else {
+    ctxLabel.textContent = target.type === 'node'
+      ? `Node: ${target.label}`
+      : `Group: ${target.label}`;
+  }
   const margin = 8;
-  const mx = Math.min(clientX, window.innerWidth  - 155 - margin);
-  const my = Math.min(clientY, window.innerHeight - 80  - margin);
+  const menuH = isEdge ? 160 : 80;
+  const mx = Math.min(clientX, window.innerWidth  - 195 - margin);
+  const my = Math.min(clientY, window.innerHeight - menuH - margin);
   ctxMenu.style.left = mx + 'px';
   ctxMenu.style.top  = my + 'px';
   ctxMenu.classList.add('visible');
+  if (isEdge) ctxEdgeLabelInput.focus();
 }
 
 function hideCtxMenu() {
@@ -1367,6 +1502,41 @@ function hideCtxMenu() {
   ctxTarget = null;
 }
 
+// Edge: set label
+function applyEdgeLabel() {
+  if (!ctxTarget || ctxTarget.type !== 'edge') return;
+  const { sourceId, targetId } = ctxTarget;
+  const newLabel = ctxEdgeLabelInput.value.trim();
+  updateYAML(data => {
+    const e = (data.edges || []).find(e =>
+      String(e.from ?? e.source ?? '') === sourceId &&
+      String(e.to   ?? e.target ?? '') === targetId
+    );
+    if (e) { if (newLabel) e.label = newLabel; else delete e.label; }
+  });
+  hideCtxMenu();
+}
+ctxEdgeLabelSet.addEventListener('click', applyEdgeLabel);
+ctxEdgeLabelInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.stopPropagation(); applyEdgeLabel(); }
+  if (e.key === 'Escape') hideCtxMenu();
+});
+
+// Edge: toggle bidir
+ctxToggleBidir.addEventListener('click', () => {
+  if (!ctxTarget || ctxTarget.type !== 'edge') return;
+  const { sourceId, targetId } = ctxTarget;
+  updateYAML(data => {
+    const e = (data.edges || []).find(e =>
+      String(e.from ?? e.source ?? '') === sourceId &&
+      String(e.to   ?? e.target ?? '') === targetId
+    );
+    if (e) e.bidir = !e.bidir;
+  });
+  hideCtxMenu();
+});
+
+// Delete (node / group / edge)
 ctxDelete.addEventListener('click', () => {
   if (!ctxTarget) return;
   if (ctxTarget.type === 'node') {
@@ -1374,12 +1544,10 @@ ctxDelete.addEventListener('click', () => {
     delete posCache[id];
     updateYAML(data => {
       data.nodes = (data.nodes || []).filter(n => String(n.id) !== id);
-      // Remove connected edges
       data.edges = (data.edges || []).filter(e =>
-        String(e.from   ?? e.source ?? '') !== id &&
-        String(e.to     ?? e.target ?? '') !== id
+        String(e.from ?? e.source ?? '') !== id &&
+        String(e.to   ?? e.target ?? '') !== id
       );
-      // Remove from any groups
       (data.groups || []).forEach(g => {
         g.nodes = (g.nodes || []).filter(nid => String(nid) !== id);
       });
@@ -1389,13 +1557,71 @@ ctxDelete.addEventListener('click', () => {
     updateYAML(data => {
       data.groups = (data.groups || []).filter(g => g.label !== lbl);
     });
+  } else if (ctxTarget.type === 'edge') {
+    const { sourceId, targetId } = ctxTarget;
+    updateYAML(data => {
+      data.edges = (data.edges || []).filter(e =>
+        !(String(e.from ?? e.source ?? '') === sourceId &&
+          String(e.to   ?? e.target ?? '') === targetId)
+      );
+    });
   }
   hideCtxMenu();
 });
 
-// Close on any click or Escape
-document.addEventListener('click',   hideCtxMenu);
+document.addEventListener('click',   e => { if (!ctxMenu.contains(e.target)) hideCtxMenu(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+// ── Inline rename ──
+const renameWrap  = document.getElementById('renameWrap');
+const renameInput = document.getElementById('renameInput');
+let renameNodeId  = null;
+
+function showRename(nodeId) {
+  const node = nodeMap[nodeId];
+  if (!node) return;
+  const t = d3.zoomTransform(canvasEl);
+  const r = getR(node.type) * t.k; // node radius in screen pixels
+  const sx = t.x + node.x * t.k;
+  const sy = t.y + node.y * t.k + r + 8; // 8px gap below node border
+  renameWrap.style.left    = sx + 'px';
+  renameWrap.style.top     = sy + 'px';
+  renameWrap.style.display = 'block';
+  renameInput.value = node.label;
+  renameNodeId = nodeId;
+  renameInput.focus();
+  renameInput.select();
+}
+
+function confirmRename() {
+  const newLabel = renameInput.value.trim();
+  if (renameNodeId && newLabel) {
+    const id = renameNodeId;
+    updateYAML(data => {
+      const n = (data.nodes || []).find(n => String(n.id) === id);
+      if (n) n.label = newLabel;
+    });
+  }
+  hideRename();
+}
+
+function hideRename() {
+  renameWrap.style.display = 'none';
+  renameNodeId = null;
+}
+
+renameInput.addEventListener('keydown', e => {
+  e.stopPropagation();
+  if (e.key === 'Enter')  confirmRename();
+  if (e.key === 'Escape') hideRename();
+});
+renameInput.addEventListener('blur', confirmRename);
+
+// ── Info hint toggle ──
+document.getElementById('infoBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  document.getElementById('canvasUsage').classList.toggle('visible');
+});
 
 // ── Export ──
 const exportBtn  = document.getElementById('exportBtn');
