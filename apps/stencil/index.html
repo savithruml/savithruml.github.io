@@ -144,7 +144,7 @@
 
     .pane-header .hint {
       font-size: 10px;
-      color: #444;
+      color: #666;
       text-transform: none;
       letter-spacing: 0;
       font-weight: 400;
@@ -167,7 +167,7 @@
       user-select: text;
     }
 
-    textarea::placeholder { color: #3a3a3a; }
+    textarea::placeholder { color: #555; }
     textarea:focus { background: #181818; }
 
     .bottom-row {
@@ -197,6 +197,42 @@
 
     #output.empty { color: #333; font-style: italic; }
     #output.error { color: var(--error); }
+
+    /* ── Pane header right group ── */
+    .pane-header-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* ── Copy / Clear buttons ── */
+    .btn-copy, .btn-clear {
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      border-radius: var(--radius);
+      color: #aaa;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn-clear { padding: 4px 10px; }
+    .btn-copy  { padding: 4px 6px; }
+    .btn-copy svg, .btn-clear svg { flex-shrink: 0; }
+    .btn-copy:hover {
+      background: rgba(124,140,248,0.1);
+      color: var(--accent);
+      border-color: rgba(124,140,248,0.4);
+    }
+    .btn-copy.copied {
+      color: var(--success);
+      border-color: #2a4a3a;
+      background: rgba(110,231,183,0.07);
+    }
 
     /* ── Clear button ── */
     .btn-clear {
@@ -277,7 +313,12 @@
     <div class="pane" id="leftPane" style="flex: 1;">
       <div class="pane-header">
         Template
-        <span class="hint">Jinja2 syntax</span>
+        <div class="pane-header-right">
+          <span class="hint">Jinja2 syntax</span>
+          <button class="btn-copy" id="copyTemplate" title="Copy template">
+            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 8V2.5A1.5 1.5 0 0 1 3.5 1H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </div>
       <textarea id="template" placeholder="Hello, {{ name }}!&#10;&#10;{% for item in items %}&#10;- {{ item }}&#10;{% endfor %}" spellcheck="false"></textarea>
     </div>
@@ -287,7 +328,12 @@
     <div class="pane" id="rightPane" style="flex: 1;">
       <div class="pane-header">
         Variables
-        <span class="hint">JSON or YAML</span>
+        <div class="pane-header-right">
+          <span class="hint">JSON or YAML</span>
+          <button class="btn-copy" id="copyVars" title="Copy variables">
+            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 8V2.5A1.5 1.5 0 0 1 3.5 1H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+        </div>
       </div>
       <textarea id="vars" placeholder='{&#10;  "name": "world",&#10;  "items": ["one", "two", "three"]&#10;}' spellcheck="false"></textarea>
     </div>
@@ -298,12 +344,17 @@
   <div class="bottom-row" id="bottomRow" style="height: 34vh;">
     <div class="pane-header">
       Output
-      <button class="btn-clear" id="clearBtn">
+      <div class="pane-header-right">
+        <button class="btn-copy" id="copyOutput" title="Copy output">
+          <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 8V2.5A1.5 1.5 0 0 1 3.5 1H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <button class="btn-clear" id="clearBtn">
         <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
           <path d="M2 2l8 8M10 2l-8 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
-        Clear
-      </button>
+          Clear
+        </button>
+      </div>
     </div>
     <div id="output" class="empty">Rendered output will appear here…</div>
   </div>
@@ -314,11 +365,30 @@
 </footer>
 
 <script>
-  const templateEl = document.getElementById('template');
-  const varsEl     = document.getElementById('vars');
-  const outputEl   = document.getElementById('output');
-  const statusEl   = document.getElementById('status');
-  const clearBtn   = document.getElementById('clearBtn');
+  const templateEl   = document.getElementById('template');
+  const varsEl       = document.getElementById('vars');
+  const outputEl     = document.getElementById('output');
+  const statusEl     = document.getElementById('status');
+  const clearBtn     = document.getElementById('clearBtn');
+  const copyTemplate = document.getElementById('copyTemplate');
+  const copyVars     = document.getElementById('copyVars');
+  const copyOutput   = document.getElementById('copyOutput');
+
+  const ICON_COPY  = `<svg width="13" height="13" viewBox="0 0 12 12" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 8V2.5A1.5 1.5 0 0 1 3.5 1H9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  const ICON_CHECK = `<svg width="13" height="13" viewBox="0 0 12 12" fill="none"><path d="M2 6.5l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+  function copyBtn(text, btn) {
+    if (!text.trim()) return;
+    navigator.clipboard.writeText(text).then(() => {
+      btn.innerHTML = ICON_CHECK;
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = ICON_COPY; btn.classList.remove('copied'); }, 1600);
+    });
+  }
+
+  copyTemplate.addEventListener('click', () => copyBtn(templateEl.value, copyTemplate));
+  copyVars.addEventListener('click',     () => copyBtn(varsEl.value,     copyVars));
+  copyOutput.addEventListener('click',   () => copyBtn(outputEl.textContent, copyOutput));
 
   const env = new nunjucks.Environment(null, { autoescape: false, throwOnUndefined: false });
 

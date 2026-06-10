@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Span</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="apple-touch-icon" href="favicon.svg"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#041a1e"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #0f0f0f;
+      --surface:  #161616;
+      --border:   #2a2a2a;
+      --text:     #e8e8e8;
+      --muted:    #666;
+      --accent:   #22d3ee;
+      --error:    #f87171;
+      --success:  #6ee7b7;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --radius:   6px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .logo { width: 34px; height: 34px; flex-shrink: 0; }
+
+    header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.01em;
+    }
+
+    .status {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--muted);
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .status.ok { color: var(--success); }
+    .status.ok::before { background: var(--success); }
+    .status.err { color: var(--error); }
+    .status.err::before { background: var(--error); }
+
+    /* ── Layout ── */
+    .workspace {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .v-handle {
+      width: 5px;
+      background: var(--border);
+      cursor: col-resize;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .v-handle:hover, .v-handle.dragging { background: var(--accent); }
+
+    .pane {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .pane-header {
+      padding: 9px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: #c0c0c0;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .pane-header .hint {
+      font-size: 10px;
+      color: #444;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 400;
+    }
+
+    .canvas-tools { display: flex; gap: 6px; }
+
+    .tool-btn {
+      background: #1e1e1e;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: #bbb;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .tool-btn:hover {
+      background: rgba(34,211,238,0.08);
+      color: var(--accent);
+      border-color: rgba(34,211,238,0.35);
+    }
+
+    /* ── Editor pane ── */
+    textarea {
+      flex: 1;
+      background: var(--surface);
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      padding: 16px;
+      resize: none;
+      width: 100%;
+      tab-size: 2;
+      -moz-tab-size: 2;
+      user-select: text;
+    }
+    textarea::placeholder { color: #333; }
+    textarea:focus { background: #181818; }
+
+    /* ── Canvas pane ── */
+    .canvas-pane { background: var(--bg); }
+
+    .canvas-wrap {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      min-height: 0;
+    }
+
+    #canvas { display: block; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      pointer-events: none;
+    }
+    .empty-state p {
+      font-size: 13px;
+      color: #333;
+    }
+
+    /* ── Legend ── */
+    .legend {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(22,22,22,0.88);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #bbb;
+    }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <svg class="logo" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="34" height="34" rx="8" fill="#041a1e"/>
+    <rect x="0.75" y="0.75" width="32.5" height="32.5" rx="7.5" stroke="#22d3ee" stroke-width="1" stroke-opacity="0.4" fill="none"/>
+    <!-- Vertical node chain -->
+    <circle cx="17" cy="8"  r="3.5" fill="#22d3ee"/>
+    <circle cx="17" cy="17" r="3.5" fill="#22d3ee" opacity="0.7"/>
+    <circle cx="17" cy="26" r="3.5" fill="#22d3ee" opacity="0.45"/>
+    <line x1="17" y1="11.5" x2="17" y2="13.5" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="17" y1="20.5" x2="17" y2="22.5" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="1.5,1.5"/>
+    <!-- RTT bars -->
+    <rect x="22" y="6.5"  width="7" height="3" rx="1" fill="#22d3ee" opacity="0.8"/>
+    <rect x="22" y="15.5" width="10" height="3" rx="1" fill="#fbbf24" opacity="0.8"/>
+    <rect x="22" y="24.5" width="4"  height="3" rx="1" fill="#10b981" opacity="0.8"/>
+  </svg>
+
+  <h1>Span</h1>
+
+  <span class="status" id="status">ready</span>
+</header>
+
+<div class="workspace">
+
+  <!-- Left pane: input -->
+  <div class="pane" id="leftPane" style="flex: 0 0 300px;">
+    <div class="pane-header">
+      Input
+      <span class="hint">traceroute output</span>
+    </div>
+    <textarea id="editor" spellcheck="false" placeholder="Paste traceroute output here…
+
+Supports Linux, macOS and Windows formats.
+
+ 1  _gateway (192.168.1.1)
+      0.4 ms  0.5 ms  0.4 ms
+ 2  100.65.0.1  8.2 ms
+ 3  * * *
+ 4  host.example.com (1.2.3.4)
+      14.2 ms  13.8 ms  14.5 ms"></textarea>
+    <div class="pane-header" style="border-top: 1px solid var(--border); border-bottom: none;">
+      <div class="canvas-tools">
+        <button class="tool-btn" id="sampleBtn">Load sample</button>
+        <button class="tool-btn" id="clearBtn">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="v-handle" id="vHandle"></div>
+
+  <!-- Right pane: visualization -->
+  <div class="pane canvas-pane" id="rightPane" style="flex: 1;">
+    <div class="pane-header">
+      Path Diagram
+      <div class="canvas-tools">
+        <button class="tool-btn" id="exportBtn">Export PNG</button>
+      </div>
+    </div>
+
+    <div class="canvas-wrap" id="canvasWrap">
+      <svg id="canvas"></svg>
+
+      <div class="empty-state" id="emptyState">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" opacity="0.25">
+          <circle cx="28" cy="8"  r="6" stroke="#22d3ee" stroke-width="1.8"/>
+          <circle cx="28" cy="28" r="6" stroke="#22d3ee" stroke-width="1.8"/>
+          <circle cx="28" cy="48" r="6" stroke="#22d3ee" stroke-width="1.8"/>
+          <line x1="28" y1="14" x2="28" y2="22" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="2.5,2.5"/>
+          <line x1="28" y1="34" x2="28" y2="42" stroke="#22d3ee" stroke-width="1.5" stroke-dasharray="2.5,2.5"/>
+        </svg>
+        <p>Paste traceroute output to visualize</p>
+      </div>
+
+      <!-- Legend -->
+      <div class="legend" id="legend" style="display:none">
+        <div class="legend-item"><div class="legend-dot" style="background:#10b981"></div>&lt; 10 ms</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#84cc16"></div>10 – 30 ms</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>30 – 60 ms</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>60 – 100 ms</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>&gt; 100 ms</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#2a2a2a; outline:1px solid #3a3a3a"></div>timeout</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── v-handle resize ──────────────────────────────────────────────────────────
+const vHandle   = document.getElementById('vHandle');
+const leftPane  = document.getElementById('leftPane');
+let dragging = false;
+vHandle.addEventListener('mousedown', e => {
+  dragging = true;
+  vHandle.classList.add('dragging');
+  e.preventDefault();
+});
+document.addEventListener('mousemove', e => {
+  if (!dragging) return;
+  const newW = e.clientX - leftPane.getBoundingClientRect().left;
+  if (newW > 160 && newW < 600) leftPane.style.flex = `0 0 ${newW}px`;
+});
+document.addEventListener('mouseup', () => {
+  dragging = false;
+  vHandle.classList.remove('dragging');
+  const parsed = parseTrace(editor.value);
+  if (parsed.hops.length) render(parsed);
+});
+
+// ── Parser ───────────────────────────────────────────────────────────────────
+function parseTrace(text) {
+  const hops = [];
+  let destination = null;
+
+  for (const rawLine of text.split('\n')) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    // Header lines
+    const hdrM = line.match(/^traceroute\s+to\s+([\w.\-]+)(?:\s+\(([\d.]+)\))?/i);
+    if (hdrM) { destination = { hostname: hdrM[1], ip: hdrM[2] || null }; continue; }
+    const winM = line.match(/^Tracing route to\s+([\w.\-]+)(?:\s+\[([\d.]+)\])?/i);
+    if (winM) { destination = { hostname: winM[1], ip: winM[2] || null }; continue; }
+    if (/^over a maximum|^PING|^---/.test(line)) continue;
+
+    const numM = line.match(/^(\d+)\s+/);
+    if (!numM) continue;
+    const num = parseInt(numM[1]);
+
+    const isTimeout = /(\*\s*){2,}|timed\s*out/i.test(line) && !line.match(/\d+\.?\d*\s*ms/i);
+
+    const rtts = [];
+    for (const m of line.matchAll(/<?\s*(\d+\.?\d*)\s*ms/gi)) rtts.push(parseFloat(m[1]));
+
+    const ipM = line.match(/\b(\d{1,3}(?:\.\d{1,3}){3})\b/);
+    const ip = ipM ? ipM[1] : null;
+
+    let hostname = null;
+    const rest = line.slice(numM[0].length).trim();
+    const hnM = rest.match(/^([\w][\w\-]*(?:\.[\w\-]+){1,})/);
+    if (hnM && hnM[1] !== ip && !/^\d+$/.test(hnM[1])) hostname = hnM[1];
+
+    hops.push({ num, ip, hostname, rtts, timeout: isTimeout });
+  }
+
+  return { hops, destination };
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+function rttColor(ms) {
+  if (ms == null) return '#374151';
+  if (ms < 10)   return '#10b981';
+  if (ms < 30)   return '#84cc16';
+  if (ms < 60)   return '#fbbf24';
+  if (ms < 100)  return '#f97316';
+  return '#ef4444';
+}
+
+function avg(arr) {
+  if (!arr || !arr.length) return null;
+  return arr.reduce((a, b) => a + b, 0) / arr.length;
+}
+
+function fmt(ms) {
+  if (ms == null) return '—';
+  return (ms < 10 ? ms.toFixed(2) : ms.toFixed(1)) + ' ms';
+}
+
+// ── SVG helpers ───────────────────────────────────────────────────────────────
+const NS = 'http://www.w3.org/2000/svg';
+function el(tag, attrs, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, String(v));
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function txt(content, attrs, parent) {
+  const e = el('text', attrs, parent);
+  e.textContent = String(content);
+  return e;
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+const svgCanvas  = document.getElementById('canvas');
+const canvasWrap = document.getElementById('canvasWrap');
+const emptyState = document.getElementById('emptyState');
+const legend     = document.getElementById('legend');
+const statusEl   = document.getElementById('status');
+
+function render({ hops, destination }) {
+  svgCanvas.innerHTML = '';
+
+  if (!hops.length) {
+    emptyState.style.display = 'flex';
+    legend.style.display = 'none';
+    svgCanvas.style.height = '0';
+    statusEl.className = 'status';
+    statusEl.textContent = 'ready';
+    return;
+  }
+
+  emptyState.style.display = 'none';
+  legend.style.display = 'flex';
+
+  // ── Layout constants ──
+  const W       = canvasWrap.clientWidth || 700;
+  const ROW_H   = 88;   // normal row height
+  const TO_H    = 58;   // timeout row (shorter, less content)
+  const PAD_T   = 52;
+  const PAD_B   = 72;
+  const NODE_X  = 130;
+  const NODE_R  = 24;
+  const LABEL_X = NODE_X + NODE_R + 22;
+  const RTT_X   = W - 18; // RTT numbers right-aligned here
+
+  // Variable-height row Y positions
+  const rowH  = hops.map(h => h.timeout ? TO_H : ROW_H);
+  const srcY  = PAD_T + ROW_H / 2;
+  const hopYs = [];
+  let curY = PAD_T + ROW_H;
+  hops.forEach((_, i) => { hopYs.push(curY + rowH[i] / 2); curY += rowH[i]; });
+  const dstY = curY + ROW_H / 2;
+  const totalH = dstY + ROW_H / 2 + PAD_B;
+
+  svgCanvas.style.width  = W + 'px';
+  svgCanvas.style.height = totalH + 'px';
+  svgCanvas.setAttribute('viewBox', `0 0 ${W} ${totalH}`);
+
+  // ── Row stripe backgrounds ──
+  el('rect', { x: 0, y: PAD_T, width: W, height: ROW_H, fill: '#0e0e0e' }, svgCanvas);
+  hops.forEach((_, i) => {
+    const ry = PAD_T + ROW_H + rowH.slice(0, i).reduce((s, v) => s + v, 0);
+    el('rect', { x: 0, y: ry, width: W, height: rowH[i], fill: i % 2 === 0 ? '#0c0c0c' : '#0e0e0e' }, svgCanvas);
+  });
+  el('rect', { x: 0, y: curY, width: W, height: ROW_H, fill: '#0e0e0e' }, svgCanvas);
+
+  // ── Source node ──
+  const srcG = el('g', { transform: `translate(0,${srcY})` }, svgCanvas);
+  el('line', { x1: 0, y1: -ROW_H/2, x2: W, y2: -ROW_H/2, stroke: '#1a1a1a', 'stroke-width': 1 }, srcG);
+  el('circle', { cx: NODE_X, cy: 0, r: NODE_R + 10, fill: '#22d3ee', opacity: '0.06' }, srcG);
+  el('circle', { cx: NODE_X, cy: 0, r: NODE_R, fill: '#061215', stroke: '#22d3ee', 'stroke-width': '2.2' }, srcG);
+  txt('src', { x: NODE_X, y: 4.5, 'text-anchor': 'middle', 'font-size': '9', fill: '#22d3ee', 'font-weight': '700', 'font-family': 'SF Mono, monospace', 'letter-spacing': '0.05em' }, srcG);
+  txt('your machine', { x: LABEL_X, y: 5, 'font-size': '14', fill: '#4a4a4a', 'font-style': 'italic' }, srcG);
+  // Hop # column header above source
+  txt('#', { x: NODE_X - NODE_R - 12, y: -ROW_H/2 + 14, 'text-anchor': 'end', 'font-size': '9', fill: '#252525', 'font-family': 'SF Mono, monospace', 'letter-spacing': '0.08em', 'font-weight': '600' }, srcG);
+  txt('HOST / IP', { x: LABEL_X, y: -ROW_H/2 + 14, 'font-size': '9', fill: '#252525', 'font-family': 'SF Mono, monospace', 'letter-spacing': '0.08em', 'font-weight': '600' }, srcG);
+  txt('AVG RTT', { x: RTT_X, y: -ROW_H/2 + 14, 'text-anchor': 'end', 'font-size': '9', fill: '#252525', 'font-family': 'SF Mono, monospace', 'letter-spacing': '0.08em', 'font-weight': '600' }, srcG);
+
+  // ── Hop rows ──
+  hops.forEach((hop, i) => {
+    const y     = hopYs[i];
+    const prevY = i === 0 ? srcY : hopYs[i - 1];
+    const rh    = rowH[i];
+    const a     = avg(hop.rtts);
+    const col   = hop.timeout ? '#2d3748' : rttColor(a);
+    const prevA = i === 0 ? 0 : avg(hops[i - 1].rtts);
+    const delta = (a != null && prevA != null) ? a - prevA : null;
+
+    const g = el('g', { transform: `translate(0,${y})` }, svgCanvas);
+
+    // Row separator
+    el('line', { x1: 0, y1: -rh/2, x2: W, y2: -rh/2, stroke: '#1a1a1a', 'stroke-width': 1 }, g);
+
+    // ── Connecting line — width encodes delta magnitude ──
+    const lineY1 = prevY - y + NODE_R + 3;
+    const lineY2 = -(NODE_R + 3);
+    const lineW  = hop.timeout ? 1.5 : Math.min(5, Math.max(1.5, delta != null ? Math.abs(delta) / 10 : 1.5));
+    el('line', {
+      x1: NODE_X, y1: lineY1,
+      x2: NODE_X, y2: lineY2,
+      stroke: col, 'stroke-width': lineW,
+      'stroke-dasharray': hop.timeout ? '5,4' : 'none',
+      'stroke-linecap': 'round',
+      opacity: hop.timeout ? '0.15' : '0.45'
+    }, g);
+
+    // ── Delta pill badge ──
+    if (delta != null && !hop.timeout && Math.abs(delta) > 0.05) {
+      const sign   = delta >= 0 ? '+' : '';
+      const label  = sign + delta.toFixed(1) + ' ms';
+      const pillW  = label.length * 6.2 + 14;
+      const midY   = (prevY - y) / 2;
+      el('rect', { x: NODE_X + 14, y: midY - 10, width: pillW, height: 20, rx: '10', fill: col, opacity: '0.12' }, g);
+      txt(label, { x: NODE_X + 14 + pillW / 2, y: midY + 4.5, 'text-anchor': 'middle', 'font-size': '10', fill: col, 'font-family': 'SF Mono, monospace', 'font-weight': '600' }, g);
+    }
+
+    // Hop # (left margin)
+    txt(String(hop.num), {
+      x: NODE_X - NODE_R - 12, y: 5,
+      'text-anchor': 'end', 'font-size': '12',
+      fill: hop.timeout ? '#222' : '#3a3a3a',
+      'font-family': 'SF Mono, monospace', 'font-weight': '700'
+    }, g);
+
+    // ── Node glow + circle ──
+    if (!hop.timeout) {
+      el('circle', { cx: NODE_X, cy: 0, r: NODE_R + 10, fill: col, opacity: '0.1' }, g);
+    }
+    el('circle', {
+      cx: NODE_X, cy: 0, r: NODE_R,
+      fill: hop.timeout ? '#0a0a0a' : col + '1a',
+      stroke: col, 'stroke-width': '2.2'
+    }, g);
+    txt(String(hop.num), {
+      x: NODE_X, y: 4.5, 'text-anchor': 'middle',
+      'font-size': hop.num > 9 ? '10' : '12',
+      fill: hop.timeout ? '#2e2e2e' : col,
+      'font-weight': '700', 'font-family': 'SF Mono, monospace'
+    }, g);
+
+    // ── Row content ──
+    if (hop.timeout) {
+      txt('* * *', { x: LABEL_X, y: 5, 'font-size': '13', fill: '#2a2a2a', 'font-family': 'SF Mono, monospace' }, g);
+      txt('no response', { x: LABEL_X + 48, y: 5, 'font-size': '12', fill: '#222', 'font-style': 'italic' }, g);
+    } else {
+      const primary   = hop.hostname || hop.ip || '—';
+      const secondary = (hop.hostname && hop.ip && hop.hostname !== hop.ip) ? hop.ip : null;
+      const hasTwo    = !!secondary;
+
+      // Hostname
+      txt(primary, {
+        x: LABEL_X, y: hasTwo ? -5 : 5,
+        'font-size': '14', fill: '#e8e8e8', 'font-weight': '600'
+      }, g);
+
+      // IP address
+      if (secondary) {
+        txt(secondary, {
+          x: LABEL_X, y: 14,
+          'font-size': '11.5', fill: '#555', 'font-family': 'SF Mono, monospace'
+        }, g);
+      }
+
+      // ── RTT (right side) ──
+      if (a != null) {
+        // Large avg number
+        txt(fmt(a), {
+          x: RTT_X, y: hasTwo ? -4 : 6,
+          'text-anchor': 'end',
+          'font-size': '22', fill: col,
+          'font-family': 'SF Mono, monospace', 'font-weight': '700'
+        }, g);
+
+        // Individual probe values below
+        if (hop.rtts.length) {
+          const probes = hop.rtts.slice(0, 3).map(r => r < 10 ? r.toFixed(2) : r.toFixed(1)).join('   ');
+          txt(probes, {
+            x: RTT_X, y: (hasTwo ? -4 : 6) + 20,
+            'text-anchor': 'end', 'font-size': '10.5',
+            fill: '#383838', 'font-family': 'SF Mono, monospace'
+          }, g);
+        }
+      }
+    }
+  });
+
+  // ── Destination node ──
+  const lastGood = [...hops].reverse().find(h => !h.timeout);
+  const dg = el('g', { transform: `translate(0,${dstY})` }, svgCanvas);
+  el('line', { x1: 0, y1: -ROW_H/2, x2: W, y2: -ROW_H/2, stroke: '#1a1a1a', 'stroke-width': 1 }, dg);
+  const lastHopY = hopYs[hopYs.length - 1];
+  el('line', { x1: NODE_X, y1: lastHopY - dstY + NODE_R + 3, x2: NODE_X, y2: -(NODE_R + 3),
+    stroke: '#22d3ee', 'stroke-width': '1.5', opacity: '0.18' }, dg);
+  el('circle', { cx: NODE_X, cy: 0, r: NODE_R + 10, fill: '#22d3ee', opacity: '0.05' }, dg);
+  el('circle', { cx: NODE_X, cy: 0, r: NODE_R, fill: '#061215', stroke: '#22d3ee',
+    'stroke-width': '2.2', 'stroke-dasharray': '3.5,2.5' }, dg);
+  txt('dst', { x: NODE_X, y: 4.5, 'text-anchor': 'middle', 'font-size': '9', fill: '#22d3ee',
+    'font-weight': '700', 'font-family': 'SF Mono, monospace' }, dg);
+  const dname = destination
+    ? (destination.hostname !== destination.ip ? destination.hostname : (destination.ip || 'destination'))
+    : (lastGood?.hostname || lastGood?.ip || 'destination');
+  txt(dname, { x: LABEL_X, y: 5, 'font-size': '13.5', fill: '#444', 'font-style': 'italic' }, dg);
+
+  // ── Status ──
+  const nonT     = hops.filter(h => !h.timeout && avg(h.rtts) != null);
+  const finalMs  = nonT.length ? avg(nonT[nonT.length - 1].rtts) : null;
+  const timeouts = hops.filter(h => h.timeout).length;
+  const parts    = [`${hops.length} hops`, finalMs != null ? fmt(finalMs) : null, timeouts ? `${timeouts} timeout${timeouts > 1 ? 's' : ''}` : null].filter(Boolean);
+  statusEl.className   = 'status ok';
+  statusEl.textContent = parts.join(' · ');
+}
+
+// ── Wiring ────────────────────────────────────────────────────────────────────
+const editor = document.getElementById('editor');
+editor.addEventListener('input', () => render(parseTrace(editor.value)));
+
+new ResizeObserver(() => {
+  const p = parseTrace(editor.value);
+  if (p.hops.length) render(p);
+}).observe(canvasWrap);
+
+// ── Export PNG ────────────────────────────────────────────────────────────────
+document.getElementById('exportBtn').addEventListener('click', () => {
+  const serializer = new XMLSerializer();
+  const svgClone = svgCanvas.cloneNode(true);
+  svgClone.setAttribute('xmlns', NS);
+  const blob = new Blob([serializer.serializeToString(svgClone)], { type: 'image/svg+xml' });
+  const url  = URL.createObjectURL(blob);
+  const img  = new Image();
+  img.onload = () => {
+    const scale = 2;
+    const cv = document.createElement('canvas');
+    cv.width  = svgCanvas.width.baseVal.value * scale;
+    cv.height = svgCanvas.height.baseVal.value * scale;
+    const ctx = cv.getContext('2d');
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#0f0f0f';
+    ctx.fillRect(0, 0, cv.width, cv.height);
+    ctx.drawImage(img, 0, 0);
+    URL.revokeObjectURL(url);
+    const a = document.createElement('a');
+    a.download = 'span-trace.png';
+    a.href = cv.toDataURL('image/png');
+    a.click();
+  };
+  img.src = url;
+});
+
+// ── Sample ────────────────────────────────────────────────────────────────────
+const SAMPLE = `traceroute to google.com (142.250.80.46), 30 hops max, 60 byte packets
+ 1  _gateway (192.168.1.1)  0.399 ms  0.519 ms  0.446 ms
+ 2  100.65.0.1 (100.65.0.1)  8.234 ms  8.456 ms  9.012 ms
+ 3  * * *
+ 4  ae-3.r01.snjsca04.us.bb.gin.ntt.net (129.250.3.97)  12.345 ms  11.234 ms  12.789 ms
+ 5  ae-0.r20.snjsca04.us.bb.gin.ntt.net (129.250.3.65)  11.876 ms  12.123 ms  11.654 ms
+ 6  * * *
+ 7  108.170.242.129 (108.170.242.129)  14.123 ms  13.789 ms  14.456 ms
+ 8  142.251.51.149 (142.251.51.149)  98.432 ms  124.567 ms  112.345 ms
+ 9  lax17s55-in-f14.1e100.net (142.250.80.46)  15.234 ms  14.876 ms  15.567 ms`;
+
+document.getElementById('sampleBtn').addEventListener('click', () => {
+  editor.value = SAMPLE;
+  render(parseTrace(SAMPLE));
+});
+
+document.getElementById('clearBtn').addEventListener('click', () => {
+  editor.value = '';
+  render({ hops: [], destination: null });
+});
+
+render({ hops: [], destination: null });
+</script>
+</body>
+</html>

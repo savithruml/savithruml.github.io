@@ -1,0 +1,12 @@
+{
+  "name": "Span",
+  "short_name": "Span",
+  "description": "Visual traceroute latency path diagram",
+  "start_url": "/apps/span/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#041a1e",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
