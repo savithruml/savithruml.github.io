@@ -117,7 +117,7 @@
 
     .pane-header .hint {
       font-size: 10px;
-      color: #444;
+      color: #777;
       text-transform: none;
       letter-spacing: 0;
       font-weight: 400;
@@ -129,7 +129,7 @@
       background: #1e1e1e;
       border: 1px solid var(--border);
       border-radius: var(--radius);
-      color: #bbb;
+      color: #ddd;
       font-size: 12px;
       font-weight: 500;
       padding: 5px 14px;
@@ -160,7 +160,7 @@
       -moz-tab-size: 2;
       user-select: text;
     }
-    textarea::placeholder { color: #333; }
+    textarea::placeholder { color: #555; }
     textarea:focus { background: #181818; }
 
     /* ── Canvas pane ── */
@@ -189,7 +189,7 @@
     }
     .empty-state p {
       font-size: 13px;
-      color: #333;
+      color: #666;
     }
 
     /* ── Legend ── */
@@ -217,6 +217,36 @@
     .legend-dot {
       width: 10px; height: 10px;
       border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Chart section ── */
+    .chart-section {
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+      display: none;
+    }
+    .chart-section.visible { display: block; }
+    .chart-header {
+      padding: 8px 16px;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #555;
+      border-bottom: 1px solid var(--border);
+    }
+    #chartSvg { display: block; width: 100%; }
+
+    /* ── Footer ── */
+    footer {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
       flex-shrink: 0;
     }
 
@@ -268,10 +298,17 @@ Supports Linux, macOS and Windows formats.
  3  * * *
  4  host.example.com (1.2.3.4)
       14.2 ms  13.8 ms  14.5 ms"></textarea>
-    <div class="pane-header" style="border-top: 1px solid var(--border); border-bottom: none;">
+    <div class="pane-header" style="border-top: 1px solid var(--border); border-bottom: none; justify-content: center;">
       <div class="canvas-tools">
-        <button class="tool-btn" id="sampleBtn">Load sample</button>
-        <button class="tool-btn" id="clearBtn">Clear</button>
+        <button class="tool-btn" id="sampleBtn">Sample</button>
+        <button class="tool-btn icon-btn" id="clearBtn" title="Clear">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 3v5h-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 16H3v5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
       </div>
     </div>
   </div>
@@ -282,16 +319,13 @@ Supports Linux, macOS and Windows formats.
   <div class="pane canvas-pane" id="rightPane" style="flex: 1;">
     <div class="pane-header">
       Path Diagram
-      <div class="canvas-tools">
-        <button class="tool-btn" id="exportBtn">Export PNG</button>
-      </div>
     </div>
 
     <div class="canvas-wrap" id="canvasWrap">
       <svg id="canvas"></svg>
 
       <div class="empty-state" id="emptyState">
-        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" opacity="0.25">
+        <svg width="56" height="56" viewBox="0 0 56 56" fill="none" opacity="0.5">
           <circle cx="28" cy="8"  r="6" stroke="#22d3ee" stroke-width="1.8"/>
           <circle cx="28" cy="28" r="6" stroke="#22d3ee" stroke-width="1.8"/>
           <circle cx="28" cy="48" r="6" stroke="#22d3ee" stroke-width="1.8"/>
@@ -311,9 +345,17 @@ Supports Linux, macOS and Windows formats.
         <div class="legend-item"><div class="legend-dot" style="background:#2a2a2a; outline:1px solid #3a3a3a"></div>timeout</div>
       </div>
     </div>
+
+    <!-- RTT Bar Chart -->
+    <div class="chart-section" id="chartSection">
+      <div class="chart-header">RTT per hop</div>
+      <svg id="chartSvg"></svg>
+    </div>
   </div>
 
 </div>
+
+<footer>© 2026 Savithru Lokanath</footer>
 
 <script>
 // ── v-handle resize ──────────────────────────────────────────────────────────
@@ -608,6 +650,8 @@ function render({ hops, destination }) {
   const parts    = [`${hops.length} hops`, finalMs != null ? fmt(finalMs) : null, timeouts ? `${timeouts} timeout${timeouts > 1 ? 's' : ''}` : null].filter(Boolean);
   statusEl.className   = 'status ok';
   statusEl.textContent = parts.join(' · ');
+
+  renderChart(hops);
 }
 
 // ── Wiring ────────────────────────────────────────────────────────────────────
@@ -616,35 +660,66 @@ editor.addEventListener('input', () => render(parseTrace(editor.value)));
 
 new ResizeObserver(() => {
   const p = parseTrace(editor.value);
-  if (p.hops.length) render(p);
+  if (p.hops.length) { render(p); renderChart(p.hops); }
 }).observe(canvasWrap);
 
-// ── Export PNG ────────────────────────────────────────────────────────────────
-document.getElementById('exportBtn').addEventListener('click', () => {
-  const serializer = new XMLSerializer();
-  const svgClone = svgCanvas.cloneNode(true);
-  svgClone.setAttribute('xmlns', NS);
-  const blob = new Blob([serializer.serializeToString(svgClone)], { type: 'image/svg+xml' });
-  const url  = URL.createObjectURL(blob);
-  const img  = new Image();
-  img.onload = () => {
-    const scale = 2;
-    const cv = document.createElement('canvas');
-    cv.width  = svgCanvas.width.baseVal.value * scale;
-    cv.height = svgCanvas.height.baseVal.value * scale;
-    const ctx = cv.getContext('2d');
-    ctx.scale(scale, scale);
-    ctx.fillStyle = '#0f0f0f';
-    ctx.fillRect(0, 0, cv.width, cv.height);
-    ctx.drawImage(img, 0, 0);
-    URL.revokeObjectURL(url);
-    const a = document.createElement('a');
-    a.download = 'span-trace.png';
-    a.href = cv.toDataURL('image/png');
-    a.click();
-  };
-  img.src = url;
-});
+// ── RTT Bar Chart ─────────────────────────────────────────────────────────────
+const chartSection = document.getElementById('chartSection');
+const chartSvg     = document.getElementById('chartSvg');
+
+function renderChart(hops) {
+  chartSvg.innerHTML = '';
+  const visible = hops.filter(h => !h.timeout && avg(h.rtts) != null);
+  if (!visible.length) { chartSection.classList.remove('visible'); return; }
+  chartSection.classList.add('visible');
+
+  const W      = canvasWrap.clientWidth || 700;
+  const H      = 120;
+  const PAD_L  = 52;
+  const PAD_R  = 20;
+  const PAD_T  = 14;
+  const PAD_B  = 32;
+  const chartW = W - PAD_L - PAD_R;
+  const n      = hops.length;
+  const barW   = Math.max(6, Math.min(36, (chartW / n) * 0.6));
+  const gap    = chartW / n;
+  const maxRtt = Math.max(...visible.map(h => avg(h.rtts)));
+  const scale  = maxRtt > 0 ? (H - PAD_T - PAD_B) / maxRtt : 1;
+
+  chartSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  chartSvg.setAttribute('height', H);
+
+  // Y-axis grid lines
+  const gridVals = [0, Math.round(maxRtt * 0.5), Math.round(maxRtt)];
+  gridVals.forEach(v => {
+    const gy = H - PAD_B - v * scale;
+    el('line', { x1: PAD_L, y1: gy, x2: W - PAD_R, y2: gy, stroke: '#1c1c1c', 'stroke-width': 1 }, chartSvg);
+    txt(v + ' ms', { x: PAD_L - 6, y: gy + 4, 'text-anchor': 'end', 'font-size': '9', fill: '#333', 'font-family': 'SF Mono, monospace' }, chartSvg);
+  });
+
+  // Bars
+  hops.forEach((hop, i) => {
+    const cx  = PAD_L + i * gap + gap / 2;
+    const a   = avg(hop.rtts);
+    const col = hop.timeout ? '#1e1e1e' : rttColor(a);
+    const bh  = hop.timeout ? 4 : Math.max(2, a * scale);
+    const by  = H - PAD_B - bh;
+
+    // Bar
+    el('rect', { x: cx - barW / 2, y: by, width: barW, height: bh, rx: 3, fill: col, opacity: hop.timeout ? '0.3' : '0.75' }, chartSvg);
+
+    // Hop label
+    txt(String(hop.num), { x: cx, y: H - PAD_B + 14, 'text-anchor': 'middle', 'font-size': '9', fill: '#3a3a3a', 'font-family': 'SF Mono, monospace' }, chartSvg);
+
+    // Value on top of bar
+    if (!hop.timeout && a != null) {
+      txt(fmt(a), { x: cx, y: by - 4, 'text-anchor': 'middle', 'font-size': '8.5', fill: col, 'font-family': 'SF Mono, monospace' }, chartSvg);
+    }
+  });
+
+  // Baseline
+  el('line', { x1: PAD_L, y1: H - PAD_B, x2: W - PAD_R, y2: H - PAD_B, stroke: '#2a2a2a', 'stroke-width': 1 }, chartSvg);
+}
 
 // ── Sample ────────────────────────────────────────────────────────────────────
 const SAMPLE = `traceroute to google.com (142.250.80.46), 30 hops max, 60 byte packets
@@ -666,6 +741,7 @@ document.getElementById('sampleBtn').addEventListener('click', () => {
 document.getElementById('clearBtn').addEventListener('click', () => {
   editor.value = '';
   render({ hops: [], destination: null });
+  chartSection.classList.remove('visible');
 });
 
 render({ hops: [], destination: null });
