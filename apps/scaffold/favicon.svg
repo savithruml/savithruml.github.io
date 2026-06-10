@@ -1,0 +1,13 @@
+<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="32" height="32" rx="8" fill="#1a1200"/>
+  <!-- Central node -->
+  <circle cx="16" cy="12" r="4" fill="#f59e0b"/>
+  <!-- Child nodes -->
+  <circle cx="8"  cy="24" r="3" fill="#f59e0b" opacity="0.75"/>
+  <circle cx="16" cy="26" r="3" fill="#f59e0b" opacity="0.75"/>
+  <circle cx="24" cy="24" r="3" fill="#f59e0b" opacity="0.75"/>
+  <!-- Edges -->
+  <line x1="16" y1="16" x2="9.5"  y2="21.5" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.85"/>
+  <line x1="16" y1="16" x2="16"   y2="23"   stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.85"/>
+  <line x1="16" y1="16" x2="22.5" y2="21.5" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.85"/>
+</svg>

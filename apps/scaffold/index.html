@@ -1,0 +1,1598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scaffold</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+  <link rel="apple-touch-icon" href="favicon.svg"/>
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#1a1200"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f0f;
+      --surface: #161616;
+      --border: #2a2a2a;
+      --text: #e8e8e8;
+      --muted: #666;
+      --accent: #f59e0b;
+      --error: #f87171;
+      --success: #6ee7b7;
+      --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --radius: 6px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-size: 14px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .logo { width: 34px; height: 34px; flex-shrink: 0; }
+
+    header h1 {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: 0.01em;
+    }
+
+    .status {
+      margin-left: auto;
+      font-size: 12px;
+      color: var(--muted);
+      transition: color 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .status::before {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+    .status.ok { color: var(--success); }
+    .status.ok::before { background: var(--success); }
+    .status.err { color: var(--error); }
+    .status.err::before { background: var(--error); }
+
+    /* ── Layout ── */
+    .workspace {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .v-handle {
+      width: 5px;
+      background: var(--border);
+      cursor: col-resize;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .v-handle:hover, .v-handle.dragging { background: var(--accent); }
+
+    .pane {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .pane-header {
+      padding: 9px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      font-weight: 600;
+      color: #c0c0c0;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+    }
+
+    .pane-header .hint {
+      font-size: 10px;
+      color: #444;
+      text-transform: none;
+      letter-spacing: 0;
+      font-weight: 400;
+    }
+
+    .canvas-tools {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tool-btn {
+      background: #1e1e1e;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: #bbb;
+      font-size: 12px;
+      font-weight: 500;
+      padding: 5px 14px;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      text-transform: none;
+    }
+    .tool-btn:hover {
+      background: #231c06;
+      color: var(--accent);
+      border-color: #4a3a10;
+    }
+    .tool-btn.copied {
+      color: var(--success);
+      border-color: #2a4a3a;
+    }
+
+    /* ── Editor pane ── */
+    textarea {
+      flex: 1;
+      background: var(--surface);
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.7;
+      padding: 16px;
+      resize: none;
+      width: 100%;
+      tab-size: 2;
+      -moz-tab-size: 2;
+      user-select: text;
+    }
+    textarea::placeholder { color: #333; }
+    textarea:focus { background: #181818; }
+
+    /* ── Canvas pane ── */
+    .canvas-pane { background: var(--bg); }
+
+    .canvas-wrap {
+      flex: 1;
+      position: relative;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    #canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+    #canvas:active { cursor: grabbing; }
+
+    /* ── Legend ── */
+    .legend {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(22,22,22,0.85);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none;
+      backdrop-filter: blur(4px);
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      color: #bbb;
+    }
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── Context menu ── */
+    .ctx-menu {
+      position: fixed;
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      overflow: hidden;
+      z-index: 500;
+      display: none;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.6);
+      min-width: 140px;
+    }
+    .ctx-menu.visible { display: block; }
+    .ctx-label {
+      padding: 7px 14px 5px;
+      font-size: 10px;
+      color: #555;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-weight: 600;
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .ctx-item {
+      display: block;
+      width: 100%;
+      padding: 9px 14px;
+      font-size: 12px;
+      color: #f87171;
+      background: none;
+      border: none;
+      cursor: pointer;
+      text-align: left;
+      font-family: inherit;
+      transition: background 0.12s;
+    }
+    .ctx-item:hover { background: #2a1414; }
+
+    /* ── Export dropdown ── */
+    .export-wrap { position: relative; }
+    .export-menu {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      overflow: hidden;
+      display: none;
+      z-index: 300;
+      min-width: 130px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.55);
+    }
+    .export-menu.visible { display: block; }
+    .export-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      font-size: 12px;
+      color: #bbb;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s;
+      border: none;
+      background: none;
+      width: 100%;
+      font-family: inherit;
+      text-align: left;
+    }
+    .export-menu-item:hover { background: #231c06; color: var(--accent); }
+
+    /* ── Add-node popup ── */
+    .popup {
+      position: absolute;
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      border-radius: 10px;
+      padding: 16px;
+      z-index: 200;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.65);
+      width: 210px;
+      display: none;
+    }
+    .popup.visible { display: block; }
+    .popup-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #888;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+    .popup-input, .popup-select {
+      width: 100%;
+      background: #131313;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      padding: 7px 10px;
+      outline: none;
+      margin-bottom: 8px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+    .popup-input:focus, .popup-select:focus { border-color: var(--accent); }
+    .popup-select { cursor: pointer; }
+    .popup-select option { background: #1e1e1e; }
+    .popup-actions { display: flex; gap: 6px; justify-content: flex-end; margin-top: 2px; }
+    .popup-btn {
+      background: #1a1a1a;
+      border: 1px solid #3a3a3a;
+      border-radius: 6px;
+      color: #999;
+      font-size: 12px;
+      padding: 5px 14px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, color 0.15s;
+    }
+    .popup-btn:hover { background: #2a2a2a; color: var(--text); }
+    .popup-btn.primary { background: #231c06; border-color: #4a3a10; color: var(--accent); }
+    .popup-btn.primary:hover { background: #2e2408; }
+
+    /* ── Connect mode overlay ── */
+    .connect-hint {
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.35);
+      border-radius: 6px;
+      padding: 6px 16px;
+      font-size: 12px;
+      color: var(--accent);
+      pointer-events: none;
+      display: none;
+      white-space: nowrap;
+      z-index: 100;
+    }
+    .connect-hint.visible { display: block; }
+
+    /* ── Group selection bar ── */
+    .group-bar {
+      position: absolute;
+      top: 12px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(22,22,22,0.94);
+      border: 1px solid #3a3a3a;
+      border-radius: 8px;
+      padding: 8px 14px;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      z-index: 101;
+      backdrop-filter: blur(4px);
+      white-space: nowrap;
+    }
+    .group-bar.visible { display: flex; }
+    .tool-btn.active {
+      background: #231c06;
+      border-color: #4a3a10;
+      color: var(--accent);
+    }
+
+    /* ── Floating canvas controls ── */
+    .canvas-controls {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      z-index: 50;
+    }
+    .canvas-ctrl-btn {
+      width: 38px;
+      height: 38px;
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: #bbb;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+    }
+    .canvas-ctrl-btn:hover {
+      background: #231c06;
+      color: var(--accent);
+      border-color: #4a3a10;
+    }
+
+    /* ── Canvas usage hint ── */
+    .canvas-usage {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      font-size: 11px;
+      color: #666;
+      line-height: 1.8;
+      pointer-events: none;
+      text-align: right;
+    }
+
+    /* ── Footer ── */
+    footer {
+      padding: 8px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 11px;
+      color: #606060;
+    }
+
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+  </style>
+</head>
+<body>
+
+<header>
+  <!-- Scaffold logo: topology nodes connected by lines -->
+  <svg class="logo" viewBox="0 0 34 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="34" height="34" rx="8" fill="#1a1200"/>
+    <rect x="0.75" y="0.75" width="32.5" height="32.5" rx="7.5" stroke="#f59e0b" stroke-width="1" stroke-opacity="0.4" fill="none"/>
+    <!-- Central node -->
+    <circle cx="17" cy="14" r="4" fill="#f59e0b"/>
+    <!-- Child nodes -->
+    <circle cx="9" cy="25" r="3" fill="#f59e0b" opacity="0.7"/>
+    <circle cx="17" cy="27" r="3" fill="#f59e0b" opacity="0.7"/>
+    <circle cx="25" cy="25" r="3" fill="#f59e0b" opacity="0.7"/>
+    <!-- Edges -->
+    <line x1="17" y1="18" x2="10.5" y2="22.5" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+    <line x1="17" y1="18" x2="17" y2="24" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+    <line x1="17" y1="18" x2="23.5" y2="22.5" stroke="#f59e0b" stroke-width="1.5" stroke-linecap="round" opacity="0.8"/>
+  </svg>
+
+  <h1>Scaffold</h1>
+
+  <span class="status" id="status">ready</span>
+</header>
+
+<div class="workspace">
+  <div class="pane" id="leftPane" style="flex: 0 0 360px;">
+    <div class="pane-header">
+      Definition
+      <span class="hint">YAML topology</span>
+    </div>
+    <textarea id="editor" spellcheck="false" placeholder="nodes:
+  - id: r1
+    type: router
+    label: Router
+
+  - id: h1
+    type: host
+    label: Host
+
+edges:
+  - from: r1
+    to: h1"></textarea>
+  </div>
+
+  <div class="v-handle" id="vHandle"></div>
+
+  <div class="pane canvas-pane" id="rightPane" style="flex: 1;">
+    <div class="pane-header">
+      Canvas
+      <div class="canvas-tools">
+        <button class="tool-btn" id="groupBtn">Group</button>
+        <button class="tool-btn" id="copyLinkBtn">Copy link</button>
+        <div class="export-wrap">
+          <button class="tool-btn" id="exportBtn">Export</button>
+          <div class="export-menu" id="exportMenu">
+            <button class="export-menu-item" id="exportJpeg">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="2" width="12" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M1 9l3-3 2.5 2.5L10 5l3 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              JPEG
+            </button>
+            <button class="export-menu-item" id="exportPdf">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 1h6l3 3v9a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z" stroke="currentColor" stroke-width="1.4"/><path d="M9 1v3h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M4.5 8h5M4.5 10h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              PDF
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="canvas-wrap">
+      <svg id="canvas"></svg>
+
+      <!-- Add-node popup -->
+      <div id="nodePopup" class="popup">
+        <div class="popup-title">Add Node</div>
+        <input id="popupLabel" class="popup-input" placeholder="Label" autocomplete="off"/>
+        <select id="popupType" class="popup-select">
+          <option value="node">Node</option>
+          <option value="router">Router</option>
+          <option value="switch">Switch</option>
+          <option value="host">Host</option>
+          <option value="cloud">Cloud</option>
+          <option value="lb">Load Balancer</option>
+          <option value="database">Database</option>
+        </select>
+        <div class="popup-actions">
+          <button id="popupCancel" class="popup-btn">Cancel</button>
+          <button id="popupConfirm" class="popup-btn primary">Add</button>
+        </div>
+      </div>
+
+      <!-- Connect mode hint -->
+      <div id="connectHint" class="connect-hint"></div>
+
+      <!-- Group selection bar -->
+      <div id="groupBar" class="group-bar">
+        <span id="groupCount" style="font-size:12px;color:#999;">0 selected</span>
+        <input id="groupLabel" class="popup-input" placeholder="Group label" style="width:130px;margin:0;padding:5px 10px;"/>
+        <button id="groupConfirm" class="popup-btn primary">Create</button>
+        <button id="groupCancel" class="popup-btn">Cancel</button>
+      </div>
+
+      <!-- Context menu -->
+      <div id="ctxMenu" class="ctx-menu">
+        <div class="ctx-label" id="ctxLabel">Node</div>
+        <button class="ctx-item" id="ctxDelete">Delete</button>
+      </div>
+
+      <!-- Floating canvas controls (bottom-right) -->
+      <div class="canvas-controls">
+        <button class="canvas-ctrl-btn" id="fitBtn" title="Fit to screen">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M2,6 L2,2 L6,2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12,2 L16,2 L16,6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M16,12 L16,16 L12,16" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M6,16 L2,16 L2,12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button class="canvas-ctrl-btn" id="relayoutBtn" title="Re-layout">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M3,9 A6,6 0 1 1 7,14.2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/>
+            <path d="M3,13.5 L3,9 L7.5,9" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Usage hint (bottom-left) -->
+      <div class="canvas-usage">Double-click to add node · Shift-click two nodes to connect<br>Group button to create region groups</div>
+
+      <div class="legend" id="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#818cf8;border-radius:50%"></div>router</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#34d399;border-radius:2px"></div>switch</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;border-radius:2px"></div>host</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#60a5fa;border-radius:4px"></div>cloud</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#22d3ee;border-radius:2px"></div>lb</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#a78bfa;border-radius:3px"></div>database</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#9ca3af;border-radius:50%"></div>node</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>© 2026 Savithru Lokanath</footer>
+
+<script>
+// ── Default topology ──
+const DEFAULT_YAML = `nodes:
+  - id: inet
+    type: cloud
+    label: Internet
+
+  - id: fw
+    type: router
+    label: Firewall
+
+  - id: core
+    type: switch
+    label: Core-SW
+
+  - id: web
+    type: host
+    label: web-01
+
+  - id: app
+    type: host
+    label: app-01
+
+  - id: db
+    type: host
+    label: db-01
+
+edges:
+  - from: inet
+    to: fw
+  - from: fw
+    to: core
+    label: 1Gbps
+  - from: core
+    to: web
+  - from: core
+    to: app
+  - from: core
+    to: db
+  - from: app
+    to: db
+    label: SQL
+
+groups:
+  - label: DMZ
+    nodes: [inet, fw]
+  - label: Internal
+    nodes: [core, web, app, db]`;
+
+// ── Node visual config ──
+const NODE_CFG = {
+  router: {
+    stroke: '#818cf8', fill: '#1a1a2e', r: 18,
+    html(s, f) {
+      return `<circle r="17" fill="${f}" stroke="${s}" stroke-width="1.5"/>
+<path d="M-9,0 L9,0" stroke="${s}" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+<path d="M6,-3.5 L9,0 L6,3.5" stroke="${s}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<path d="M-6,-3.5 L-9,0 L-6,3.5" stroke="${s}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<path d="M0,-9 L0,9" stroke="${s}" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+<path d="M-3.5,6 L0,9 L3.5,6" stroke="${s}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<path d="M-3.5,-6 L0,-9 L3.5,-6" stroke="${s}" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+    }
+  },
+  switch: {
+    stroke: '#34d399', fill: '#0a2018', r: 19,
+    html(s, f) {
+      return `<rect x="-17" y="-11" width="34" height="22" rx="4" fill="${f}" stroke="${s}" stroke-width="1.5"/>
+<line x1="-10" y1="-3" x2="-10" y2="5" stroke="${s}" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="-4" y1="-3" x2="-4" y2="5" stroke="${s}" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="2" y1="-3" x2="2" y2="5" stroke="${s}" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="8" y1="-3" x2="8" y2="5" stroke="${s}" stroke-width="1.8" stroke-linecap="round"/>`;
+    }
+  },
+  host: {
+    stroke: '#f59e0b', fill: '#1e1a06', r: 17,
+    html(s, f) {
+      return `<rect x="-14" y="-12" width="28" height="20" rx="3" fill="${f}" stroke="${s}" stroke-width="1.5"/>
+<rect x="-3" y="8" width="6" height="5" fill="${f}" stroke="${s}" stroke-width="1.2"/>
+<line x1="-8" y1="13" x2="8" y2="13" stroke="${s}" stroke-width="2" stroke-linecap="round"/>`;
+    }
+  },
+  cloud: {
+    stroke: '#60a5fa', fill: '#091528', r: 20,
+    html(s, f) {
+      return `<path d="M-15,5 Q-18,-2 -11,-7 Q-9,-16 0,-13 Q5,-18 13,-10 Q19,-7 16,5 Z"
+  fill="${f}" stroke="${s}" stroke-width="1.5" stroke-linejoin="round"/>`;
+    }
+  },
+  lb: {
+    stroke: '#22d3ee', fill: '#071e28', r: 19,
+    html(s, f) {
+      return `<rect x="-17" y="-11" width="34" height="22" rx="4" fill="${f}" stroke="${s}" stroke-width="1.5"/>
+<line x1="-9" y1="-3" x2="9" y2="-3" stroke="${s}" stroke-width="1.8" stroke-linecap="round"/>
+<line x1="0" y1="-3" x2="-8" y2="6" stroke="${s}" stroke-width="1.5" stroke-linecap="round"/>
+<line x1="0" y1="-3" x2="0" y2="6" stroke="${s}" stroke-width="1.5" stroke-linecap="round"/>
+<line x1="0" y1="-3" x2="8" y2="6" stroke="${s}" stroke-width="1.5" stroke-linecap="round"/>`;
+    }
+  },
+  database: {
+    stroke: '#a78bfa', fill: '#140e28', r: 17,
+    html(s, f) {
+      return `<path d="M-12,-7 L-12,8 A12,4 0 0 0 12,8 L12,-7" fill="${f}" stroke="${s}" stroke-width="1.5" stroke-linejoin="round"/>
+<ellipse cx="0" cy="-7" rx="12" ry="4" fill="${f}" stroke="${s}" stroke-width="1.5"/>`;
+    }
+  },
+  node: {
+    stroke: '#9ca3af', fill: '#1c1c1c', r: 15,
+    html(s, f) {
+      return `<circle r="14" fill="${f}" stroke="${s}" stroke-width="1.5"/>
+<circle r="4" fill="${s}"/>`;
+    }
+  }
+};
+
+const GROUP_COLORS = [
+  { fill: 'rgba(129,140,248,0.06)', stroke: 'rgba(129,140,248,0.4)', text: 'rgba(129,140,248,0.7)' },
+  { fill: 'rgba(52,211,153,0.06)',  stroke: 'rgba(52,211,153,0.4)',  text: 'rgba(52,211,153,0.7)' },
+  { fill: 'rgba(251,191,36,0.06)',  stroke: 'rgba(251,191,36,0.4)',  text: 'rgba(251,191,36,0.7)' },
+  { fill: 'rgba(96,165,250,0.06)',  stroke: 'rgba(96,165,250,0.4)',  text: 'rgba(96,165,250,0.7)' },
+  { fill: 'rgba(248,113,113,0.06)', stroke: 'rgba(248,113,113,0.4)', text: 'rgba(248,113,113,0.7)' },
+];
+
+// ── State ──
+let simulation  = null;
+let nodeMap     = {};
+let currentNodes  = [];
+let currentEdges  = [];
+let currentGroups = [];
+let posCache    = {};
+let svgW = 800, svgH = 600;
+
+// ── DOM ──
+const editor   = document.getElementById('editor');
+const statusEl = document.getElementById('status');
+const canvasEl = document.getElementById('canvas');
+
+// ── D3 setup ──
+const svg = d3.select('#canvas');
+
+// Arrowhead marker
+svg.append('defs').append('marker')
+  .attr('id', 'arrow')
+  .attr('viewBox', '0 0 10 8')
+  .attr('refX', 9)
+  .attr('refY', 4)
+  .attr('markerWidth', 6)
+  .attr('markerHeight', 6)
+  .attr('orient', 'auto-start-reverse')
+  .append('path')
+  .attr('d', 'M0,0.5 L9,4 L0,7.5 Z')
+  .attr('fill', '#686868');
+
+// Layers
+const groupLayer = svg.append('g').attr('class', 'group-layer');
+const edgeLayer  = svg.append('g').attr('class', 'edge-layer');
+const nodeLayer  = svg.append('g').attr('class', 'node-layer');
+
+// Wrap all layers in a zoom group
+const layers = [groupLayer, edgeLayer, nodeLayer];
+
+// Re-create: put all content inside a single zoom group
+svg.selectAll('.group-layer, .edge-layer, .node-layer').remove();
+const zoomGroup  = svg.append('g').attr('class', 'zoom-group');
+const groupLayer2 = zoomGroup.append('g');
+const edgeLayer2  = zoomGroup.append('g');
+const nodeLayer2  = zoomGroup.append('g');
+
+// Zoom behavior
+const zoomBehavior = d3.zoom()
+  .scaleExtent([0.05, 8])
+  .on('zoom', event => {
+    zoomGroup.attr('transform', event.transform);
+  });
+
+svg.call(zoomBehavior);
+
+// Prevent double-click zoom
+svg.on('dblclick.zoom', null);
+
+// Background rect (captures double-click on empty canvas)
+const bgTarget = zoomGroup.insert('rect', ':first-child')
+  .attr('x', -50000).attr('y', -50000)
+  .attr('width', 100000).attr('height', 100000)
+  .attr('fill', 'transparent');
+
+// Highlight layer (on top of nodes, for connect-mode ring)
+const highlightLayer = zoomGroup.append('g').attr('class', 'highlight-layer');
+
+// ── Parse YAML ──
+function parseTopology(text) {
+  try {
+    const data = jsyaml.load(text);
+    if (!data || typeof data !== 'object') return null;
+
+    const nodes = (data.nodes || []).map(n => ({
+      id:    String(n.id ?? ''),
+      type:  n.type || 'node',
+      label: String(n.label ?? n.id ?? ''),
+    })).filter(n => n.id);
+
+    if (nodes.length === 0) return null;
+    const nodeIds = new Set(nodes.map(n => n.id));
+
+    const edges = (data.edges || []).map(e => ({
+      source: String(e.from ?? e.source ?? ''),
+      target: String(e.to ?? e.target ?? ''),
+      label:  e.label ? String(e.label) : '',
+      bidir:  !!(e.bidir || e.bidirectional),
+    })).filter(e => nodeIds.has(e.source) && nodeIds.has(e.target));
+
+    const groups = (data.groups || []).map((g, i) => ({
+      label:    g.label || '',
+      nodes:    (g.nodes || []).map(String).filter(id => nodeIds.has(id)),
+      colorIdx: i % GROUP_COLORS.length,
+    }));
+
+    return { nodes, edges, groups };
+  } catch {
+    return null;
+  }
+}
+
+// ── Helpers ──
+function getCfg(type) { return NODE_CFG[type] || NODE_CFG.node; }
+function getR(type)   { return getCfg(type).r; }
+
+function getSvgSize() {
+  const rect = canvasEl.getBoundingClientRect();
+  svgW = rect.width  || 800;
+  svgH = rect.height || 600;
+}
+
+// ── Render ──
+function renderGraph() {
+  exitConnectMode();      // reset connect state on re-render
+  exitGroupSelectMode();  // reset group select state on re-render
+  nodeMap = Object.fromEntries(currentNodes.map(n => [n.id, n]));
+
+  // Build linkData FIRST — D3 forceLink mutates these objects, replacing
+  // string source/target with actual node references. The DOM elements must
+  // be bound to this same array so tick() sees the resolved node objects.
+  const linkData = currentEdges.map(e => ({
+    source: e.source,
+    target: e.target,
+    label:  e.label,
+    bidir:  e.bidir,
+  }));
+
+  groupLayer2.selectAll('*').remove();
+  edgeLayer2.selectAll('*').remove();
+  nodeLayer2.selectAll('*').remove();
+
+  // ── Groups ──
+  const groupGs = groupLayer2.selectAll('.grp')
+    .data(currentGroups)
+    .enter().append('g').attr('class', 'grp');
+
+  groupGs.append('rect')
+    .attr('rx', 14)
+    .attr('fill',         d => GROUP_COLORS[d.colorIdx].fill)
+    .attr('stroke',       d => GROUP_COLORS[d.colorIdx].stroke)
+    .attr('stroke-width', 1.5)
+    .attr('stroke-dasharray', '6,4');
+
+  groupGs.append('text')
+    .attr('fill',           d => GROUP_COLORS[d.colorIdx].text)
+    .attr('font-size',      '10px')
+    .attr('font-family',    '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif')
+    .attr('font-weight',    '700')
+    .attr('letter-spacing', '0.1em')
+    .text(d => d.label.toUpperCase());
+
+  groupGs.on('contextmenu', function(event, d) {
+    event.preventDefault();
+    event.stopPropagation();
+    showCtxMenu(event.clientX, event.clientY, { type: 'group', label: d.label });
+  });
+
+  // ── Edges — bound to linkData so tick() gets node objects, not strings ──
+  const edgeGs = edgeLayer2.selectAll('.edge')
+    .data(linkData)
+    .enter().append('g').attr('class', 'edge');
+
+  edgeGs.append('line')
+    .attr('stroke',         '#585858')
+    .attr('stroke-width',   1.5)
+    .attr('stroke-linecap', 'butt')
+    .attr('marker-end',     'url(#arrow)')
+    .attr('marker-start',   d => d.bidir ? 'url(#arrow)' : null);
+
+  edgeGs.filter(d => d.label)
+    .append('text')
+    .attr('fill',              '#666')
+    .attr('font-size',         '10px')
+    .attr('font-family',       'SF Mono, Fira Code, monospace')
+    .attr('text-anchor',       'middle')
+    .attr('dominant-baseline', 'middle')
+    .attr('dy', -8)
+    .text(d => d.label);
+
+  // ── Nodes ──
+  const nodeGs = nodeLayer2.selectAll('.nd')
+    .data(currentNodes)
+    .enter().append('g').attr('class', 'nd')
+    .style('cursor', 'grab')
+    .call(
+      d3.drag()
+        .on('start', dragStart)
+        .on('drag',  dragged)
+        .on('end',   dragEnd)
+    );
+
+  attachNodeInteractions(nodeGs);
+
+  nodeGs.each(function(d) {
+    const cfg = getCfg(d.type);
+    this.innerHTML = cfg.html(cfg.stroke, cfg.fill);
+  });
+
+  nodeGs.append('text')
+    .attr('fill',              '#cccccc')
+    .attr('font-size',         '11px')
+    .attr('font-family',       '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif')
+    .attr('font-weight',       '500')
+    .attr('text-anchor',       'middle')
+    .attr('dominant-baseline', 'auto')
+    .attr('y', d => getR(d.type) + 15)
+    .text(d => d.label);
+
+  // ── Simulation ──
+  if (simulation) simulation.stop();
+
+  simulation = d3.forceSimulation(currentNodes)
+    .force('link',      d3.forceLink(linkData).id(d => d.id).distance(130).strength(0.9))
+    .force('charge',    d3.forceManyBody().strength(-600))
+    .force('center',    d3.forceCenter(svgW / 2, svgH / 2))
+    .force('collision', d3.forceCollide().radius(d => getR(d.type) + 22))
+    .on('tick', tick);
+}
+
+// ── Tick ──
+function tick() {
+  // Cache positions
+  currentNodes.forEach(n => {
+    posCache[n.id] = { x: n.x, y: n.y };
+  });
+
+  // Edges
+  edgeLayer2.selectAll('.edge').each(function(d) {
+    const src = d.source, tgt = d.target;
+    if (!src || !tgt || src.x == null) return;
+
+    const dx = tgt.x - src.x, dy = tgt.y - src.y;
+    const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+    const r1 = getR(src.type), r2 = getR(tgt.type);
+
+    const arrowGap = 7; // pull back so arrowhead tip lands at node border
+    const srcGap = d.bidir ? arrowGap : 0;
+    d3.select(this).select('line')
+      .attr('x1', src.x + (dx / dist) * (r1 + srcGap))
+      .attr('y1', src.y + (dy / dist) * (r1 + srcGap))
+      .attr('x2', tgt.x - (dx / dist) * (r2 + arrowGap))
+      .attr('y2', tgt.y - (dy / dist) * (r2 + arrowGap));
+
+    d3.select(this).select('text')
+      .attr('x', (src.x + tgt.x) / 2)
+      .attr('y', (src.y + tgt.y) / 2);
+  });
+
+  // Nodes
+  nodeLayer2.selectAll('.nd')
+    .attr('transform', d => `translate(${d.x ?? 0},${d.y ?? 0})`);
+
+  // Groups
+  groupLayer2.selectAll('.grp').each(function(group) {
+    const members = group.nodes.map(id => nodeMap[id]).filter(n => n && n.x != null);
+    if (members.length === 0) return;
+
+    const pad = 38;
+    const minX = Math.min(...members.map(n => n.x));
+    const minY = Math.min(...members.map(n => n.y));
+    const maxX = Math.max(...members.map(n => n.x));
+    const maxY = Math.max(...members.map(n => n.y));
+    const x = minX - pad, y = minY - pad - 6;
+    const w = Math.max(maxX - minX + pad * 2, 100);
+    const h = Math.max(maxY - minY + pad * 2, 80);
+
+    d3.select(this).select('rect')
+      .attr('x', x).attr('y', y)
+      .attr('width', w).attr('height', h);
+
+    d3.select(this).select('text')
+      .attr('x', x + 14).attr('y', y + 17);
+  });
+
+  // Keep connect-mode ring in sync
+  if (connectSource) {
+    const rNode = nodeMap[connectSource];
+    if (rNode && rNode.x != null) {
+      highlightLayer.select('.connect-ring')
+        .attr('cx', rNode.x).attr('cy', rNode.y);
+    }
+  }
+  // Keep group-select rings in sync
+  if (groupSelectMode) {
+    selectedForGroup.forEach(id => {
+      const n = nodeMap[id];
+      if (n && n.x != null) {
+        highlightLayer.select(`#gring-${id}`)
+          .attr('cx', n.x).attr('cy', n.y);
+      }
+    });
+  }
+}
+
+// ── Drag ──
+function dragStart(event, d) {
+  if (!event.active) simulation.alphaTarget(0.2).restart();
+  d.fx = d.x; d.fy = d.y;
+  d3.select(this).style('cursor', 'grabbing');
+}
+function dragged(event, d) {
+  d.fx = event.x; d.fy = event.y;
+}
+function dragEnd(event, d) {
+  if (!event.active) simulation.alphaTarget(0);
+  d.fx = null; d.fy = null;
+  d3.select(this).style('cursor', 'grab');
+}
+
+// ── Update from text ──
+function updateFromText(text) {
+  const data = parseTopology(text);
+  if (!data) {
+    setStatus('err', 'parse error');
+    return;
+  }
+
+  getSvgSize();
+
+  // Preserve positions for known nodes
+  currentNodes = data.nodes.map(n => {
+    const cached = posCache[n.id];
+    if (cached) return { ...n, x: cached.x, y: cached.y, vx: 0, vy: 0 };
+    return {
+      ...n,
+      x: svgW / 2 + (Math.random() - 0.5) * 220,
+      y: svgH / 2 + (Math.random() - 0.5) * 220,
+    };
+  });
+
+  currentEdges  = data.edges;
+  currentGroups = data.groups;
+
+  renderGraph();
+  setStatus('ok', `${data.nodes.length} node${data.nodes.length !== 1 ? 's' : ''} · ${data.edges.length} edge${data.edges.length !== 1 ? 's' : ''}`);
+  updateHash(text);
+}
+
+function setStatus(cls, text) {
+  statusEl.className = 'status ' + cls;
+  statusEl.textContent = text;
+}
+
+// ── Hash sharing ──
+function encodeHash(str) {
+  try { return btoa(unescape(encodeURIComponent(str))); } catch { return ''; }
+}
+function decodeHash(str) {
+  try { return decodeURIComponent(escape(atob(str))); } catch { return null; }
+}
+function updateHash(text) {
+  history.replaceState(null, '', '#' + encodeHash(text));
+}
+
+// ── Fit view ──
+function fitView() {
+  if (!currentNodes.length) return;
+  const xs = currentNodes.map(n => n.x).filter(v => v != null);
+  const ys = currentNodes.map(n => n.y).filter(v => v != null);
+  if (!xs.length) return;
+
+  const pad = 70;
+  const x1 = Math.min(...xs) - pad, y1 = Math.min(...ys) - pad;
+  const x2 = Math.max(...xs) + pad, y2 = Math.max(...ys) + pad;
+  const k  = Math.min(svgW / (x2 - x1), svgH / (y2 - y1), 2) * 0.9;
+  const tx = svgW / 2 - k * (x1 + x2) / 2;
+  const ty = svgH / 2 - k * (y1 + y2) / 2;
+
+  svg.transition().duration(450)
+    .call(zoomBehavior.transform, d3.zoomIdentity.translate(tx, ty).scale(k));
+}
+
+// ── Re-layout ──
+function relayout() {
+  posCache = {};
+  getSvgSize();
+  currentNodes.forEach(n => {
+    n.x = svgW / 2 + (Math.random() - 0.5) * 300;
+    n.y = svgH / 2 + (Math.random() - 0.5) * 300;
+    n.vx = 0; n.vy = 0;
+    n.fx = null; n.fy = null;
+  });
+  if (simulation) {
+    simulation.nodes(currentNodes);
+    simulation.alpha(1).restart();
+  }
+}
+
+// ── Buttons ──
+document.getElementById('fitBtn').addEventListener('click', fitView);
+document.getElementById('relayoutBtn').addEventListener('click', relayout);
+document.getElementById('copyLinkBtn').addEventListener('click', function() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    this.textContent = 'Copied!';
+    this.classList.add('copied');
+    setTimeout(() => {
+      this.textContent = 'Copy link';
+      this.classList.remove('copied');
+    }, 1500);
+  });
+});
+
+// ── Tab key ──
+editor.addEventListener('keydown', e => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const s = editor.selectionStart, end = editor.selectionEnd;
+    editor.value = editor.value.substring(0, s) + '  ' + editor.value.substring(end);
+    editor.selectionStart = editor.selectionEnd = s + 2;
+  }
+});
+
+// ── Mutate YAML helper ──
+function updateYAML(mutate) {
+  let data;
+  try { data = jsyaml.load(editor.value) || {}; } catch { data = {}; }
+  if (!Array.isArray(data.nodes)) data.nodes = [];
+  if (!Array.isArray(data.edges)) data.edges = [];
+  mutate(data);
+  editor.value = jsyaml.dump(data, { indent: 2, lineWidth: -1 });
+  updateFromText(editor.value);
+}
+
+// ── Add-node popup ──
+const nodePopup    = document.getElementById('nodePopup');
+const popupLabel   = document.getElementById('popupLabel');
+const popupType    = document.getElementById('popupType');
+const popupConfirm = document.getElementById('popupConfirm');
+const popupCancel  = document.getElementById('popupCancel');
+let pendingPos = null; // screen coords of the double-click
+
+function showAddNodePopup(clientX, clientY) {
+  const wrap = document.querySelector('.canvas-wrap').getBoundingClientRect();
+  const relX = Math.min(clientX - wrap.left + 8, wrap.width  - 225);
+  const relY = Math.min(clientY - wrap.top  + 8, wrap.height - 175);
+  nodePopup.style.left = relX + 'px';
+  nodePopup.style.top  = relY + 'px';
+  nodePopup.classList.add('visible');
+  pendingPos = { clientX, clientY };
+  popupLabel.value = '';
+  popupLabel.focus();
+}
+
+function hideAddNodePopup() {
+  nodePopup.classList.remove('visible');
+  pendingPos = null;
+}
+
+function confirmAddNode() {
+  if (!pendingPos) return;
+  const label = popupLabel.value.trim() || popupType.value;
+  const type  = popupType.value;
+
+  // Unique id
+  const base = label.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') || type;
+  const ids = new Set(currentNodes.map(n => n.id));
+  let id = base, n = 1;
+  while (ids.has(id)) id = base + '-' + (++n);
+
+  // Map click to canvas coordinates (account for current zoom/pan)
+  const wrap = document.querySelector('.canvas-wrap').getBoundingClientRect();
+  const t = d3.zoomTransform(canvasEl);
+  posCache[id] = {
+    x: (pendingPos.clientX - wrap.left - t.x) / t.k,
+    y: (pendingPos.clientY - wrap.top  - t.y) / t.k,
+  };
+
+  hideAddNodePopup();
+  updateYAML(data => data.nodes.push({ id, type, label }));
+}
+
+popupConfirm.addEventListener('click', confirmAddNode);
+popupCancel.addEventListener('click',  hideAddNodePopup);
+popupLabel.addEventListener('keydown', e => {
+  if (e.key === 'Enter')  confirmAddNode();
+  if (e.key === 'Escape') hideAddNodePopup();
+});
+// Close popup on outside click
+document.addEventListener('mousedown', e => {
+  if (nodePopup.classList.contains('visible') && !nodePopup.contains(e.target)) hideAddNodePopup();
+});
+
+// Double-click on empty canvas → add node
+bgTarget.on('dblclick', function(event) {
+  showAddNodePopup(event.clientX, event.clientY);
+});
+
+// ── Connect mode (shift+click node → shift+click target) ──
+const connectHint = document.getElementById('connectHint');
+let connectSource = null;
+
+function enterConnectMode(nodeId) {
+  connectSource = nodeId;
+  connectHint.textContent = `Connecting from "${nodeId}" — Shift-click target node, or Esc to cancel`;
+  connectHint.classList.add('visible');
+  nodeLayer2.selectAll('.nd').style('opacity', d => d.id === nodeId ? 1 : 0.3);
+  // Draw pulsing ring on source
+  const node = nodeMap[nodeId];
+  if (node) {
+    highlightLayer.append('circle')
+      .attr('class', 'connect-ring')
+      .attr('cx', node.x ?? 0).attr('cy', node.y ?? 0)
+      .attr('r', getR(node.type) + 10)
+      .attr('fill', 'none')
+      .attr('stroke', 'var(--accent)')
+      .attr('stroke-width', 2)
+      .attr('stroke-dasharray', '5,4')
+      .attr('opacity', 0.85);
+  }
+}
+
+function exitConnectMode() {
+  connectSource = null;
+  connectHint.classList.remove('visible');
+  nodeLayer2.selectAll('.nd').style('opacity', 1);
+  highlightLayer.selectAll('*').remove();
+}
+
+// (ring position is updated inside tick() directly)
+
+// ── Group select mode ──
+const groupBar     = document.getElementById('groupBar');
+const groupCount   = document.getElementById('groupCount');
+const groupLabel   = document.getElementById('groupLabel');
+const groupConfirm = document.getElementById('groupConfirm');
+const groupCancel  = document.getElementById('groupCancel');
+const groupBtn     = document.getElementById('groupBtn');
+let groupSelectMode = false;
+let selectedForGroup = new Set();
+
+function enterGroupSelectMode() {
+  exitConnectMode();
+  groupSelectMode = true;
+  selectedForGroup.clear();
+  groupLabel.value = '';
+  groupBar.classList.add('visible');
+  groupBtn.classList.add('active');
+  groupCount.textContent = '0 selected';
+  nodeLayer2.selectAll('.nd').style('cursor', 'cell');
+}
+
+function exitGroupSelectMode() {
+  groupSelectMode = false;
+  selectedForGroup.clear();
+  groupBar.classList.remove('visible');
+  groupBtn.classList.remove('active');
+  nodeLayer2.selectAll('.nd').style('cursor', 'grab').style('opacity', 1);
+  highlightLayer.selectAll('.group-ring').remove();
+}
+
+function toggleGroupNode(nodeId) {
+  if (selectedForGroup.has(nodeId)) {
+    selectedForGroup.delete(nodeId);
+    highlightLayer.select(`#gring-${CSS.escape(nodeId)}`).remove();
+  } else {
+    selectedForGroup.add(nodeId);
+    const node = nodeMap[nodeId];
+    if (node) {
+      highlightLayer.append('circle')
+        .attr('id', `gring-${nodeId}`)
+        .attr('class', 'group-ring')
+        .attr('cx', node.x ?? 0).attr('cy', node.y ?? 0)
+        .attr('r', getR(node.type) + 8)
+        .attr('fill', 'none')
+        .attr('stroke', 'var(--accent)')
+        .attr('stroke-width', 2)
+        .attr('opacity', 0.7);
+    }
+  }
+  groupCount.textContent = `${selectedForGroup.size} selected`;
+}
+
+function confirmCreateGroup() {
+  if (selectedForGroup.size === 0) return;
+  const label = groupLabel.value.trim() || 'Group';
+  const nodes = [...selectedForGroup];
+  exitGroupSelectMode();
+  updateYAML(data => {
+    if (!Array.isArray(data.groups)) data.groups = [];
+    data.groups.push({ label, nodes });
+  });
+}
+
+groupBtn.addEventListener('click', () => {
+  if (groupSelectMode) exitGroupSelectMode();
+  else enterGroupSelectMode();
+});
+groupConfirm.addEventListener('click', confirmCreateGroup);
+groupCancel.addEventListener('click', exitGroupSelectMode);
+groupLabel.addEventListener('keydown', e => {
+  if (e.key === 'Enter')  confirmCreateGroup();
+  if (e.key === 'Escape') exitGroupSelectMode();
+});
+
+// Attach shift-click handler to nodes (called from renderGraph)
+function attachNodeInteractions(sel) {
+  sel.on('contextmenu', function(event, d) {
+    event.preventDefault();
+    event.stopPropagation();
+    showCtxMenu(event.clientX, event.clientY, { type: 'node', id: d.id, label: d.label });
+  });
+
+  sel.on('click.interact', function(event, d) {
+    // Group select mode: plain click toggles selection
+    if (groupSelectMode) {
+      event.stopPropagation();
+      toggleGroupNode(d.id);
+      return;
+    }
+    // Connect mode: shift+click
+    if (!event.shiftKey) return;
+    event.stopPropagation();
+    if (!connectSource) {
+      enterConnectMode(d.id);
+    } else if (connectSource === d.id) {
+      exitConnectMode();
+    } else {
+      const src = connectSource;
+      exitConnectMode();
+      updateYAML(data => data.edges.push({ from: src, to: d.id }));
+    }
+  });
+}
+
+// Global Esc to cancel
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    exitConnectMode();
+    exitGroupSelectMode();
+    hideAddNodePopup();
+  }
+});
+
+// ── Context menu (right-click delete) ──
+const ctxMenu   = document.getElementById('ctxMenu');
+const ctxLabel  = document.getElementById('ctxLabel');
+const ctxDelete = document.getElementById('ctxDelete');
+let ctxTarget   = null; // { type: 'node'|'group', id, label }
+
+function showCtxMenu(clientX, clientY, target) {
+  ctxTarget = target;
+  ctxLabel.textContent = target.type === 'node'
+    ? `Node: ${target.label}`
+    : `Group: ${target.label}`;
+  // Position, keeping inside viewport
+  const margin = 8;
+  const mx = Math.min(clientX, window.innerWidth  - 155 - margin);
+  const my = Math.min(clientY, window.innerHeight - 80  - margin);
+  ctxMenu.style.left = mx + 'px';
+  ctxMenu.style.top  = my + 'px';
+  ctxMenu.classList.add('visible');
+}
+
+function hideCtxMenu() {
+  ctxMenu.classList.remove('visible');
+  ctxTarget = null;
+}
+
+ctxDelete.addEventListener('click', () => {
+  if (!ctxTarget) return;
+  if (ctxTarget.type === 'node') {
+    const id = ctxTarget.id;
+    delete posCache[id];
+    updateYAML(data => {
+      data.nodes = (data.nodes || []).filter(n => String(n.id) !== id);
+      // Remove connected edges
+      data.edges = (data.edges || []).filter(e =>
+        String(e.from   ?? e.source ?? '') !== id &&
+        String(e.to     ?? e.target ?? '') !== id
+      );
+      // Remove from any groups
+      (data.groups || []).forEach(g => {
+        g.nodes = (g.nodes || []).filter(nid => String(nid) !== id);
+      });
+    });
+  } else if (ctxTarget.type === 'group') {
+    const lbl = ctxTarget.label;
+    updateYAML(data => {
+      data.groups = (data.groups || []).filter(g => g.label !== lbl);
+    });
+  }
+  hideCtxMenu();
+});
+
+// Close on any click or Escape
+document.addEventListener('click',   hideCtxMenu);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') hideCtxMenu(); });
+
+// ── Export ──
+const exportBtn  = document.getElementById('exportBtn');
+const exportMenu = document.getElementById('exportMenu');
+
+exportBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  exportMenu.classList.toggle('visible');
+});
+document.addEventListener('click', () => exportMenu.classList.remove('visible'));
+
+function drawLegendOnCanvas(ctx, w, h) {
+  const LEGEND_ITEMS = [
+    { label: 'router',   color: '#818cf8', round: true  },
+    { label: 'switch',   color: '#34d399', round: false },
+    { label: 'host',     color: '#f59e0b', round: false },
+    { label: 'cloud',    color: '#60a5fa', round: false },
+    { label: 'lb',       color: '#22d3ee', round: false },
+    { label: 'database', color: '#a78bfa', round: false },
+    { label: 'node',     color: '#9ca3af', round: true  },
+  ];
+
+  // Only show types present in the diagram
+  const usedTypes = new Set(currentNodes.map(n => n.type));
+  const items = LEGEND_ITEMS.filter(i => usedTypes.has(i.label));
+  if (!items.length) return;
+
+  const pad = 12, dot = 8, rowH = 20;
+  const bw = 115, bh = pad * 2 + items.length * rowH;
+  const bx = 14, by = h - 14 - bh;
+
+  // Background
+  ctx.save();
+  ctx.globalAlpha = 0.88;
+  ctx.fillStyle = '#161616';
+  _roundRect(ctx, bx, by, bw, bh, 6);
+  ctx.fill();
+  ctx.globalAlpha = 0.5;
+  ctx.strokeStyle = '#2a2a2a';
+  ctx.lineWidth = 1;
+  _roundRect(ctx, bx, by, bw, bh, 6);
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.font = '500 11px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+  ctx.textBaseline = 'middle';
+  items.forEach((item, i) => {
+    const iy = by + pad + i * rowH + rowH / 2;
+    const dx = bx + pad + dot / 2;
+
+    ctx.fillStyle = item.color;
+    if (item.round) {
+      ctx.beginPath();
+      ctx.arc(dx, iy, dot / 2, 0, Math.PI * 2);
+      ctx.fill();
+    } else {
+      ctx.fillRect(dx - dot / 2, iy - dot / 2, dot, dot);
+    }
+
+    ctx.fillStyle = '#bbbbbb';
+    ctx.fillText(item.label, dx + dot / 2 + 8, iy);
+  });
+}
+
+function _roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y,     x + w, y + r,     r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x,     y + h, x,     y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x,     y,     x + r, y,         r);
+  ctx.closePath();
+}
+
+function svgToCanvas(callback) {
+  const svgEl  = document.getElementById('canvas');
+  const w = svgEl.clientWidth  || 1200;
+  const h = svgEl.clientHeight || 800;
+  const scale  = 2; // 2× for sharpness
+
+  // Clone so we can inject an explicit background without touching the live SVG
+  const clone = svgEl.cloneNode(true);
+  clone.setAttribute('width',  w);
+  clone.setAttribute('height', h);
+  clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+  // Prepend background rect
+  const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  bg.setAttribute('width',  w);
+  bg.setAttribute('height', h);
+  bg.setAttribute('fill', '#0f0f0f');
+  clone.insertBefore(bg, clone.firstChild);
+
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  const blob   = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+  const url    = URL.createObjectURL(blob);
+  const img    = new Image();
+
+  img.onload = () => {
+    const cv  = document.createElement('canvas');
+    cv.width  = w * scale;
+    cv.height = h * scale;
+    const ctx = cv.getContext('2d');
+    ctx.scale(scale, scale);
+    ctx.fillStyle = '#0f0f0f';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+    drawLegendOnCanvas(ctx, w, h);
+    URL.revokeObjectURL(url);
+    callback(cv, w, h);
+  };
+  img.onerror = () => { URL.revokeObjectURL(url); alert('Export failed — try again.'); };
+  img.src = url;
+}
+
+document.getElementById('exportJpeg').addEventListener('click', () => {
+  exportMenu.classList.remove('visible');
+  svgToCanvas((cv) => {
+    const a = document.createElement('a');
+    a.href     = cv.toDataURL('image/jpeg', 0.95);
+    a.download = 'scaffold.jpg';
+    a.click();
+  });
+});
+
+document.getElementById('exportPdf').addEventListener('click', () => {
+  exportMenu.classList.remove('visible');
+  svgToCanvas((cv, w, h) => {
+    const dataUrl = cv.toDataURL('image/jpeg', 0.92);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({
+      orientation: w >= h ? 'landscape' : 'portrait',
+      unit: 'px',
+      format: [w, h],
+      hotfixes: ['px_scaling'],
+    });
+    pdf.addImage(dataUrl, 'JPEG', 0, 0, w, h);
+    pdf.save('scaffold.pdf');
+  });
+});
+
+// ── Live update ──
+let debounceTimer;
+editor.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => updateFromText(editor.value), 250);
+});
+
+// ── Pane resize ──
+const vHandle   = document.getElementById('vHandle');
+const leftPane  = document.getElementById('leftPane');
+const rightPane = document.getElementById('rightPane');
+const workspace = document.querySelector('.workspace');
+
+vHandle.addEventListener('mousedown', e => {
+  e.preventDefault();
+  vHandle.classList.add('dragging');
+  const startX    = e.clientX;
+  const totalW    = workspace.getBoundingClientRect().width - vHandle.offsetWidth;
+  const startLeft = leftPane.getBoundingClientRect().width;
+
+  function onMove(ev) {
+    const newLeft = Math.max(180, Math.min(totalW - 250, startLeft + ev.clientX - startX));
+    leftPane.style.flex  = 'none';
+    rightPane.style.flex = 'none';
+    leftPane.style.width  = newLeft + 'px';
+    rightPane.style.width = (totalW - newLeft) + 'px';
+    getSvgSize();
+  }
+  function onUp() {
+    vHandle.classList.remove('dragging');
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+  }
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+});
+
+// ── Init ──
+// Load from hash or use default
+let initialText = DEFAULT_YAML;
+if (window.location.hash) {
+  const decoded = decodeHash(window.location.hash.slice(1));
+  if (decoded) initialText = decoded;
+}
+editor.value = initialText;
+
+// Render after layout stabilizes
+requestAnimationFrame(() => {
+  getSvgSize();
+  updateFromText(editor.value);
+  setTimeout(fitView, 1000);
+});
+</script>
+</body>
+</html>

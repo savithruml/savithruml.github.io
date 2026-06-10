@@ -1,0 +1,12 @@
+{
+  "name": "Scaffold",
+  "short_name": "Scaffold",
+  "description": "Network topology visualizer",
+  "start_url": "/apps/scaffold/",
+  "display": "standalone",
+  "background_color": "#0f0f0f",
+  "theme_color": "#1a1200",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
