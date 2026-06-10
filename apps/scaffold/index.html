@@ -293,6 +293,13 @@
       flex-shrink: 0;
     }
     .ctx-set-btn:hover { background: #2e2408; }
+    .ctx-group-item {
+      padding-left: 28px !important;
+      font-size: 12px;
+      color: #888;
+    }
+    .ctx-group-item.already-in { color: #555; cursor: default; }
+    .ctx-group-item.already-in:hover { background: transparent; }
 
     /* ── Inline rename ── */
     .rename-wrap {
@@ -634,6 +641,12 @@ edges:
             <button class="ctx-set-btn" id="ctxEdgeLabelSet">Set</button>
           </div>
           <button class="ctx-item neutral" id="ctxToggleBidir">Toggle direction</button>
+          <button class="ctx-item neutral" id="ctxReverseEdge">Reverse direction</button>
+        </div>
+        <!-- Node-only actions -->
+        <div id="ctxNodeItems" style="display:none">
+          <button class="ctx-item neutral" id="ctxAddToGroupBtn">Add to group ›</button>
+          <div id="ctxGroupList"></div>
         </div>
         <button class="ctx-item" id="ctxDelete">Delete</button>
       </div>
@@ -1472,24 +1485,31 @@ const ctxEdgeItems     = document.getElementById('ctxEdgeItems');
 const ctxEdgeLabelInput= document.getElementById('ctxEdgeLabelInput');
 const ctxEdgeLabelSet  = document.getElementById('ctxEdgeLabelSet');
 const ctxToggleBidir   = document.getElementById('ctxToggleBidir');
+const ctxReverseEdge   = document.getElementById('ctxReverseEdge');
+const ctxNodeItems     = document.getElementById('ctxNodeItems');
+const ctxAddToGroupBtn = document.getElementById('ctxAddToGroupBtn');
+const ctxGroupList     = document.getElementById('ctxGroupList');
 let ctxTarget = null; // { type: 'node'|'group'|'edge', ... }
 
 function showCtxMenu(clientX, clientY, target) {
   ctxTarget = target;
   const isEdge = target.type === 'edge';
+  const isNode = target.type === 'node';
   ctxEdgeItems.style.display = isEdge ? 'block' : 'none';
+  ctxNodeItems.style.display = isNode ? 'block' : 'none';
+  ctxGroupList.style.display = 'none';
   if (isEdge) {
     ctxLabel.textContent = `Edge: ${target.sourceId} → ${target.targetId}`;
     ctxEdgeLabelInput.value = target.label || '';
     ctxToggleBidir.textContent = target.bidir ? 'Make one-way' : 'Make bidirectional';
   } else {
-    ctxLabel.textContent = target.type === 'node'
+    ctxLabel.textContent = isNode
       ? `Node: ${target.label}`
       : `Group: ${target.label}`;
   }
   const margin = 8;
-  const menuH = isEdge ? 160 : 80;
-  const mx = Math.min(clientX, window.innerWidth  - 195 - margin);
+  const menuH = isEdge ? 180 : 100;
+  const mx = Math.min(clientX, window.innerWidth  - 215 - margin);
   const my = Math.min(clientY, window.innerHeight - menuH - margin);
   ctxMenu.style.left = mx + 'px';
   ctxMenu.style.top  = my + 'px';
@@ -1534,6 +1554,52 @@ ctxToggleBidir.addEventListener('click', () => {
     if (e) e.bidir = !e.bidir;
   });
   hideCtxMenu();
+});
+
+// Edge: reverse direction
+ctxReverseEdge.addEventListener('click', () => {
+  if (!ctxTarget || ctxTarget.type !== 'edge') return;
+  const { sourceId, targetId } = ctxTarget;
+  updateYAML(data => {
+    const e = (data.edges || []).find(e =>
+      String(e.from ?? e.source ?? '') === sourceId &&
+      String(e.to   ?? e.target ?? '') === targetId
+    );
+    if (e) { const tmp = e.from; e.from = e.to; e.to = tmp; }
+  });
+  hideCtxMenu();
+});
+
+// Node: add to group — show group picker
+ctxAddToGroupBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  ctxGroupList.innerHTML = '';
+  const nodeId  = String(ctxTarget?.id ?? '');
+  const groups  = currentGroups || [];
+  if (groups.length === 0) {
+    const el = document.createElement('div');
+    el.className = 'ctx-group-item already-in';
+    el.textContent = 'No groups yet';
+    ctxGroupList.appendChild(el);
+  } else {
+    groups.forEach(g => {
+      const alreadyIn = (g.nodes || []).some(n => String(n) === nodeId);
+      const btn = document.createElement('button');
+      btn.className = 'ctx-item neutral ctx-group-item' + (alreadyIn ? ' already-in' : '');
+      btn.textContent = (alreadyIn ? '✓ ' : '') + g.label;
+      if (!alreadyIn) {
+        btn.addEventListener('click', () => {
+          updateYAML(data => {
+            const grp = (data.groups || []).find(gr => gr.label === g.label);
+            if (grp) { if (!grp.nodes) grp.nodes = []; grp.nodes.push(nodeId); }
+          });
+          hideCtxMenu();
+        });
+      }
+      ctxGroupList.appendChild(btn);
+    });
+  }
+  ctxGroupList.style.display = 'block';
 });
 
 // Delete (node / group / edge)
