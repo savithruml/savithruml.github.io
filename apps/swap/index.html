@@ -6,8 +6,219 @@
   <title>Swap</title>
   <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
   <link rel="manifest" href="manifest.json"/>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js"></script>
-  <script>if (!window.jsyaml) document.write('<script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"><\/script>');</script>
+  <script>
+/* ── Inline YAML (no CDN dependency) ─────────────────────── */
+window.jsyaml = (function(){
+  'use strict';
+
+  /* ── DUMP: JS → YAML ──────────────────────────────────── */
+  var NEEDS_QUOTE = /[:{}\[\]|>&*!,%@`'"\\#\n\r\t]|^[\s\-?]|\s$/;
+  var IS_SPECIAL  = /^(true|false|null|~|yes|no|on|off)$/i;
+  var IS_NUM      = /^[-+]?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$|^0x[0-9a-fA-F]+$/;
+
+  function qStr(s){
+    if(s==='') return "''";
+    if(/[\n\r\t]/.test(s))
+      return '"'+s.replace(/\\/g,'\\\\').replace(/"/g,'\\"').replace(/\n/g,'\\n').replace(/\r/g,'\\r').replace(/\t/g,'\\t')+'"';
+    var t=s.trim();
+    if(IS_SPECIAL.test(t)||IS_NUM.test(t)||NEEDS_QUOTE.test(s))
+      return s.indexOf("'")<0 ? "'"+s+"'" : '"'+s.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
+    return s;
+  }
+  function qKey(k){
+    k=String(k);
+    if(!k) return "''";
+    if(/[:{}\[\],&*#?|<>=!%@`'"\/]/.test(k)||/^\s|\s$/.test(k)||IS_SPECIAL.test(k.trim())||IS_NUM.test(k.trim()))
+      return k.indexOf("'")<0 ? "'"+k+"'" : '"'+k.replace(/\\/g,'\\\\').replace(/"/g,'\\"')+'"';
+    return k;
+  }
+  function _dv(v,lvl,ind){
+    var pad=Array(lvl*ind+1).join(' ');
+    if(v===null||v===undefined) return 'null';
+    if(v===true)  return 'true';
+    if(v===false) return 'false';
+    if(typeof v==='number') return isFinite(v)?String(v):'null';
+    if(typeof v==='string') return qStr(v);
+    if(Array.isArray(v)){
+      if(!v.length) return '[]';
+      var rows=v.map(function(item){
+        var r=_dv(item,lvl+1,ind);
+        return r.charAt(0)==='\n' ? pad+'-'+r : pad+'- '+r;
+      });
+      return '\n'+rows.join('\n');
+    }
+    if(typeof v==='object'){
+      var ks=Object.keys(v);
+      if(!ks.length) return '{}';
+      var ls=ks.map(function(k){
+        var r=_dv(v[k],lvl+1,ind);
+        return r.charAt(0)==='\n' ? pad+qKey(k)+':'+r : pad+qKey(k)+': '+r;
+      });
+      return '\n'+ls.join('\n');
+    }
+    return qStr(String(v));
+  }
+  function dump(obj,opts){
+    var ind=(opts&&opts.indent)||2;
+    var s=_dv(obj,0,ind);
+    return (s.charAt(0)==='\n'?s.slice(1):s)+'\n';
+  }
+
+  /* ── LOAD: YAML → JS ──────────────────────────────────── */
+  function load(text){
+    if(!text||!text.trim()) return null;
+    text=text.replace(/^﻿/,'').replace(/\r\n/g,'\n').replace(/\r/g,'\n');
+    var rawLines=text.split('\n'), lines=[];
+    for(var i=0;i<rawLines.length;i++){
+      var raw=rawLines[i].replace(/\s+$/,'');
+      var tr=raw.replace(/^\s+/,'');
+      if(tr.charAt(0)==='#'){ lines.push({blank:true,full:''}); continue; }
+      if(!tr){ lines.push({blank:true,full:raw}); continue; }
+      var content=stripCmt(tr);
+      lines.push({indent:raw.length-tr.length, content:content, full:raw, blank:false});
+    }
+    var pos=0;
+    function skipB(){ while(pos<lines.length&&lines[pos].blank) pos++; }
+    function pk(){ var p=pos; while(p<lines.length&&lines[p].blank) p++; return p<lines.length?lines[p]:null; }
+    function cs(){ while(pos<lines.length&&lines[pos].blank) pos++; return pos<lines.length?lines[pos++]:null; }
+    function parseVal(minI){
+      var cur=pk();
+      if(!cur||cur.indent<minI) return undefined;
+      var c=cur.content;
+      return (c==='-'||(c.charAt(0)==='-'&&c.charAt(1)===' ')) ? parseSeq(cur.indent) : parseMap(cur.indent);
+    }
+    function resolveV(after,pInd){
+      after=(after||'').trim();
+      if(after===''||after==='~'){ var nx=pk(); return (nx&&nx.indent>pInd)?parseVal(pInd+1):null; }
+      if(after==='|'||after==='|-'||after==='|+') return parseBlockLit(pInd+1,after);
+      if(after==='>'||after==='>-'||after==='>+') return parseBlockFold(pInd+1,after);
+      if(after.charAt(0)==='['||after.charAt(0)==='{'){try{return JSON.parse(after);}catch(e){}}
+      return parseScalar(after);
+    }
+    function parseMap(iLvl){
+      var obj={};
+      for(;;){
+        var ln=pk();
+        if(!ln||ln.indent<iLvl) break;
+        if(ln.indent>iLvl){cs();continue;}
+        var c=ln.content;
+        if(c==='-'||(c.charAt(0)==='-'&&c.charAt(1)===' ')) break;
+        var ci=findColon(c);
+        if(ci<0) break;
+        cs();
+        var key=parseScalar(c.slice(0,ci).trim());
+        var after=c.slice(ci+1).replace(/^\s/,'');
+        obj[key]=resolveV(after,iLvl);
+      }
+      return obj;
+    }
+    function parseSeq(iLvl){
+      var arr=[];
+      for(;;){
+        var ln=pk();
+        if(!ln||ln.indent<iLvl) break;
+        if(ln.indent>iLvl){cs();continue;}
+        var c=ln.content;
+        if(c!=='-'&&!(c.charAt(0)==='-'&&c.charAt(1)===' ')) break;
+        cs();
+        var ad=(c==='-')?'':c.slice(2).trim();
+        if(!ad){
+          var nx=pk();
+          arr.push((nx&&nx.indent>iLvl)?parseVal(iLvl+1):null);
+        } else {
+          var ci=findColon(ad);
+          if(ci>=0){
+            var iI=ln.indent+2, item={};
+            var fk=parseScalar(ad.slice(0,ci).trim());
+            var fv=ad.slice(ci+1).replace(/^\s/,'').trim();
+            item[fk]=resolveV(fv,iI-1);
+            for(;;){
+              var n2=pk();
+              if(!n2||n2.indent<iI) break;
+              if(n2.indent>iI){cs();continue;}
+              var ci2=findColon(n2.content);
+              if(ci2<0) break;
+              cs();
+              var nk=parseScalar(n2.content.slice(0,ci2).trim());
+              var nv=n2.content.slice(ci2+1).replace(/^\s/,'').trim();
+              item[nk]=resolveV(nv,iI);
+            }
+            arr.push(item);
+          } else {
+            arr.push(parseScalar(ad));
+          }
+        }
+      }
+      return arr;
+    }
+    function parseBlockLit(minI,style){
+      var strs=[],bI=null;
+      while(pos<lines.length){
+        var ln=lines[pos];
+        if(ln.blank){strs.push('');pos++;continue;}
+        if(bI===null){if(ln.indent<minI) break; bI=ln.indent;}
+        if(ln.indent<bI) break;
+        strs.push(ln.full.slice(bI));
+        pos++;
+      }
+      while(strs.length&&strs[strs.length-1]==='') strs.pop();
+      return (style==='|'||style==='|+')?strs.join('\n')+'\n':strs.join('\n');
+    }
+    function parseBlockFold(minI,style){
+      var strs=[],bI=null;
+      while(pos<lines.length){
+        var ln=lines[pos];
+        if(ln.blank){strs.push('');pos++;continue;}
+        if(bI===null){if(ln.indent<minI) break; bI=ln.indent;}
+        if(ln.indent<bI) break;
+        strs.push(ln.full.slice(bI));
+        pos++;
+      }
+      while(strs.length&&strs[strs.length-1]==='') strs.pop();
+      var r=strs.join('\n').replace(/([^\n])\n([^\n])/g,'$1 $2');
+      return (style==='>'||style==='>+')?r+'\n':r;
+    }
+    function findColon(s){
+      var inS=false,inD=false;
+      for(var i=0;i<s.length;i++){
+        var c=s[i];
+        if(c==="'"&&!inD){inS=!inS;continue;}
+        if(c==='"'&&!inS){inD=!inD;continue;}
+        if(!inS&&!inD&&c===':'&&(i+1>=s.length||s[i+1]===' '||s[i+1]==='\t')) return i;
+      }
+      return -1;
+    }
+    function stripCmt(s){
+      var inS=false,inD=false;
+      for(var i=0;i<s.length;i++){
+        var c=s[i];
+        if(c==="'"&&!inD){inS=!inS;continue;}
+        if(c==='"'&&!inS){inD=!inD;continue;}
+        if(!inS&&!inD&&c==='#'&&(i===0||s[i-1]===' ')) return s.slice(0,i).replace(/\s+$/,'');
+      }
+      return s;
+    }
+    function parseScalar(s){
+      s=(s||'').trim();
+      if(!s||s==='~'||s==='null') return null;
+      if(s==='true'||s==='yes'||s==='on')  return true;
+      if(s==='false'||s==='no'||s==='off') return false;
+      if(s.length>=2){
+        if(s.charAt(0)==="'"&&s.charAt(s.length-1)==="'") return s.slice(1,-1).replace(/''/g,"'");
+        if(s.charAt(0)==='"'&&s.charAt(s.length-1)==='"')
+          return s.slice(1,-1).replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/\\r/g,'\r').replace(/\\"/g,'"').replace(/\\\\/g,'\\');
+      }
+      if(/^0x[0-9a-fA-F]+$/.test(s)) return parseInt(s,16);
+      if(/^-?\d+$/.test(s)) return parseInt(s,10);
+      if(/^-?(\d+\.?\d*|\.\d+)([eE][+-]?\d+)?$/.test(s)) return parseFloat(s);
+      return s;
+    }
+    return parseVal(0);
+  }
+
+  return {load:load, dump:dump};
+}());
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -15,14 +226,15 @@
       --bg:      #0f0f0f;
       --surface: #161616;
       --border:  #222;
-      --text:    #d4d4d4;
+      --text:    #ececec;
       --muted:   #666;
       --accent:  #f97316;
       --radius:  8px;
       --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
     }
 
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: Helvetica, Arial, sans-serif; font-size: 13px; overflow: hidden; }
+    html { height: 100%; }
+    body { height: 100%; display: flex; flex-direction: column; background: var(--bg); color: var(--text); font-family: Helvetica, Arial, sans-serif; font-size: 13px; overflow: hidden; }
 
     /* ── Header ── */
     header {
@@ -34,8 +246,8 @@
       gap: 10px;
       flex-shrink: 0;
     }
-    .logo { flex-shrink: 0; }
-    header h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; color: #e8e8e8; }
+    .logo { flex-shrink: 0; width: 35px; height: 35px; }
+    header h1 { font-size: 18px; font-weight: 400; letter-spacing: 0.01em; color: var(--text); }
     .status-dot {
       margin-left: auto;
       font-size: 11px;
@@ -58,8 +270,20 @@
     /* ── Workspace ── */
     .workspace {
       display: flex;
-      height: calc(100vh - 48px);
+      flex: 1;
       overflow: hidden;
+    }
+
+    /* ── Footer ── */
+    footer {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+      flex-shrink: 0;
     }
 
     /* ── Pane ── */
@@ -72,20 +296,22 @@
     }
 
     .pane-header {
-      height: 34px;
+      height: 40px;
       display: flex;
       align-items: center;
+      justify-content: center;
       padding: 0 14px;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #888;
+      color: #aaa;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
       gap: 8px;
     }
-    .pane-header .canvas-tools { margin-left: auto; display: flex; gap: 4px; }
+    .pane-header { position: relative; }
+    .pane-header .canvas-tools { position: absolute; right: 14px; display: flex; gap: 4px; }
     .pane-header .format-badge {
       margin-left: 6px;
       font-size: 9px;
@@ -107,12 +333,12 @@
       background: var(--bg);
       color: var(--text);
       font-family: var(--font-mono);
-      font-size: 11.5px;
+      font-size: 13px;
       line-height: 1.65;
       padding: 14px;
       caret-color: var(--accent);
     }
-    .pane-editor::placeholder { color: #3a3a3a; }
+    .pane-editor::placeholder { color: #555; }
     #yamlEl { border-left: 1px solid var(--border); }
     #yamlEl:focus { background: #0c0c0c; }
     #jsonEl:focus { background: #0c0c0c; }
@@ -129,6 +355,7 @@
     }
     .v-handle:hover, .v-handle.dragging { background: var(--accent); opacity: 0.5; }
 
+    /* ── Swap bar ── */
     /* ── Tool buttons ── */
     .tool-btn {
       background: transparent;
@@ -161,35 +388,12 @@
     }
     .err-strip.visible { display: block; }
 
-    /* ── Swap bar ── */
-    .swap-bar {
-      position: absolute;
-      left: 50%;
-      top: calc(48px + 17px);
-      transform: translateX(-50%);
-      z-index: 20;
-    }
-    .swap-btn {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      color: #888;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: color 0.12s, border-color 0.12s, transform 0.2s;
-    }
-    .swap-btn:hover { color: var(--accent); border-color: var(--accent); }
-    .swap-btn.spin { transform: rotate(180deg); }
   </style>
 </head>
 <body>
 
 <header>
-  <svg class="logo" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg class="logo" width="35" height="35" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="26" height="26" rx="6" fill="#1e0f00"/>
     <!-- Right arrow (top) -->
     <path d="M5 9 L16 9 M13 6 L16 9 L13 12" stroke="#fb923c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -200,15 +404,6 @@
   <span class="status-dot" id="statusDot">ready</span>
 </header>
 
-<!-- Floating swap button -->
-<div class="swap-bar">
-  <button class="swap-btn" id="swapBtn" title="Swap JSON ↔ YAML">
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-      <path d="M2 4.5 L10 4.5 M8 2 L10 4.5 L8 7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-      <path d="M12 9.5 L4 9.5 M6 7 L4 9.5 L6 12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-  </button>
-</div>
 
 <div class="workspace">
 
@@ -268,6 +463,8 @@ config:
 
 </div>
 
+<footer>© 2026 Savithru Lokanath</footer>
+
 <script>
 // ── v-handle drag ─────────────────────────────────────────────
 const vHandle  = document.getElementById('vHandle');
@@ -313,7 +510,6 @@ function hideErr(el)       { el.textContent = ''; el.classList.remove('visible')
 function jsonToYaml() {
   const txt = jsonEl.value;
   if (!txt.trim()) { yamlEl.value = ''; hideErr(jsonErr); hideErr(yamlErr); setStatus('', 'ready'); return; }
-  if (!window.jsyaml) { showErr(jsonErr, 'js-yaml library failed to load — check network'); return; }
   try {
     const obj = JSON.parse(txt);
     yamlEl.value = jsyaml.dump(obj, { indent: 2, lineWidth: -1, noCompatMode: true });
@@ -331,7 +527,6 @@ function jsonToYaml() {
 function yamlToJson() {
   const txt = yamlEl.value;
   if (!txt.trim()) { jsonEl.value = ''; hideErr(jsonErr); hideErr(yamlErr); setStatus('', 'ready'); return; }
-  if (!window.jsyaml) { showErr(yamlErr, 'js-yaml library failed to load — check network'); return; }
   try {
     const obj = jsyaml.load(txt);
     if (obj === undefined) { hideErr(yamlErr); return; }
@@ -350,42 +545,6 @@ function yamlToJson() {
 jsonEl.addEventListener('input', jsonToYaml);
 yamlEl.addEventListener('input', yamlToJson);
 
-// ── Swap button ───────────────────────────────────────────────
-const swapBtn = document.getElementById('swapBtn');
-swapBtn.addEventListener('click', () => {
-  const jTxt = jsonEl.value;
-  const yTxt = yamlEl.value;
-  jsonEl.value = '';
-  yamlEl.value = '';
-  hideErr(jsonErr);
-  hideErr(yamlErr);
-
-  // Try to convert YAML→JSON (put yaml content into json side, re-render)
-  if (yTxt.trim()) {
-    try {
-      const obj = jsyaml.load(yTxt);
-      jsonEl.value = JSON.stringify(obj, null, 2);
-      yamlEl.value = jsyaml.dump(obj, { indent: 2, lineWidth: -1, noCompatMode: true });
-      setStatus('ok', 'swapped');
-    } catch(e) {
-      jsonEl.value = yTxt;
-      yamlEl.value = jTxt;
-    }
-  } else if (jTxt.trim()) {
-    try {
-      const obj = JSON.parse(jTxt);
-      yamlEl.value = jsyaml.dump(obj, { indent: 2, lineWidth: -1, noCompatMode: true });
-      jsonEl.value = JSON.stringify(obj, null, 2);
-      setStatus('ok', 'swapped');
-    } catch(e) {
-      jsonEl.value = jTxt;
-      yamlEl.value = yTxt;
-    }
-  }
-
-  swapBtn.classList.add('spin');
-  setTimeout(() => swapBtn.classList.remove('spin'), 300);
-});
 
 // ── Copy buttons ──────────────────────────────────────────────
 const ICON_COPY  = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 9H2.5C1.67 9 1 8.33 1 7.5V2.5C1 1.67 1.67 1 2.5 1H7.5C8.33 1 9 1.67 9 2.5V3" stroke="currentColor" stroke-width="1.2"/></svg>`;

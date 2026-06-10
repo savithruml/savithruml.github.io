@@ -7,21 +7,32 @@
   <link rel="icon" type="image/svg+xml" href="favicon.svg"/>
   <link rel="manifest" href="manifest.json"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/1.3.1/forge.min.js"></script>
+  <script>
+  // Patch forge: tolerate EC / unknown key types without throwing
+  if (window.forge && forge.pki) {
+    const _origPK = forge.pki.publicKeyFromAsn1;
+    forge.pki.publicKeyFromAsn1 = function(obj) {
+      try { return _origPK.call(this, obj); }
+      catch(e) { return { _unknownType: true, _err: e.message }; }
+    };
+  }
+  </script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
       --bg:      #0f0f0f;
-      --surface: #161616;
-      --border:  #222;
-      --text:    #d4d4d4;
-      --muted:   #666;
+      --surface: #1a1a1a;
+      --border:  #2a2a2a;
+      --text:    #ececec;
+      --muted:   #888;
       --accent:  #a78bfa;
       --radius:  8px;
       --font-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
     }
 
-    html, body { height: 100%; background: var(--bg); color: var(--text); font-family: Helvetica, Arial, sans-serif; font-size: 13px; overflow: hidden; }
+    html { height: 100%; }
+    body { height: 100%; display: flex; flex-direction: column; background: var(--bg); color: var(--text); font-family: Helvetica, Arial, sans-serif; font-size: 14px; overflow: hidden; }
 
     /* ── Header ── */
     header {
@@ -33,11 +44,11 @@
       gap: 10px;
       flex-shrink: 0;
     }
-    .logo { flex-shrink: 0; }
-    header h1 { font-size: 15px; font-weight: 700; letter-spacing: -0.02em; color: #e8e8e8; }
+    .logo { flex-shrink: 0; width: 35px; height: 35px; }
+    header h1 { font-size: 18px; font-weight: 400; letter-spacing: 0.01em; color: var(--text); }
     .status-dot {
       margin-left: auto;
-      font-size: 11px;
+      font-size: 12px;
       color: var(--muted);
       display: flex;
       align-items: center;
@@ -58,8 +69,20 @@
     /* ── Workspace ── */
     .workspace {
       display: flex;
-      height: calc(100vh - 48px);
+      flex: 1;
       overflow: hidden;
+    }
+
+    /* ── Footer ── */
+    footer {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+      flex-shrink: 0;
     }
 
     /* ── Pane ── */
@@ -73,15 +96,15 @@
     #rightPane { flex: 1; }
 
     .pane-header {
-      height: 34px;
+      height: 40px;
       display: flex;
       align-items: center;
       padding: 0 14px;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: #888;
+      color: #aaa;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
       gap: 8px;
@@ -91,7 +114,7 @@
       font-weight: 400;
       letter-spacing: 0;
       text-transform: none;
-      color: #555;
+      color: #777;
       margin-left: auto;
     }
     .pane-header .canvas-tools { margin-left: auto; display: flex; gap: 4px; }
@@ -105,35 +128,36 @@
       background: var(--bg);
       color: var(--text);
       font-family: var(--font-mono);
-      font-size: 11.5px;
+      font-size: 13px;
       line-height: 1.65;
       padding: 14px;
       caret-color: var(--accent);
     }
-    #editor::placeholder { color: #3a3a3a; }
+    #editor::placeholder { color: #555; }
 
     /* ── Tool buttons ── */
     .pane-footer {
-      height: 40px;
+      height: 56px;
       display: flex;
       align-items: center;
-      padding: 0 10px;
-      gap: 6px;
+      justify-content: center;
+      padding: 0 14px;
+      gap: 8px;
       border-top: 1px solid var(--border);
       flex-shrink: 0;
     }
     .tool-btn {
       background: transparent;
       border: 1px solid var(--border);
-      color: #888;
-      border-radius: 5px;
-      padding: 4px 10px;
-      font-size: 11px;
+      color: #aaa;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 12px;
       cursor: pointer;
       transition: color 0.12s, border-color 0.12s;
     }
     .tool-btn:hover { color: var(--accent); border-color: var(--accent); }
-    .tool-btn.icon-btn { padding: 4px 6px; }
+    .tool-btn.icon-btn { padding: 6px 8px; }
 
     /* ── v-handle ── */
     .v-handle {
@@ -148,17 +172,25 @@
     .v-handle:hover, .v-handle.dragging { background: var(--accent); opacity: 0.5; }
 
     /* ── Cert display ── */
-    .cert-wrap {
+    #certView {
+      display: flex;
+      flex-direction: column;
       flex: 1;
       overflow-y: auto;
+    }
+
+    .cert-wrap {
       padding: 18px;
       display: flex;
       flex-direction: column;
       gap: 12px;
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
     }
-    .cert-wrap::-webkit-scrollbar { width: 6px; }
-    .cert-wrap::-webkit-scrollbar-track { background: transparent; }
-    .cert-wrap::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
+    #certView::-webkit-scrollbar { width: 6px; }
+    #certView::-webkit-scrollbar-track { background: transparent; }
+    #certView::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 3px; }
 
     .cert-section {
       background: var(--surface);
@@ -168,7 +200,7 @@
     }
     .cert-section-title {
       padding: 7px 14px;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
       color: var(--accent);
       text-transform: uppercase;
@@ -180,25 +212,25 @@
       display: flex;
       align-items: flex-start;
       padding: 8px 14px;
-      border-bottom: 1px solid #1a1a1a;
+      border-bottom: 1px solid #222;
       gap: 10px;
     }
     .cert-row:last-child { border-bottom: none; }
     .cert-key {
-      font-size: 11px;
-      color: #555;
-      min-width: 130px;
+      font-size: 12px;
+      color: #888;
+      min-width: 140px;
       flex-shrink: 0;
       padding-top: 1px;
       font-family: var(--font-mono);
     }
     .cert-val {
-      font-size: 11.5px;
-      color: #c8c8c8;
+      font-size: 13px;
+      color: #ececec;
       font-family: var(--font-mono);
       word-break: break-all;
       flex: 1;
-      line-height: 1.5;
+      line-height: 1.55;
     }
     .validity-badge {
       display: inline-block;
@@ -223,8 +255,8 @@
       background: rgba(167,139,250,0.08);
       border: 1px solid rgba(167,139,250,0.2);
       border-radius: 4px;
-      padding: 2px 8px;
-      font-size: 11px;
+      padding: 3px 9px;
+      font-size: 12px;
       color: #c4b5fd;
       font-family: var(--font-mono);
     }
@@ -232,14 +264,18 @@
       background: #1c1c1c;
       border: 1px solid #2a2a2a;
       border-radius: 4px;
-      padding: 2px 8px;
-      font-size: 11px;
-      color: #888;
+      padding: 3px 9px;
+      font-size: 12px;
+      color: #aaa;
     }
     .fp-val {
-      font-size: 10.5px;
+      font-size: 12px;
       line-height: 1.6;
     }
+
+    /* ── Drag-over highlight ── */
+    #leftPane.drag-over { outline: 2px dashed var(--accent); outline-offset: -4px; }
+    #leftPane.drag-over textarea { opacity: 0.4; }
 
     /* ── Empty state ── */
     .empty-state {
@@ -254,7 +290,7 @@
       user-select: none;
     }
     .empty-state svg { opacity: 0.3; }
-    .empty-state p { font-size: 12px; color: #444; }
+    .empty-state p { font-size: 13px; color: #666; }
 
     /* ── CA badge ── */
     .ca-badge {
@@ -278,7 +314,7 @@
 
 <header>
   <!-- Logo -->
-  <svg class="logo" width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg class="logo" width="35" height="35" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
     <rect width="26" height="26" rx="6" fill="#1a0a2e"/>
     <!-- Shield outline -->
     <path d="M13 4 L20 7.5 L20 13.5 C20 17.5 13 22 13 22 C13 22 6 17.5 6 13.5 L6 7.5 Z"
@@ -295,16 +331,24 @@
   <!-- Left: PEM input -->
   <div class="pane" id="leftPane">
     <div class="pane-header">
-      Certificate
-      <span class="hint">PEM format</span>
+      Input
+      <span class="hint">paste or drop a file</span>
     </div>
     <textarea id="editor" placeholder="-----BEGIN CERTIFICATE-----
 MIIFazCCA1OgAwIBAgIRAIIQz7DSQ...
 -----END CERTIFICATE-----
 
-Paste any X.509 PEM certificate here."></textarea>
+Paste or drop a PEM file here.
+Supports: certificate, private key, CSR, public key."></textarea>
     <div class="pane-footer">
-      <button class="tool-btn" id="sampleBtn">Sample cert</button>
+      <button class="tool-btn" id="uploadBtn">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:4px;vertical-align:-1px">
+          <path d="M6 1v7M3 4l3-3 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M1 9.5V11h10V9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+        </svg>Upload file
+      </button>
+      <input type="file" id="fileInput" accept=".pem,.crt,.cer,.key,.csr,.p7b,.pub" style="display:none"/>
+      <button class="tool-btn" id="sampleBtn">Sample</button>
       <button class="tool-btn" id="clearBtn">Clear</button>
     </div>
   </div>
@@ -339,6 +383,8 @@ Paste any X.509 PEM certificate here."></textarea>
   </div>
 </div>
 
+<footer>© 2026 Savithru Lokanath</footer>
+
 <script>
 // ── v-handle drag ─────────────────────────────────────────────
 const vHandle = document.getElementById('vHandle');
@@ -355,38 +401,7 @@ document.addEventListener('mousemove', e => {
 });
 document.addEventListener('mouseup', () => { dragging = false; vHandle.classList.remove('dragging'); });
 
-// ── ISRG Root X1 sample cert ──────────────────────────────────
-const SAMPLE_PEM = `-----BEGIN CERTIFICATE-----
-MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw
-TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh
-cmNoIEdyb3VwMRUwEwYDVQQDEwxJU1JHIFJvb3QgWDEwHhcNMTUwNjA0MTEwNDM4
-WhcNMzUwNjA0MTEwNDM4WjBPMQswCQYDVQQGEwJVUzEpMCcGA1UEChMgSW50ZXJu
-ZXQgU2VjdXJpdHkgUmVzZWFyY2ggR3JvdXAxFTATBgNVBAMTDElTUkcgUm9vdCBY
-MTCCAiIwDQYJKoZIhvcNAQEBBQADggIPADCCAgoBggIBAK3oJHP0FDfzm54rVygc
-h77ct984kIxuPOZXoHj3dcKi/vVqbvYATyjb3miGbESTtrFj/RQSa78f0uoxmyF+
-0TM8ukj13Xnfs7j/EvEhmkvBioZxaUpmZmyPfjxwv60pIgbz5MDmgK7iS4+3mX6U
-A5/TR5d8mUgjU+g4rk8Kb4Mu0UlXjIB0ttov0DiNewNwIRt18jA8+o+u3dpjq+sW
-T8KOEUt+zwvo/7V3LvSye0rgTBIlDHCNAymg4VMk7BPZ7hm/ELNKjD+Jo2FR3qyH
-B5T0Y3HsLuJvW5iB4YlcNHlsdu87kGJ55tukmi8mxdAQ4Q7e2RCOFvu396j3x+UC
-B5iPNgiV5+I3lg02dZ77DnKxHZu8A/lJBdiB3QW0KtZB6awBdpUKD9jf1b0SHzUv
-KBds0pjBqAlkd25HN7rOrFleaJ1/ctaJxQZBKT5ZPt0m9STJEadao0xAH0ahmbWn
-OlFuhjuefXKnEgV4We0+UXgVCwOPjdAvBbI+e0ocS3MFEvzG6uBQE3xDk3SzynTn
-jh8BCNAw1FtxNrQHusEwMFxIt4I7mKZ9YIqioymCzLq9gwQbooMDQaHWBfEbwrbw
-qHyGO0aoSCqI3Haadr8faqU9GY/rOPNk3sgrDQoo//fb4hVC1CLQJ13hef4Y53CI
-rU7m2Ys6xt0nUW7/vGT1M0NPAgMBAAGjQjBAMA4GA1UdDwEB/wQEAwIBBjAPBgNV
-HRMBAf8EBTADAQH/MB0GA1UdDgQWBBR5tFnme7bl5AFzgAiIyBpY9umbbjANBgkq
-hkiG9w0BAQsFAAOCAgEAVR9YqbyyqFDQDLHYGmkgJykIrGF1XIpu+ILlaS/V9lZL
-ubhzEFnTIZd+50xx+7LSYK05qAvqFyFWhfFQDlnrzuBZ6brJFe+GnY+EgPbk6ZGQ
-3BebYhtF8GaV0nxvwuo77x/Py9auJ/GpsMiu/X1+mvoiBOv/2X/qkSsisRcOj/KK
-NFtY2PwByVS5uCbMiogziUwthDyC3+6WVwW6LLv3xLfHTjuCvjHIInNzktHCgKQ5
-ORAzI4JMPJ+GslWYHb4phowim57iaztXOoJwTdwJx4nLCgdNbOhdjsnvzqvHu7Ur
-TkXWStAmzOVyyghqpZXjFaH3pO3JLF+l+/+sKAIuvtd7u+Nxe5AW0wdeRlN8NwdC
-jNPElpzVmbUq4JUagEiuTDkHzsxHpFKVK7q4+63SM1N95R1NbdWhscdCb+ZAJzVc
-oyi3B43njTOQ5yOf+1CceWxG1bQVs5ZufpsMljq4Ui0/1lvh+wjChP4kqKOJ2qxq
-4RgqsahDYVvTH9w7jXbyLeiNdd8XM2w9U/t7y0Ff/9yi0GE44Za4rF2LN9d11TPA
-mRGunUHBcnWEvgJBQl9nJEiU0Zsnvgc/ubhPgXRR4Xq37Z0j4r7g1SgEEzwxA57d
-emyPxgcYxn/eR44/KJ4EBs+lVDR3veyJm+kXQ99b21/+jh5Xos1AnX5iItreGCc=
------END CERTIFICATE-----`;
+// No hardcoded sample — generate one via forge on demand
 
 // ── Helpers ───────────────────────────────────────────────────
 function getAttr(attrs, name) {
@@ -403,11 +418,13 @@ function daysUntil(d) {
   return Math.round((d - new Date()) / 86400000);
 }
 
-function hexFingerprint(cert, mdAlgo) {
+// Hash raw DER bytes directly — no need to re-serialize the cert
+function hexFingerprint(rawPem, mdAlgo) {
   try {
-    const der = forge.asn1.toDer(forge.pki.certificateToAsn1(cert));
+    const b64 = rawPem.replace(/-----[^-]+-----/g, '').replace(/\s+/g, '');
+    const der = forge.util.decode64(b64);
     const md = mdAlgo.create();
-    md.update(der.bytes());
+    md.update(der);
     return md.digest().toHex().toUpperCase().match(/../g).join(':');
   } catch(e) { return '—'; }
 }
@@ -495,24 +512,35 @@ function renderCert(pem) {
   // ── Public key
   const pk = cert.publicKey;
   let pkType = 'Unknown', pkInfo = '';
-  if (pk && pk.n) {
+  if (pk && pk._unknownType) {
+    // EC or other unsupported key type — show what we know from siginfo
+    pkType = 'EC / Other';
+  } else if (pk && pk.n) {
     pkType = 'RSA';
     try { pkInfo = pk.n.bitLength() + ' bits'; } catch(e) {}
   } else if (pk && pk.curve) {
-    pkType = 'EC';
-    pkInfo = pk.curve;
+    pkType = 'EC (' + pk.curve + ')';
   }
+  // Signature algorithm from siginfo OID or md
+  let sigAlg = '—';
+  try {
+    const oid = cert.siginfo?.algorithmOid;
+    if (oid) sigAlg = forge.pki.oids[oid] || oid;
+    else if (cert.md?.algorithm) {
+      sigAlg = cert.md.algorithm
+        .replace('with','With').replace('sha','SHA')
+        .replace('rsa','RSA').replace('ecdsa','ECDSA');
+    }
+  } catch(e) {}
   html.push(section('Public Key',
     row('Algorithm', escHtml(pkType)) +
     (pkInfo ? row('Key Size', escHtml(pkInfo)) : '') +
-    row('Signature Alg', escHtml(cert.siginfo?.algorithmOid
-      ? (forge.pki.oids[cert.siginfo.algorithmOid] || cert.siginfo.algorithmOid)
-      : (cert.md?.algorithm ? cert.md.algorithm.replace('with','With').replace('sha','SHA').replace('rsa','RSA').replace('ecdsa','ECDSA') : '—')))
+    row('Signature Alg', escHtml(sigAlg))
   ));
 
-  // ── Fingerprints
-  const fp256 = hexFingerprint(cert, forge.md.sha256);
-  const fp1   = hexFingerprint(cert, forge.md.sha1);
+  // ── Fingerprints (hash raw DER — works for any key type)
+  const fp256 = hexFingerprint(certs[0], forge.md.sha256);
+  const fp1   = hexFingerprint(certs[0], forge.md.sha1);
   html.push(section('Fingerprints',
     row('SHA-256', `<span class="fp-val">${escHtml(fp256)}</span>`) +
     row('SHA-1',   `<span class="fp-val">${escHtml(fp1)}</span>`)
@@ -585,7 +613,8 @@ const certView  = document.getElementById('certView');
 const statusDot = document.getElementById('statusDot');
 const copyBtn   = document.getElementById('copyBtn');
 
-let lastCert = null;
+let lastCert    = null;
+let lastPem     = null;   // raw PEM string of the first block (for fingerprints + copy)
 let copyTimeout = null;
 
 const ICON_COPY  = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 9H2.5C1.67 9 1 8.33 1 7.5V2.5C1 1.67 1.67 1 2.5 1H7.5C8.33 1 9 1.67 9 2.5V3" stroke="currentColor" stroke-width="1.2"/></svg>`;
@@ -596,6 +625,112 @@ function setStatus(type, text) {
   statusDot.textContent = text;
 }
 
+// ── PEM type detection ────────────────────────────────────────
+function detectPemType(text) {
+  const m = text.match(/-----BEGIN ([A-Z0-9 ]+)-----/);
+  if (!m) return 'unknown';
+  const t = m[1].trim();
+  if (t.includes('CERTIFICATE REQUEST') || t.includes('NEW CERTIFICATE REQUEST')) return 'csr';
+  if (t === 'CERTIFICATE') return 'cert';
+  if (t.includes('PRIVATE KEY')) return 'key';
+  if (t.includes('PUBLIC KEY')) return 'pubkey';
+  return 'other';
+}
+
+// ── Render private key ────────────────────────────────────────
+function renderKey(pem) {
+  const m = pem.match(/-----BEGIN ([A-Z0-9 ]+)-----/);
+  const header = m ? m[1].trim() : 'PRIVATE KEY';
+  const html = [];
+
+  let keyType = header.includes('RSA') ? 'RSA' : header.includes('EC') ? 'EC' : 'Unknown';
+  let keySize = '—';
+
+  if (window.forge) {
+    try {
+      if (header.includes('RSA') || header === 'PRIVATE KEY') {
+        const key = forge.pki.privateKeyFromPem(pem);
+        if (key && key.n) { keyType = 'RSA'; keySize = key.n.bitLength() + ' bits'; }
+      }
+    } catch(e) {}
+  }
+
+  html.push(section('Private Key',
+    row('Type',      escHtml(keyType)) +
+    (keySize !== '—' ? row('Size', escHtml(keySize)) : '') +
+    row('PEM Header', escHtml(header)) +
+    row('⚠ Warning', '<span style="color:#fbbf24">Key material detected — never share private keys</span>')
+  ));
+
+  return { html: html.join(''), summary: `${keyType} private key${keySize !== '—' ? ' · ' + keySize : ''}` };
+}
+
+// ── Render public key ─────────────────────────────────────────
+function renderPubKey(pem) {
+  const m = pem.match(/-----BEGIN ([A-Z0-9 ]+)-----/);
+  const header = m ? m[1].trim() : 'PUBLIC KEY';
+  const html = [];
+
+  let keyType = '—', keySize = '—';
+  if (window.forge) {
+    try {
+      const key = forge.pki.publicKeyFromPem(pem);
+      if (key && key.n) { keyType = 'RSA'; keySize = key.n.bitLength() + ' bits'; }
+      else if (key && key.curve) { keyType = 'EC'; keySize = key.curve; }
+    } catch(e) {}
+  }
+
+  html.push(section('Public Key',
+    row('Type',      escHtml(keyType)) +
+    (keySize !== '—' ? row('Size / Curve', escHtml(keySize)) : '') +
+    row('PEM Header', escHtml(header))
+  ));
+
+  return { html: html.join(''), summary: `${keyType} public key${keySize !== '—' ? ' · ' + keySize : ''}` };
+}
+
+// ── Render CSR ────────────────────────────────────────────────
+function renderCSR(pem) {
+  const html = [];
+
+  if (!window.forge) throw new Error('forge library not available');
+
+  let csr;
+  try { csr = forge.pki.certificationRequestFromPem(pem); }
+  catch(e) { throw new Error('Failed to parse CSR: ' + e.message); }
+
+  const subjR = subjRows(csr.subject.attributes);
+  if (subjR) html.push(section('Subject', subjR));
+
+  // Public key
+  const pk = csr.publicKey;
+  let pkType = 'Unknown', pkSize = '';
+  if (pk && pk._unknownType) { pkType = 'EC / Other'; }
+  else if (pk && pk.n) { pkType = 'RSA'; try { pkSize = pk.n.bitLength() + ' bits'; } catch(e) {} }
+  else if (pk && pk.curve) { pkType = 'EC (' + pk.curve + ')'; }
+  html.push(section('Public Key',
+    row('Algorithm', escHtml(pkType)) +
+    (pkSize ? row('Key Size', escHtml(pkSize)) : '')
+  ));
+
+  // SANs from requested extensions
+  const exts = csr.extensions || [];
+  const extSAN = exts.find(e => e.name === 'subjectAltName');
+  if (extSAN && extSAN.altNames && extSAN.altNames.length) {
+    const tags = extSAN.altNames.map(n => {
+      const val = n.value || n.ip || '';
+      return `<span class="san-tag">${escHtml(val)}</span>`;
+    }).join('');
+    html.push(section('Requested SANs', `<div class="san-list">${tags}</div>`));
+  }
+
+  html.push(section('Type', row('Document', '<span class="ca-badge">Certificate Signing Request</span>')));
+
+  const cn = getAttr(csr.subject.attributes, 'CN') || 'CSR';
+  return { html: html.join(''), summary: cn + ' · CSR' };
+}
+
+// ── Master update ─────────────────────────────────────────────
 function update() {
   const pem = editor.value.trim();
   if (!pem) {
@@ -606,40 +741,142 @@ function update() {
         <path d="M13.5 20 L17.5 24 L26.5 15"
               stroke="#a78bfa" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
       </svg>
-      <p>Decoded certificate fields will appear here</p>
+      <p>Decoded fields will appear here</p>
     </div>`;
-    setStatus('', 'paste a PEM certificate');
-    lastCert = null;
+    setStatus('', 'paste or drop a PEM file');
+    lastCert = null; lastPem = null;
     return;
   }
 
-  try {
-    const { html, cert } = renderCert(pem);
-    certView.innerHTML = `<div class="cert-wrap">${html}</div>`;
-    lastCert = cert;
+  const type = detectPemType(pem);
 
-    const days = daysUntil(cert.validity.notAfter);
-    const cn = getAttr(cert.subject.attributes, 'CN') || 'certificate';
-    if (days > 30) {
-      setStatus('ok', `${escHtml(cn)} · ${days} days left`);
-    } else if (days >= 0) {
-      setStatus('warn', `${escHtml(cn)} · expiring soon`);
+  try {
+    if (type === 'cert') {
+      const { html, cert } = renderCert(pem);
+      certView.innerHTML = `<div class="cert-wrap">${html}</div>`;
+      lastCert = cert;
+      lastPem  = pem.match(/-----BEGIN CERTIFICATE-----[\s\S]+?-----END CERTIFICATE-----/)[0];
+      const days = daysUntil(cert.validity.notAfter);
+      const cn = getAttr(cert.subject.attributes, 'CN') || 'certificate';
+      if (days > 30)       setStatus('ok',    `${escHtml(cn)} · ${days} days left`);
+      else if (days >= 0)  setStatus('warn',  `${escHtml(cn)} · expiring soon`);
+      else                 setStatus('error', `${escHtml(cn)} · expired`);
+
+    } else if (type === 'key') {
+      const { html, summary } = renderKey(pem);
+      certView.innerHTML = `<div class="cert-wrap">${html}</div>`;
+      lastCert = null; lastPem = null;
+      setStatus('warn', summary);
+
+    } else if (type === 'pubkey') {
+      const { html, summary } = renderPubKey(pem);
+      certView.innerHTML = `<div class="cert-wrap">${html}</div>`;
+      lastCert = null; lastPem = null;
+      setStatus('ok', summary);
+
+    } else if (type === 'csr') {
+      const { html, summary } = renderCSR(pem);
+      certView.innerHTML = `<div class="cert-wrap">${html}</div>`;
+      lastCert = null; lastPem = null;
+      setStatus('ok', summary);
+
     } else {
-      setStatus('error', `${escHtml(cn)} · expired`);
+      // Try as cert anyway
+      try {
+        const { html, cert } = renderCert(pem);
+        certView.innerHTML = `<div class="cert-wrap">${html}</div>`;
+        lastCert = cert;
+        lastPem  = pem.match(/-----BEGIN [^-]+-----[\s\S]+?-----END [^-]+-----/)[0];
+        setStatus('ok', 'certificate');
+      } catch(e) {
+        certView.innerHTML = `<div class="empty-state"><p style="color:#ef4444">${escHtml('Unknown PEM type: ' + (pem.match(/-----BEGIN ([^-]+)-----/)?.[1] || '?'))}</p></div>`;
+        setStatus('error', 'unknown PEM type');
+        lastCert = null; lastPem = null;
+      }
     }
   } catch(e) {
     certView.innerHTML = `<div class="empty-state"><p style="color:#ef4444">${escHtml(e.message)}</p></div>`;
     setStatus('error', 'parse error');
-    lastCert = null;
+    lastCert = null; lastPem = null;
   }
 }
 
 editor.addEventListener('input', update);
 
+// ── File upload + drag-drop ───────────────────────────────────
+const fileInput = document.getElementById('fileInput');
+
+document.getElementById('uploadBtn').addEventListener('click', () => fileInput.click());
+
+fileInput.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  loadFile(file);
+  fileInput.value = '';
+});
+
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = e => {
+    editor.value = e.target.result;
+    update();
+  };
+  reader.readAsText(file);
+}
+
+leftPane.addEventListener('dragover', e => { e.preventDefault(); leftPane.classList.add('drag-over'); });
+leftPane.addEventListener('dragleave', e => { if (!leftPane.contains(e.relatedTarget)) leftPane.classList.remove('drag-over'); });
+leftPane.addEventListener('drop', e => {
+  e.preventDefault();
+  leftPane.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) loadFile(file);
+});
+
 // ── Buttons ───────────────────────────────────────────────────
 document.getElementById('sampleBtn').addEventListener('click', () => {
-  editor.value = SAMPLE_PEM.trim();
-  update();
+  if (!window.forge) { setStatus('error', 'forge library not loaded'); return; }
+  setStatus('', 'generating…');
+  // Use setTimeout so the status text renders before blocking RSA gen
+  setTimeout(() => {
+    try {
+      const kp   = forge.pki.rsa.generateKeyPair(512); // small key — demo only
+      const cert = forge.pki.createCertificate();
+      cert.publicKey   = kp.publicKey;
+      cert.serialNumber = '01A2B3C4';
+      cert.validity.notBefore = new Date('2024-01-15T00:00:00Z');
+      cert.validity.notAfter  = new Date('2025-12-31T23:59:59Z');
+      const subj = [
+        {name:'commonName',       value:'demo.example.com'},
+        {name:'organizationName', value:'Example Corp'},
+        {shortName:'OU',          value:'Engineering'},
+        {shortName:'L',           value:'San Francisco'},
+        {shortName:'ST',          value:'California'},
+        {shortName:'C',           value:'US'},
+      ];
+      cert.setSubject(subj);
+      cert.setIssuer([
+        {name:'commonName',       value:'Example Root CA'},
+        {name:'organizationName', value:'Example Corp'},
+        {shortName:'C',           value:'US'},
+      ]);
+      cert.setExtensions([
+        {name:'basicConstraints', cA:false},
+        {name:'keyUsage', digitalSignature:true, keyEncipherment:true},
+        {name:'extKeyUsage', serverAuth:true, clientAuth:false},
+        {name:'subjectAltName', altNames:[
+          {type:2, value:'demo.example.com'},
+          {type:2, value:'www.demo.example.com'},
+          {type:2, value:'*.demo.example.com'},
+        ]},
+      ]);
+      cert.sign(kp.privateKey, forge.md.sha256.create());
+      editor.value = forge.pki.certificateToPem(cert);
+      update();
+    } catch(e) {
+      setStatus('error', 'generation failed: ' + e.message);
+    }
+  }, 16);
 });
 
 document.getElementById('clearBtn').addEventListener('click', () => {
@@ -648,29 +885,7 @@ document.getElementById('clearBtn').addEventListener('click', () => {
 });
 
 copyBtn.addEventListener('click', () => {
-  if (!lastCert) return;
-  // Build text representation
-  function getA(attrs, sn) { const a = attrs.find(x => x.shortName === sn || x.name === sn); return a ? a.value : null; }
-  const lines = [
-    '=== Subject ===',
-    'CN:  ' + (getA(cert_sub_attrs(), 'CN') || ''),
-    'O:   ' + (getA(cert_sub_attrs(), 'O')  || ''),
-    'C:   ' + (getA(cert_sub_attrs(), 'C')  || ''),
-    '',
-    '=== Issuer ===',
-    'CN:  ' + (getA(lastCert.issuer.attributes, 'CN') || ''),
-    '',
-    '=== Validity ===',
-    'Not Before: ' + fmtDate(lastCert.validity.notBefore),
-    'Not After:  ' + fmtDate(lastCert.validity.notAfter),
-    '',
-    '=== Serial ===',
-    fmtSerial(lastCert.serialNumber),
-    '',
-    '=== Fingerprint (SHA-256) ===',
-    hexFingerprint(lastCert, forge.md.sha256),
-  ];
-  function cert_sub_attrs() { return lastCert.subject.attributes; }
+  if (!lastCert || !lastPem) return;
   const text = [
     '=== Subject ===',
     ...lastCert.subject.attributes.map(a => `${a.shortName || a.name}: ${a.value}`),
@@ -686,7 +901,7 @@ copyBtn.addEventListener('click', () => {
     fmtSerial(lastCert.serialNumber),
     '',
     '=== SHA-256 Fingerprint ===',
-    hexFingerprint(lastCert, forge.md.sha256),
+    hexFingerprint(lastPem, forge.md.sha256),
   ].join('\n');
   navigator.clipboard.writeText(text).then(() => {
     copyBtn.innerHTML = ICON_CHECK;
