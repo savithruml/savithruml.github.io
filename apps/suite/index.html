@@ -158,8 +158,12 @@
       letter-spacing: 0.09em;
       text-transform: uppercase;
       color: #444;
-      padding: 14px 14px 6px;
+      padding: 16px 14px 5px;
       white-space: nowrap;
+    }
+    .sidebar-label + .sidebar-label,
+    .sidebar-category-gap {
+      padding-top: 10px;
     }
 
     .sidebar-item {
@@ -168,13 +172,13 @@
       gap: 9px;
       padding: 5px 12px;
       cursor: pointer;
-      color: var(--muted);
+      color: #b0b0b0;
       font-size: 13px;
       white-space: nowrap;
       transition: background 0.1s, color 0.1s;
     }
-    .sidebar-item:hover { background: #1b1b1b; color: #ccc; }
-    .sidebar-item.open { color: #bbb; }
+    .sidebar-item:hover { background: #1b1b1b; color: #ddd; }
+    .sidebar-item.open { color: #ccc; }
     .sidebar-item.active { color: var(--text); background: #1f1f1f; }
 
     .sidebar-icon { flex-shrink: 0; display: flex; align-items: center; border-radius: 5px; overflow: hidden; }
@@ -196,7 +200,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: flex-start;
-      padding: 60px 40px 40px;
+      padding: 48px 48px 48px;
       overflow-y: auto;
       gap: 36px;
     }
@@ -212,33 +216,48 @@
     #welcome-header p { font-size: 14px; color: var(--muted); }
 
     #welcome-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-      gap: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
       width: 100%;
-      max-width: 880px;
+      max-width: 920px;
+    }
+
+    .welcome-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .welcome-section-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 8px;
     }
 
     .welcome-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 11px 14px;
+      border-radius: 8px;
+      padding: 14px 16px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
       transition: border-color 0.15s, background 0.15s;
     }
     .welcome-card:hover { border-color: #3a3a3a; background: #1a1a1a; }
     .welcome-card.open-indicator { border-color: #333; }
 
-    .welcome-icon { flex-shrink: 0; display: flex; align-items: center; border-radius: 7px; overflow: hidden; }
+    .welcome-icon { flex-shrink: 0; display: flex; align-items: center; border-radius: 8px; overflow: hidden; }
     .welcome-icon svg { display: block; }
 
     .welcome-card-text { min-width: 0; }
-    .welcome-card-name { font-size: 13px; font-weight: 500; color: var(--text); }
-    .welcome-card-desc { font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .welcome-card-name { font-size: 14px; font-weight: 500; color: var(--text); }
+    .welcome-card-desc { font-size: 12px; color: var(--muted); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     .open-badge {
       margin-left: auto;
@@ -285,14 +304,13 @@
 
 <div id="layout">
   <div id="sidebar">
-    <div class="sidebar-label">Apps</div>
     <div id="sidebar-items"></div>
   </div>
   <div id="content-wrap">
     <div id="welcome">
       <div id="welcome-header">
         <h1>Suite</h1>
-        <p>All your network tools in one place. Click any app to open it.</p>
+        <p>All your performance and reliability tools in one place. Click any app to open it.</p>
       </div>
       <div id="welcome-grid"></div>
     </div>
@@ -336,22 +354,45 @@ function mkIcon(name, size) {
 }
 
 // ── App data ───────────────────────────────────────────────────────────
-const APPS = [
-  { name: 'Scale',    path: '/apps/scale/',    desc: 'Unit & currency converter'    },
-  { name: 'Scaffold', path: '/apps/scaffold/', desc: 'Network topology visualizer'  },
-  { name: 'Scout',    path: '/apps/scout/',    desc: 'DNS lookup tool'              },
-  { name: 'Seal',     path: '/apps/seal/',     desc: 'TLS certificate inspector'    },
-  { name: 'Sift',     path: '/apps/sift/',     desc: 'Whois parser'                 },
-  { name: 'Sigil',    path: '/apps/sigil/',    desc: 'JWT decoder'                  },
-  { name: 'Skim',     path: '/apps/skim/',     desc: 'OpenAPI spec browser'         },
-  { name: 'Slice',    path: '/apps/slice/',    desc: 'Subnet calculator'            },
-  { name: 'Span',     path: '/apps/span/',     desc: 'Traceroute visualizer'        },
-  { name: 'Split',    path: '/apps/split/',    desc: 'Text diff tool'               },
-  { name: 'Stalk',    path: '/apps/stalk/',    desc: 'IP geolocation & BGP info'    },
-  { name: 'Stencil',  path: '/apps/stencil/',  desc: 'Jinja template renderer'      },
-  { name: 'Sundial',  path: '/apps/sundial/',  desc: 'Unix timestamp converter'     },
-  { name: 'Swap',     path: '/apps/swap/',     desc: 'JSON ↔ YAML converter'        },
+const CATEGORIES = [
+  {
+    label: 'Network',
+    apps: [
+      { name: 'Scout',   path: '/apps/scout/',   desc: 'DNS lookup tool'          },
+      { name: 'Slice',   path: '/apps/slice/',   desc: 'Subnet calculator'        },
+      { name: 'Span',    path: '/apps/span/',    desc: 'Traceroute visualizer'    },
+      { name: 'Stalk',   path: '/apps/stalk/',   desc: 'IP geolocation & BGP'     },
+    ]
+  },
+  {
+    label: 'Security',
+    apps: [
+      { name: 'Seal',    path: '/apps/seal/',    desc: 'TLS certificate inspector' },
+      { name: 'Sigil',   path: '/apps/sigil/',   desc: 'JWT decoder'               },
+    ]
+  },
+  {
+    label: 'Transform',
+    apps: [
+      { name: 'Scale',   path: '/apps/scale/',   desc: 'Unit & currency converter' },
+      { name: 'Sundial', path: '/apps/sundial/', desc: 'Unix timestamp converter'  },
+      { name: 'Swap',    path: '/apps/swap/',    desc: 'JSON ↔ YAML converter'     },
+    ]
+  },
+  {
+    label: 'Inspect',
+    apps: [
+      { name: 'Scaffold',path: '/apps/scaffold/',desc: 'Network topology visualizer'},
+      { name: 'Sift',    path: '/apps/sift/',    desc: 'Whois parser'              },
+      { name: 'Skim',    path: '/apps/skim/',    desc: 'OpenAPI spec browser'      },
+      { name: 'Split',   path: '/apps/split/',   desc: 'Text diff tool'            },
+      { name: 'Stencil', path: '/apps/stencil/', desc: 'Jinja template renderer'   },
+    ]
+  },
 ];
+
+// Flat list for tab/frame lookups
+const APPS = CATEGORIES.flatMap(c => c.apps);
 
 // ── State ──────────────────────────────────────────────────────────────
 let tabs        = [];
@@ -366,31 +407,54 @@ function init() {
 
 function buildSidebar() {
   const container = document.getElementById('sidebar-items');
-  APPS.forEach(app => {
-    const el = document.createElement('div');
-    el.className = 'sidebar-item';
-    el.id = `sb-${app.name}`;
-    el.innerHTML = `<span class="sidebar-icon">${mkIcon(app.name, 22)}</span><span>${app.name}</span>`;
-    el.onclick = () => openApp(app);
-    container.appendChild(el);
+  CATEGORIES.forEach((cat, i) => {
+    const label = document.createElement('div');
+    label.className = 'sidebar-label';
+    if (i > 0) label.style.paddingTop = '12px';
+    label.textContent = cat.label;
+    container.appendChild(label);
+
+    cat.apps.forEach(app => {
+      const el = document.createElement('div');
+      el.className = 'sidebar-item';
+      el.id = `sb-${app.name}`;
+      el.innerHTML = `<span class="sidebar-icon">${mkIcon(app.name, 22)}</span><span>${app.name}</span>`;
+      el.onclick = () => openApp(app);
+      container.appendChild(el);
+    });
   });
 }
 
 function buildWelcomeGrid() {
   const grid = document.getElementById('welcome-grid');
-  APPS.forEach(app => {
-    const card = document.createElement('div');
-    card.className = 'welcome-card';
-    card.id = `wc-${app.name}`;
-    card.innerHTML = `
-      <span class="welcome-icon">${mkIcon(app.name, 34)}</span>
-      <div class="welcome-card-text">
-        <div class="welcome-card-name">${app.name}</div>
-        <div class="welcome-card-desc">${app.desc}</div>
-      </div>
-    `;
-    card.onclick = () => openApp(app);
-    grid.appendChild(card);
+  CATEGORIES.forEach(cat => {
+    const section = document.createElement('div');
+
+    const title = document.createElement('div');
+    title.className = 'welcome-section-title';
+    title.textContent = cat.label;
+    section.appendChild(title);
+
+    const cards = document.createElement('div');
+    cards.className = 'welcome-section-cards';
+
+    cat.apps.forEach(app => {
+      const card = document.createElement('div');
+      card.className = 'welcome-card';
+      card.id = `wc-${app.name}`;
+      card.innerHTML = `
+        <span class="welcome-icon">${mkIcon(app.name, 40)}</span>
+        <div class="welcome-card-text">
+          <div class="welcome-card-name">${app.name}</div>
+          <div class="welcome-card-desc">${app.desc}</div>
+        </div>
+      `;
+      card.onclick = () => openApp(app);
+      cards.appendChild(card);
+    });
+
+    section.appendChild(cards);
+    grid.appendChild(section);
   });
 }
 
