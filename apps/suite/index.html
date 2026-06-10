@@ -52,17 +52,17 @@
     #sidebar-toggle:hover { color: var(--text); }
 
     #suite-wordmark {
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: #aaa;
-      padding: 0 12px 0 4px;
+      letter-spacing: 0.04em;
+      color: #ccc;
+      padding: 0 14px 0 4px;
       flex-shrink: 0;
       border-right: 1px solid var(--border);
       height: 100%;
       display: flex;
       align-items: center;
+      gap: 8px;
     }
 
     #tab-bar {
@@ -136,7 +136,7 @@
 
     /* ── Sidebar ── */
     #sidebar {
-      width: 192px;
+      width: 210px;
       background: var(--surface);
       border-right: 1px solid var(--border);
       display: flex;
@@ -153,11 +153,11 @@
     #sidebar::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 2px; }
 
     .sidebar-label {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
-      letter-spacing: 0.09em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #444;
+      color: #555;
       padding: 16px 14px 5px;
       white-space: nowrap;
     }
@@ -173,7 +173,7 @@
       padding: 5px 12px;
       cursor: pointer;
       color: #b0b0b0;
-      font-size: 13px;
+      font-size: 14px;
       white-space: nowrap;
       transition: background 0.1s, color 0.1s;
     }
@@ -293,7 +293,16 @@
       <rect x="1" y="10.1" width="13" height="1.4" rx=".7" fill="currentColor"/>
     </svg>
   </div>
-  <div id="suite-wordmark">Suite</div>
+  <div id="suite-wordmark">
+    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="22" height="22">
+      <rect width="24" height="24" rx="5" fill="#1a1a1a"/>
+      <circle cx="8.5" cy="8.5" r="3" fill="#3fb950" opacity="0.95"/>
+      <circle cx="15.5" cy="8.5" r="3" fill="#38bdf8" opacity="0.95"/>
+      <circle cx="8.5" cy="15.5" r="3" fill="#fbbf24" opacity="0.95"/>
+      <circle cx="15.5" cy="15.5" r="3" fill="#fb7185" opacity="0.95"/>
+    </svg>
+    Suite
+  </div>
   <div id="tab-bar"></div>
   <div id="new-tab-btn" onclick="showWelcome()" title="New tab">
     <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
@@ -418,7 +427,7 @@ function buildSidebar() {
       const el = document.createElement('div');
       el.className = 'sidebar-item';
       el.id = `sb-${app.name}`;
-      el.innerHTML = `<span class="sidebar-icon">${mkIcon(app.name, 22)}</span><span>${app.name}</span>`;
+      el.innerHTML = `<span class="sidebar-icon">${mkIcon(app.name, 28)}</span><span>${app.name}</span>`;
       el.onclick = () => openApp(app);
       container.appendChild(el);
     });
