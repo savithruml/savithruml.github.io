@@ -404,16 +404,109 @@
         .replace(/"/g, '&quot;');
     }
 
-    function showResults(data) {
+    // ── Enrichment helpers ──────────────────────────────────────────────────────
+
+    function reverseIP(ip) {
+      // IPv4 → reverse octets + .in-addr.arpa
+      if (ip.includes('.')) {
+        return ip.split('.').reverse().join('.') + '.in-addr.arpa';
+      }
+      // IPv6 → expand, reverse nibbles + .ip6.arpa
+      try {
+        const parts = ip.split(':');
+        const expanded = parts.map(p => p.padStart(4, '0')).join('');
+        return expanded.split('').reverse().join('.') + '.ip6.arpa';
+      } catch { return null; }
+    }
+
+    async function fetchPTR(ip) {
+      const name = reverseIP(ip);
+      if (!name) return null;
+      const endpoints = [
+        `https://cloudflare-dns.com/dns-query?name=${name}&type=PTR&ct=application/dns-json`,
+        `https://dns.google/resolve?name=${name}&type=PTR`,
+      ];
+      for (const url of endpoints) {
+        try {
+          const r = await fetch(url);
+          if (!r.ok) continue;
+          const j = await r.json();
+          const answer = j.Answer || j.answer;
+          if (answer && answer.length > 0) {
+            return answer[0].data.replace(/\.$/, '');
+          }
+        } catch { continue; }
+      }
+      return null;
+    }
+
+    async function fetchRIPE(ip, asnRaw) {
+      const result = { prefix: null, holder: null, asType: null, announced: null, abuseEmail: null };
+
+      // Extract ASN number
+      const asnMatch = (asnRaw || '').match(/\d+/);
+      const asn = asnMatch ? asnMatch[0] : null;
+
+      try {
+        const [prefixRes, abuseRes] = await Promise.allSettled([
+          fetch(`https://stat.ripe.net/data/prefix-overview/data.json?resource=${encodeURIComponent(ip)}`),
+          asn ? fetch(`https://stat.ripe.net/data/abuse-contact-finder/data.json?resource=${encodeURIComponent(ip)}`) : Promise.reject(),
+        ]);
+
+        if (prefixRes.status === 'fulfilled' && prefixRes.value.ok) {
+          const j = await prefixRes.value.json();
+          const prefixes = j?.data?.prefixes;
+          if (prefixes && prefixes.length > 0) {
+            result.prefix = prefixes[0].prefix;
+            const asns = prefixes[0].asns;
+            if (asns && asns.length > 0) {
+              result.holder = asns[0].holder || asns[0].name || null;
+            }
+          }
+        }
+
+        if (abuseRes.status === 'fulfilled' && abuseRes.value.ok) {
+          const j = await abuseRes.value.json();
+          const contacts = j?.data?.anti_abuse_contacts?.abuse_c;
+          if (contacts && contacts.length > 0 && contacts[0].email) {
+            result.abuseEmail = contacts[0].email;
+          }
+        }
+
+        // AS overview for type
+        if (asn) {
+          try {
+            const r = await fetch(`https://stat.ripe.net/data/as-overview/data.json?resource=AS${asn}`);
+            if (r.ok) {
+              const j = await r.json();
+              result.asType = j?.data?.type || null;
+              result.announced = j?.data?.announced ?? null;
+            }
+          } catch { /* ignore */ }
+        }
+      } catch { /* ignore */ }
+
+      return result;
+    }
+
+    // ── Render ───────────────────────────────────────────────────────────────────
+
+    async function showResults(data, ip) {
       const flag = flagEmoji(data.countryCode);
       const countryStr = flag ? `${flag} ${escapeHtml(data.country)}` : escapeHtml(data.country || '—');
       const coordsHref = `https://www.openstreetmap.org/?mlat=${data.lat}&mlon=${data.lon}#map=12/${data.lat}/${data.lon}`;
       const coordsStr = `<a href="${coordsHref}" target="_blank" rel="noopener">${data.lat}, ${data.lon}</a>`;
 
-      // Map bbox ±0.5 degrees
       const delta = 0.5;
       const bboxStr = `${data.lon - delta},${data.lat - delta},${data.lon + delta},${data.lat + delta}`;
       const mapSrc = `https://www.openstreetmap.org/export/embed.html?bbox=${bboxStr}&layer=mapnik&marker=${data.lat},${data.lon}`;
+
+      // Extract ASN number for link
+      const asnMatch = (data.as || '').match(/(\d+)/);
+      const asnNum = asnMatch ? asnMatch[1] : null;
+      const asnLink = asnNum
+        ? `<a href="https://bgp.he.net/AS${asnNum}" target="_blank" rel="noopener">${escapeHtml(data.as)}</a>`
+        : escapeHtml(data.as || '');
 
       const rows = (entries) => entries
         .filter(([, v]) => v !== null && v !== undefined && v !== '')
@@ -435,13 +528,14 @@
       ];
 
       const networkRows = [
-        ['ISP',   escapeHtml(data.isp || '')],
-        ['Org',   escapeHtml(data.org || '')],
-        ['AS',    escapeHtml(data.as || '')],
+        ['ISP',  escapeHtml(data.isp || '')],
+        ['Org',  escapeHtml(data.org || '')],
+        ['AS',   asnLink],
       ];
 
+      // Show initial cards immediately
       contentEl.innerHTML = `
-        <div class="results">
+        <div class="results" id="resultsInner">
           <div class="cert-section">
             <div class="cert-section-title">Location</div>
             ${rows(locationRows)}
@@ -450,18 +544,60 @@
             <div class="cert-section-title">Network</div>
             ${rows(networkRows)}
           </div>
-          <div class="map-container">
-            <iframe
-              src="${mapSrc}"
-              style="width:100%;height:280px;border:1px solid var(--border);border-radius:var(--radius);margin-top:4px"
-              loading="lazy"
-              title="Map"
-            ></iframe>
+          <div class="cert-section" id="bgpCard">
+            <div class="cert-section-title">BGP / Routing</div>
+            <div class="cert-row"><span class="cert-val" style="color:var(--muted);font-size:12px">Fetching…</span></div>
           </div>
-        </div>
-      `;
+          <div class="cert-section" id="dnsCard">
+            <div class="cert-section-title">Reverse DNS</div>
+            <div class="cert-row"><span class="cert-val" style="color:var(--muted);font-size:12px">Fetching…</span></div>
+          </div>
+          <div class="map-container">
+            <iframe src="${mapSrc}"
+              style="width:100%;height:280px;border:1px solid var(--border);border-radius:var(--radius);margin-top:4px"
+              loading="lazy" title="Map"></iframe>
+          </div>
+        </div>`;
 
       setStatus('ok', 'Located');
+
+      // Fetch enrichment in parallel
+      const [ripe, ptr] = await Promise.allSettled([
+        fetchRIPE(ip, data.as),
+        fetchPTR(ip),
+      ]);
+
+      // BGP / Routing card
+      const bgpCard = document.getElementById('bgpCard');
+      if (bgpCard) {
+        const r = ripe.status === 'fulfilled' ? ripe.value : {};
+        const bgpRows = [
+          ['Prefix',    r.prefix ? escapeHtml(r.prefix) : null],
+          ['Holder',    r.holder ? escapeHtml(r.holder) : null],
+          ['AS type',   r.asType ? escapeHtml(r.asType) : null],
+          ['Announced', r.announced !== null && r.announced !== undefined ? (r.announced ? 'Yes' : 'No') : null],
+          ['Abuse',     r.abuseEmail ? `<a href="mailto:${escapeHtml(r.abuseEmail)}">${escapeHtml(r.abuseEmail)}</a>` : null],
+        ];
+        const bgpHtml = bgpRows
+          .filter(([, v]) => v)
+          .map(([k, v]) => `<div class="cert-row"><span class="cert-key">${k}</span><span class="cert-val">${v}</span></div>`)
+          .join('');
+        bgpCard.innerHTML = `
+          <div class="cert-section-title">BGP / Routing</div>
+          ${bgpHtml || '<div class="cert-row"><span class="cert-val" style="color:var(--muted);font-size:12px">No BGP data available</span></div>'}`;
+      }
+
+      // Reverse DNS card
+      const dnsCard = document.getElementById('dnsCard');
+      if (dnsCard) {
+        const hostname = ptr.status === 'fulfilled' ? ptr.value : null;
+        dnsCard.innerHTML = `
+          <div class="cert-section-title">Reverse DNS</div>
+          <div class="cert-row">
+            <span class="cert-key">PTR</span>
+            <span class="cert-val">${hostname ? escapeHtml(hostname) : '<span style="color:var(--muted)">No PTR record</span>'}</span>
+          </div>`;
+      }
     }
 
     async function doLookup() {
@@ -549,7 +685,7 @@
         if (!data) {
           showError(lastErr?.message || 'All lookup providers failed — check your network.');
         } else {
-          showResults(data);
+          showResults(data, ip);
         }
       } catch (err) {
         if (err.name === 'TypeError' && err.message.includes('fetch')) {
