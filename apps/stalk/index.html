@@ -270,13 +270,14 @@
 
     /* Footer */
     footer {
-      border-top: 1px solid var(--border);
       height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
+      border-top: 1px solid var(--border);
       font-size: 11px;
-      color: var(--muted);
+      color: #888;
+      flex-shrink: 0;
     }
   </style>
 </head>
@@ -329,9 +330,7 @@
     </div>
   </main>
 
-  <footer>
-    &copy; 2026 Savithru Lokanath
-  </footer>
+<footer>© 2026 Savithru Lokanath</footer>
 
   <script>
     const ipInput = document.getElementById('ipInput');
