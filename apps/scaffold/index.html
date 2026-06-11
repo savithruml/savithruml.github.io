@@ -171,7 +171,7 @@
       -moz-tab-size: 2;
       user-select: text;
     }
-    textarea::placeholder { color: #333; }
+    textarea::placeholder { color: #777; }
     textarea:focus { background: #181818; }
 
     /* ── Canvas pane ── */
@@ -515,14 +515,14 @@
 
     /* ── Footer ── */
     footer {
-      padding: 8px 20px;
-      border-top: 1px solid var(--border);
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
-      flex-shrink: 0;
+      border-top: 1px solid var(--border);
       font-size: 11px;
-      color: #606060;
+      color: var(--muted);
+      flex-shrink: 0;
     }
 
     ::-webkit-scrollbar { width: 6px; height: 6px; }
