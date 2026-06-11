@@ -169,7 +169,7 @@
       letter-spacing: 0.02em;
     }
 
-    .cidr-input::placeholder { color: #555; }
+    .cidr-input::placeholder { color: #777; }
     .cidr-input:focus  { border-color: var(--accent); }
     .cidr-input.error  { border-color: var(--error); }
 
@@ -347,11 +347,13 @@
     .chip.active .chip-count { color: var(--accent); opacity: 0.7; }
 
     footer {
-      padding: 14px 20px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       border-top: 1px solid var(--border);
       font-size: 11px;
-      color: #606060;
-      text-align: center;
+      color: var(--muted);
       flex-shrink: 0;
     }
 
