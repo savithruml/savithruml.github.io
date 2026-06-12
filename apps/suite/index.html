@@ -468,7 +468,7 @@ function buildWelcomeGrid() {
 }
 
 // ── Tab management ─────────────────────────────────────────────────────
-function openApp(app) {
+function openApp(app, stateHash) {
   const existing = tabs.find(t => t.path === app.path);
   if (existing) { setActive(existing.id); return; }
 
@@ -478,7 +478,7 @@ function openApp(app) {
   const iframe = document.createElement('iframe');
   iframe.className = 'app-frame';
   iframe.id = `frame-${id}`;
-  iframe.src = app.path;
+  iframe.src = app.path + (stateHash ? '#' + stateHash : '');
   iframe.setAttribute('allow', 'clipboard-write');
   document.getElementById('content-wrap').appendChild(iframe);
 
@@ -588,6 +588,17 @@ document.addEventListener('keydown', e => {
 });
 
 init();
+
+// ── Deep-link routing: #appname or #appname/statehash ─────────────────
+(function() {
+  const raw = window.location.hash.slice(1);
+  if (!raw) return;
+  const slash = raw.indexOf('/');
+  const appName  = slash === -1 ? raw : raw.slice(0, slash);
+  const stateHash = slash === -1 ? '' : raw.slice(slash + 1);
+  const app = APPS.find(a => a.name.toLowerCase() === appName.toLowerCase());
+  if (app) openApp(app, stateHash);
+})();
 </script>
 </body>
 </html>

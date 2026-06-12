@@ -907,7 +907,12 @@
   // ── Share button ─────────────────────────────────────────────────────────────
   document.getElementById('shareBtn').addEventListener('click', function() {
     pushHash();
-    navigator.clipboard.writeText(window.location.href).then(() => {
+    var appName = window.location.pathname.split('/').filter(Boolean).pop();
+    var stateHash = window.location.hash.slice(1);
+    var shareUrl = (window.parent !== window)
+      ? window.location.origin + '/apps/suite/#' + appName + (stateHash ? '/' + stateHash : '')
+      : window.location.href;
+    navigator.clipboard.writeText(shareUrl).then(() => {
       this.classList.add('copied');
       this.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!`;
       setTimeout(() => {
