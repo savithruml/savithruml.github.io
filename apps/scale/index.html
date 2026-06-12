@@ -661,6 +661,7 @@
         currencyLabel.textContent = `${c.flag} ${c.code}`;
         closeCurrencyList();
         renderCurrency();
+        pushHash();
       });
       currencyList.appendChild(opt);
     });
@@ -863,7 +864,9 @@
   // ─── URL state ───────────────────────────────────────────────────────────────
 
   function pushHash() {
-    const unit = activeTab === 'currency' ? (selectedCurrencyCode || 'USD') : (unitSelect.value || '');
+    const unit = activeTab === 'currency'
+      ? (selectedCurrencyCode || 'USD')
+      : (unitSelect.value || TABS[activeTab]?.units[0]?.key || '');
     const state = { tab: activeTab, value: valueInput.value, unit };
     const hash = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
     history.replaceState(null, '', '#' + hash);
@@ -871,31 +874,35 @@
 
   function loadHash() {
     const raw = window.location.hash.slice(1);
-    if (!raw) return;
+    if (!raw) return false;
     try {
       const state = JSON.parse(decodeURIComponent(escape(atob(raw))));
-      if (state.tab) {
-        // Switch tab first to populate selects
-        switchTab(state.tab);
-        if (state.value != null) valueInput.value = state.value;
-        if (state.unit) {
-          if (state.tab === 'currency') {
-            selectedCurrencyCode = state.unit;
-            populateCurrencySelect(state.unit);
-            renderCurrency();
-          } else {
-            unitSelect.value = state.unit;
-            renderResults();
-          }
+      if (!state.tab) return false;
+
+      // Set value first so switchTab's internal render picks it up
+      if (state.value != null) valueInput.value = state.value;
+
+      // Switch tab (populates selects, triggers first render with restored value)
+      switchTab(state.tab);
+
+      // Override unit after tab populates its select
+      if (state.unit) {
+        if (state.tab === 'currency') {
+          selectedCurrencyCode = state.unit;
+          populateCurrencySelect(state.unit);
+          renderCurrency();
+        } else {
+          unitSelect.value = state.unit;
+          renderResults();
         }
       }
-    } catch (e) { /* ignore bad hash */ }
+      return true;
+    } catch (e) { return false; }
   }
 
   // ─── Init ────────────────────────────────────────────────────────────────────
 
-  if (!window.location.hash) switchTab('datasize');
-  else loadHash();
+  if (!window.location.hash || !loadHash()) switchTab('datasize');
 
   // ── Share button ─────────────────────────────────────────────────────────────
   document.getElementById('shareBtn').addEventListener('click', function() {
