@@ -528,11 +528,15 @@ function wordDiff(lineA, lineB) {
 
 function renderWordTokens(tokens, isRemoved) {
   const hlStyle = isRemoved
-    ? 'background:rgba(239,68,68,0.35);border-radius:2px'
-    : 'background:rgba(16,185,129,0.35);border-radius:2px';
+    ? 'background:rgba(239,68,68,0.55);border-radius:2px;padding:0 1px;'
+    : 'background:rgba(16,185,129,0.5);border-radius:2px;padding:0 1px;';
   return tokens.map(t => {
     const escaped = escHtml(t.text);
-    return t.changed ? `<span style="${hlStyle}">${escaped}</span>` : escaped;
+    if (t.changed) {
+      return `<span style="${hlStyle}">${escaped}</span>`;
+    } else {
+      return `<span style="opacity:0.5;">${escaped}</span>`;
+    }
   }).join('');
 }
 
