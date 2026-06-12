@@ -287,7 +287,7 @@
             <a class="app-link" href="/apps/scaffold/" target="_blank">Open →</a>
         </div>
 
-        <p>Scaffold turns a YAML definition into an interactive diagram. Describe your nodes (services, databases, load balancers, hosts) and their connections, and the canvas arranges everything with a force simulation, updating live as you type. The canvas also works directly: double-click to add a node, shift-click two nodes to connect them, right-click for options. Diagrams share via URL and export as JPEG or PDF.</p>
+        <p>Scaffold turns a YAML definition into an interactive diagram. Describe your nodes (services, databases, load balancers, hosts) and their connections, and the canvas arranges everything with a force simulation, updating live as you type. Nodes can be organised into groups, which render as labelled regions on the canvas. The canvas also works directly: double-click to add a node, shift-click two nodes to connect them, right-click for options. Diagrams share via URL and export as JPEG or PDF.</p>
 
         <h2>Scout</h2>
 
@@ -311,13 +311,13 @@
                 <div class="app-logo"><svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="56" height="56" rx="13" fill="#1a0a2e"/><rect x="1" y="1" width="54" height="54" rx="12" stroke="#a78bfa" stroke-width="1.2" stroke-opacity="0.35" fill="none"/><path d="M28 7 L41 13.5 L41 24.5 C41 33.5 28 42 28 42 C28 42 15 33.5 15 24.5 L15 13.5 Z" fill="none" stroke="#a78bfa" stroke-width="2.2" stroke-linejoin="round"/><path d="M20.5 25.5 L25.5 31 L35.5 20" stroke="#c4b5fd" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></div>
                 <div class="app-card-text">
                     <span class="app-card-name">Seal</span>
-                    <span class="app-card-desc">TLS certificate inspector. Paste any PEM and see every field decoded cleanly.</span>
+                    <span class="app-card-desc">TLS certificate and CSR inspector. Paste any PEM and see every field decoded cleanly.</span>
                 </div>
             </div>
             <a class="app-link" href="/apps/seal/" target="_blank">Open →</a>
         </div>
 
-        <p>Seal decodes PEM certificates entirely in the browser. Drop in a cert file and the inspector surfaces every field: subject, issuer, validity window, SANs, public key algorithm, serial number, SHA-256 fingerprint, and key usage extensions. A validity badge shows at a glance whether the certificate is current, expired, or not yet active.</p>
+        <p>Seal decodes PEM certificates and certificate signing requests entirely in the browser. Drop in a cert or CSR and the inspector surfaces every field: subject, issuer, validity window, SANs, public key algorithm, serial number, SHA-256 fingerprint, and key usage extensions. A validity badge shows at a glance whether the certificate is current, expired, or not yet active.</p>
 
         <h2>Sift</h2>
 
@@ -347,7 +347,7 @@
             <a class="app-link" href="/apps/sigil/" target="_blank">Open →</a>
         </div>
 
-        <p>Sigil decodes JSON Web Tokens in the browser. The three parts of the token (header, payload, signature) are colour-coded in the input pane. The inspector breaks each section down cleanly: algorithm and type from the header, all payload claims with standard ones like <em>sub</em>, <em>iss</em>, <em>aud</em>, and <em>exp</em> called out prominently, and a validity badge showing whether the token is live, expired, or how long it has left.</p>
+        <p>Sigil decodes JSON Web Tokens in the browser. The three parts of the token (header, payload, signature) are colour-coded in the input pane. The inspector breaks each section down cleanly: algorithm and type from the header, all payload claims with standard ones like <em>sub</em>, <em>iss</em>, <em>aud</em>, and <em>exp</em> called out prominently, and a validity badge showing whether the token is live, expiring soon, or already expired.</p>
 
         <h2>Skim</h2>
 
@@ -356,13 +356,13 @@
                 <div class="app-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#001220"/><rect x="6" y="6" width="20" height="20" rx="2" stroke="#38bdf8" stroke-width="1.8" fill="none"/><line x1="6" y1="12" x2="26" y2="12" stroke="#38bdf8" stroke-width="1.4"/><rect x="9" y="16" width="4" height="3" rx="1" fill="#10b981" opacity="0.9"/><line x1="16" y1="17.5" x2="23" y2="17.5" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/><rect x="9" y="21" width="4" height="3" rx="1" fill="#f97316" opacity="0.9"/><line x1="16" y1="22.5" x2="23" y2="22.5" stroke="#38bdf8" stroke-width="1.4" stroke-linecap="round" opacity="0.7"/></svg></div>
                 <div class="app-card-text">
                     <span class="app-card-name">Skim</span>
-                    <span class="app-card-desc">OpenAPI spec viewer. Paste a swagger.json and browse every endpoint as a readable UI.</span>
+                    <span class="app-card-desc">OpenAPI spec viewer. Paste a 2.0 or 3.0 spec and browse every endpoint as a readable UI.</span>
                 </div>
             </div>
             <a class="app-link" href="/apps/skim/" target="_blank">Open →</a>
         </div>
 
-        <p>Skim parses OpenAPI/Swagger specs and renders them as a browsable UI. Paste a swagger.json and every endpoint appears grouped by tag, with method badges (GET, POST, PUT, DELETE), parameter tables, request body schemas, and response codes with descriptions. Faster than reading raw JSON, lighter than running a full Swagger UI instance.</p>
+        <p>Skim parses OpenAPI specs and renders them as a browsable UI. Supports both Swagger 2.0 and OpenAPI 3.0. Paste a spec and every endpoint appears grouped by tag, with method badges (GET, POST, PUT, DELETE), parameter tables, request body schemas, and response codes with descriptions. Faster than reading raw JSON, lighter than running a full Swagger UI instance.</p>
 
         <h2>Slice</h2>
 
@@ -416,13 +416,13 @@
                 <div class="app-logo"><svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="32" height="32" rx="7" fill="#0a1200"/><circle cx="16" cy="13" r="5" stroke="#84cc16" stroke-width="1.8" fill="none"/><circle cx="16" cy="13" r="2" fill="#84cc16" opacity="0.6"/><path d="M16 18 C16 18 11 22 11 27" stroke="#84cc16" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M16 18 C16 18 21 22 21 27" stroke="#84cc16" stroke-width="1.8" stroke-linecap="round" fill="none"/></svg></div>
                 <div class="app-card-text">
                     <span class="app-card-name">Stalk</span>
-                    <span class="app-card-desc">IP lookup. Enter any address and see country, ASN, ISP, timezone, and location on a map.</span>
+                    <span class="app-card-desc">IP lookup. Enter any address and see country, ASN, ISP, BGP routing info, reverse DNS, and location on a map.</span>
                 </div>
             </div>
             <a class="app-link" href="/apps/stalk/" target="_blank">Open →</a>
         </div>
 
-        <p>Stalk looks up geolocation and network data for any IPv4 or IPv6 address. Enter an IP and get back country, city, ASN, ISP, timezone, and coordinates on a map. Useful when you need to understand where a request is coming from, or which organisation owns a given address block.</p>
+        <p>Stalk looks up geolocation and network data for any IPv4 or IPv6 address. Enter an IP and get back country, city, ASN, ISP, timezone, and coordinates on a map. It also shows BGP routing information and resolves the reverse DNS (PTR) record. Useful when you need to understand where a request is coming from, which organisation owns a given block, or how the address is announced.</p>
 
         <h2>Stencil</h2>
 
