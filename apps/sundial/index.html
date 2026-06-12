@@ -693,6 +693,34 @@
   // Initial empty state
   renderEmpty();
 })();
+
+// ── URL state persistence ─────────────────────────────────────
+(function() {
+  var _st;
+  function saveHash() {
+    try {
+      var v = document.getElementById('tsInput').value;
+      history.replaceState(null,'', v.trim() ? '#'+btoa(unescape(encodeURIComponent(v))) : location.pathname);
+    } catch(e) {}
+  }
+  function loadHash() {
+    try {
+      if (location.hash.length < 2) return null;
+      return decodeURIComponent(escape(atob(location.hash.slice(1))));
+    } catch(e) { return null; }
+  }
+  window.addEventListener('load', function() {
+    var v = loadHash();
+    if (v) {
+      document.getElementById('tsInput').value = v;
+      document.getElementById('tsInput').dispatchEvent(new Event('input', {bubbles:true}));
+    }
+    document.getElementById('tsInput').addEventListener('input', function() {
+      clearTimeout(_st); _st = setTimeout(saveHash, 400);
+    });
+  });
+})();
+
 </script>
 </body>
 </html>

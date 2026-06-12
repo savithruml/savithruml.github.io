@@ -171,7 +171,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      height: 100%;
+      height: calc(100% - 36px);
       color: #888;
       font-family: Helvetica, Arial, sans-serif;
       font-size: 14px;
@@ -272,6 +272,25 @@
       font-size: 11px;
       color: #888;
       flex-shrink: 0;
+    }
+
+    /* ── Diff toolbar ── */
+    .diff-toolbar {
+      height: 36px;
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      gap: 6px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+      background: var(--surface);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .diff-toolbar .tool-btn.active {
+      color: var(--accent);
+      border-color: var(--accent);
     }
 
     /* ── Scrollbar ── */
@@ -377,6 +396,10 @@
 
   <!-- ── Diff panel ── -->
   <div class="diff-panel" id="diffPanel">
+    <div class="diff-toolbar" id="diffToolbar">
+      <button class="tool-btn" id="modeLineBtn">Line</button>
+      <button class="tool-btn" id="modeWordBtn">Word</button>
+    </div>
     <div class="diff-empty" id="diffEmpty">Paste or upload text in both panes to see the diff</div>
     <table class="diff-table" id="diffTable" style="display:none"></table>
   </div>
@@ -478,13 +501,60 @@ function buildSideBySide(diff) {
   return rows;
 }
 
+// ── Word-level diff helpers ───────────────────────────────────
+function wordDiff(lineA, lineB) {
+  // Split by whitespace boundaries, preserving spaces as tokens
+  const tokA = lineA.split(/(\s+)/);
+  const tokB = lineB.split(/(\s+)/);
+
+  const common = lcs(tokA, tokB);
+  const resultA = [], resultB = [];
+
+  let ai = 0, bi = 0, ci = 0;
+  while (ci < common.length) {
+    const [ca, cb] = common[ci];
+    while (ai < ca) { resultA.push({ text: tokA[ai], changed: true });  ai++; }
+    while (bi < cb) { resultB.push({ text: tokB[bi], changed: true });  bi++; }
+    resultA.push({ text: tokA[ai], changed: false }); ai++;
+    resultB.push({ text: tokB[bi], changed: false }); bi++;
+    ci++;
+  }
+  while (ai < tokA.length) { resultA.push({ text: tokA[ai], changed: true });  ai++; }
+  while (bi < tokB.length) { resultB.push({ text: tokB[bi], changed: true });  bi++; }
+
+  return { tokA: resultA, tokB: resultB };
+}
+
+function renderWordTokens(tokens, isRemoved) {
+  const hlStyle = isRemoved
+    ? 'background:rgba(239,68,68,0.35);border-radius:2px'
+    : 'background:rgba(16,185,129,0.35);border-radius:2px';
+  return tokens.map(t => {
+    const escaped = escHtml(t.text);
+    return t.changed ? `<span style="${hlStyle}">${escaped}</span>` : escaped;
+  }).join('');
+}
+
 // ── Render ────────────────────────────────────────────────────
+let wordMode = false;
+
 const beforeEl   = document.getElementById('beforeEl');
 const afterEl    = document.getElementById('afterEl');
 const diffPanel  = document.getElementById('diffPanel');
 const diffEmpty  = document.getElementById('diffEmpty');
 const diffTable  = document.getElementById('diffTable');
 const statusDot  = document.getElementById('statusDot');
+const modeLineBtn = document.getElementById('modeLineBtn');
+const modeWordBtn = document.getElementById('modeWordBtn');
+
+function updateModeButtons() {
+  modeLineBtn.classList.toggle('active', !wordMode);
+  modeWordBtn.classList.toggle('active',  wordMode);
+}
+updateModeButtons();
+
+modeLineBtn.addEventListener('click', () => { wordMode = false; updateModeButtons(); renderDiff(); });
+modeWordBtn.addEventListener('click', () => { wordMode = true;  updateModeButtons(); renderDiff(); });
 
 function escHtml(s) {
   return s
@@ -530,8 +600,16 @@ function renderDiff() {
 
     const leftLn  = left  ? left.ln  : '';
     const rightLn = right ? (right.type === 'unchanged' ? right.lnB : right.ln) : '';
-    const leftTxt  = left  ? escHtml(left.line)  : '';
-    const rightTxt = right ? escHtml(right.line) : '';
+
+    let leftTxt, rightTxt;
+    if (wordMode && left && right && left.type === 'removed' && right.type === 'added') {
+      const wd = wordDiff(left.line, right.line);
+      leftTxt  = renderWordTokens(wd.tokA, true);
+      rightTxt = renderWordTokens(wd.tokB, false);
+    } else {
+      leftTxt  = left  ? escHtml(left.line)  : '';
+      rightTxt = right ? escHtml(right.line) : '';
+    }
 
     return `<tr>` +
       `<td class="diff-ln ${leftCls}">${leftLn}</td>` +
@@ -640,6 +718,39 @@ function readFile(input, targetEl) {
 
 readFile(document.getElementById('uploadBeforeFile'), beforeEl);
 readFile(document.getElementById('uploadAfterFile'),  afterEl);
+
+// ── URL state persistence ─────────────────────────────────────
+(function() {
+  var _st;
+  function saveHash() {
+    try {
+      var a = document.getElementById('beforeEl').value;
+      var b = document.getElementById('afterEl').value;
+      if (!a.trim() && !b.trim()) { history.replaceState(null,'',location.pathname); return; }
+      history.replaceState(null,'','#'+btoa(unescape(encodeURIComponent(JSON.stringify({a:a,b:b})))));
+    } catch(e) {}
+  }
+  function loadHash() {
+    try {
+      if (location.hash.length < 2) return null;
+      return JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))));
+    } catch(e) { return null; }
+  }
+  window.addEventListener('load', function() {
+    var s = loadHash();
+    if (s) {
+      if (s.a) document.getElementById('beforeEl').value = s.a;
+      if (s.b) document.getElementById('afterEl').value = s.b;
+      document.getElementById('beforeEl').dispatchEvent(new Event('input', {bubbles:true}));
+    }
+    ['beforeEl','afterEl'].forEach(function(id) {
+      document.getElementById(id).addEventListener('input', function() {
+        clearTimeout(_st); _st = setTimeout(saveHash, 400);
+      });
+    });
+  });
+})();
+
 </script>
 </body>
 </html>

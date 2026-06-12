@@ -450,6 +450,34 @@ async function doLookup() {
 
 lookupBtn.addEventListener('click', doLookup);
 hostnameInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLookup(); });
+
+// ── URL state persistence ─────────────────────────────────────
+(function() {
+  var _st;
+  function saveHash() {
+    try {
+      var v = document.getElementById('hostnameInput').value;
+      history.replaceState(null,'', v.trim() ? '#'+encodeURIComponent(v) : location.pathname);
+    } catch(e) {}
+  }
+  function loadHash() {
+    try {
+      if (location.hash.length < 2) return null;
+      return decodeURIComponent(location.hash.slice(1));
+    } catch(e) { return null; }
+  }
+  window.addEventListener('load', function() {
+    var v = loadHash();
+    if (v) {
+      document.getElementById('hostnameInput').value = v;
+      document.getElementById('hostnameInput').dispatchEvent(new KeyboardEvent('keydown', {key:'Enter',bubbles:true}));
+    }
+    document.getElementById('hostnameInput').addEventListener('input', function() {
+      clearTimeout(_st); _st = setTimeout(saveHash, 400);
+    });
+  });
+})();
+
 </script>
 </body>
 </html>

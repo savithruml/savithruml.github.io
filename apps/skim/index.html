@@ -1007,6 +1007,34 @@
   });
 
 })();
+
+// ── URL state persistence ─────────────────────────────────────
+(function() {
+  var _st;
+  function saveHash() {
+    try {
+      var v = document.getElementById('specInput').value;
+      history.replaceState(null,'', v.trim() ? '#'+btoa(unescape(encodeURIComponent(v))) : location.pathname);
+    } catch(e) {}
+  }
+  function loadHash() {
+    try {
+      if (location.hash.length < 2) return null;
+      return decodeURIComponent(escape(atob(location.hash.slice(1))));
+    } catch(e) { return null; }
+  }
+  window.addEventListener('load', function() {
+    var v = loadHash();
+    if (v) {
+      document.getElementById('specInput').value = v;
+      document.getElementById('specInput').dispatchEvent(new Event('input', {bubbles:true}));
+    }
+    document.getElementById('specInput').addEventListener('input', function() {
+      clearTimeout(_st); _st = setTimeout(saveHash, 400);
+    });
+  });
+})();
+
 </script>
 </body>
 </html>

@@ -648,48 +648,116 @@ function section(title, content) {
 }
 
 function renderWaterfall(timing) {
-  const keys = ['namelookup','connect','appconnect','pretransfer','starttransfer','total'];
-  const hasAll = keys.slice(0,5).some(k => timing[k] !== undefined);
-  const hasTotal = timing['total'] !== undefined;
+  // Check if any timing values > 0 exist
+  const timingValues = ['namelookup','connect','appconnect','pretransfer','starttransfer','total'];
+  const hasTimingData = timingValues.some(k => timing[k] !== undefined && timing[k] > 0);
 
-  if (!hasAll && !hasTotal) {
-    return `<div class="cert-section">
-      <div class="cert-section-title">Timing Waterfall</div>
-      <div class="timing-hint">
-        Add <code>-w</code> timing flags to curl for waterfall data. Run:
-        <code>curl -v -w "\\ntime_namelookup: %{time_namelookup}\\ntime_connect: %{time_connect}\\ntime_appconnect: %{time_appconnect}\\ntime_pretransfer: %{time_pretransfer}\\ntime_starttransfer: %{time_starttransfer}\\ntime_total: %{time_total}\\n" URL</code>
-      </div>
-    </div>`;
+  if (!hasTimingData) {
+    return '';
   }
 
-  const phases = computePhases(timing);
-  const total = timing.total || 0;
+  const t = timing;
+  const total = t.total || 0;
+  const totalMs = total * 1000;
 
-  // Build bar segments
-  const segments = phases.map(p =>
-    `<div class="waterfall-segment" style="width:${p.pct.toFixed(4)}%;background:${p.color};" title="${p.label}: ${p.ms.toFixed(2)}ms (${p.pct.toFixed(1)}%)"></div>`
-  ).join('');
+  // Build phases per spec, omitting TLS if appconnect ≈ connect
+  const tlsDuration = (t.appconnect || 0) - (t.connect || 0);
+  const tlsOmit = Math.abs(tlsDuration) < 0.0005; // < 0.5ms means no TLS
+
+  const phases = [
+    {
+      label: 'DNS Lookup',
+      color: '#818cf8',
+      start: 0,
+      end: t.namelookup || 0,
+    },
+    {
+      label: 'TCP Connect',
+      color: '#38bdf8',
+      start: t.namelookup || 0,
+      end: t.connect || 0,
+    },
+    ...(!tlsOmit ? [{
+      label: 'TLS Handshake',
+      color: '#f59e0b',
+      start: t.connect || 0,
+      end: t.appconnect || 0,
+    }] : []),
+    {
+      label: 'Pre-transfer',
+      color: '#a3e635',
+      start: t.appconnect || t.connect || 0,
+      end: t.pretransfer || 0,
+    },
+    {
+      label: 'TTFB',
+      color: '#f87171',
+      start: t.pretransfer || 0,
+      end: t.starttransfer || 0,
+    },
+    {
+      label: 'Content',
+      color: '#10b981',
+      start: t.starttransfer || 0,
+      end: total,
+    },
+  ].map(p => ({
+    ...p,
+    ms: Math.max(0, (p.end - p.start) * 1000),
+    pct: total > 0 ? Math.max(0, ((p.end - p.start) / total) * 100) : 0,
+  })).filter(p => p.ms > 0.05); // omit negligible segments
+
+  // SVG waterfall bar
+  // Use a viewBox so it scales; height 36px for bar + some padding
+  const svgHeight = 36;
+  const svgWidth = 1000; // internal coordinate space
+  const barH = 28;
+  const barY = (svgHeight - barH) / 2;
+  const radius = 4;
+
+  let svgRects = '';
+  for (let i = 0; i < phases.length; i++) {
+    const p = phases[i];
+    const x = (p.start / total) * svgWidth;
+    const w = Math.max(0.5, (p.ms / totalMs) * svgWidth);
+    const isFirst = i === 0;
+    const isLast = i === phases.length - 1;
+    // Use clipPath trick for rounded ends only on first/last
+    const rx = (isFirst || isLast) ? radius : 0;
+    const titleText = `${p.label}: ${p.ms.toFixed(1)}ms (${p.pct.toFixed(1)}%)`;
+    svgRects += `<rect x="${x.toFixed(2)}" y="${barY}" width="${w.toFixed(2)}" height="${barH}" rx="${isFirst ? radius : 0}" ry="${isFirst ? radius : 0}" fill="${p.color}" style="cursor:default"><title>${titleText}</title></rect>`;
+    // For last segment, add rounded right corners using an overlapping rect trick
+    if (isLast && w > radius) {
+      svgRects += `<rect x="${(x + w - radius).toFixed(2)}" y="${barY}" width="${radius.toFixed(2)}" height="${barH}" rx="${radius}" ry="${radius}" fill="${p.color}"><title>${titleText}</title></rect>`;
+    }
+  }
+
+  // Total label at right end
+  const totalLabel = `${totalMs.toFixed(1)}ms`;
+
+  const svgBar = `<svg viewBox="0 0 ${svgWidth} ${svgHeight}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:${svgHeight}px;display:block;border-radius:4px;overflow:visible;">${svgRects}</svg>`;
 
   // Legend
   const legend = phases.map(p =>
-    `<div class="legend-item"><span class="legend-dot" style="background:${p.color}"></span>${p.label}</div>`
+    `<div class="legend-item"><span class="legend-dot" style="background:${p.color}"></span>${p.label} <span style="color:#666;margin-left:3px;">${p.ms.toFixed(1)}ms</span></div>`
   ).join('');
 
   // Table rows
   const tableRows = phases.map(p =>
     `<tr>
       <td><span class="phase-dot" style="background:${p.color}"></span>${p.label}</td>
-      <td>${p.ms.toFixed(2)}</td>
+      <td>${p.ms.toFixed(1)}</td>
       <td>${p.pct.toFixed(1)}%</td>
     </tr>`
   ).join('');
 
-  const totalMs = total * 1000;
-
   return `<div class="cert-section">
     <div class="cert-section-title">Timing Waterfall</div>
     <div class="waterfall-bar-container">
-      <div class="waterfall-bar-track">${segments}</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="flex:1;background:#1e1e1e;border:1px solid var(--border);border-radius:4px;overflow:hidden;">${svgBar}</div>
+        <div style="font-size:12px;font-family:var(--font-mono);color:var(--text);white-space:nowrap;flex-shrink:0;">${totalLabel}</div>
+      </div>
       <div class="waterfall-legend">${legend}</div>
       <table class="waterfall-table">
         <thead>
@@ -703,7 +771,7 @@ function renderWaterfall(timing) {
           ${tableRows}
           <tr class="total-row">
             <td>Total</td>
-            <td>${totalMs.toFixed(2)}</td>
+            <td>${totalMs.toFixed(1)}</td>
             <td>100%</td>
           </tr>
         </tbody>
@@ -729,7 +797,7 @@ function render(parsed) {
     html += section('Request Info', infoContent);
   }
 
-  // 2. Timing waterfall (always show section)
+  // 2. Timing waterfall (only shown when timing data present)
   html += renderWaterfall(parsed.timing);
 
   // 3. Response headers
@@ -852,6 +920,34 @@ document.getElementById('clearBtn').addEventListener('click', function() {
     }
   });
 })();
+
+// ── URL state persistence ─────────────────────────────────────
+(function() {
+  var _st;
+  function saveHash() {
+    try {
+      var v = document.getElementById('curlInput').value;
+      history.replaceState(null,'', v.trim() ? '#'+btoa(unescape(encodeURIComponent(v))) : location.pathname);
+    } catch(e) {}
+  }
+  function loadHash() {
+    try {
+      if (location.hash.length < 2) return null;
+      return decodeURIComponent(escape(atob(location.hash.slice(1))));
+    } catch(e) { return null; }
+  }
+  window.addEventListener('load', function() {
+    var v = loadHash();
+    if (v) {
+      document.getElementById('curlInput').value = v;
+      document.getElementById('curlInput').dispatchEvent(new Event('input', {bubbles:true}));
+    }
+    document.getElementById('curlInput').addEventListener('input', function() {
+      clearTimeout(_st); _st = setTimeout(saveHash, 400);
+    });
+  });
+})();
+
 </script>
 </body>
 </html>

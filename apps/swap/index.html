@@ -572,6 +572,39 @@ jsonEl.addEventListener('focus', () => { jsonBadge.textContent = 'editing'; });
 jsonEl.addEventListener('blur',  () => { jsonBadge.textContent = jsonEl.value.trim() ? 'JSON' : 'auto'; });
 yamlEl.addEventListener('focus', () => { yamlBadge.textContent = 'editing'; });
 yamlEl.addEventListener('blur',  () => { yamlBadge.textContent = yamlEl.value.trim() ? 'YAML' : 'auto'; });
+
+// ── URL state persistence ─────────────────────────────────────
+(function() {
+  var _st;
+  function saveHash() {
+    try {
+      var a = document.getElementById('jsonEl').value;
+      var b = document.getElementById('yamlEl').value;
+      if (!a.trim() && !b.trim()) { history.replaceState(null,'',location.pathname); return; }
+      history.replaceState(null,'','#'+btoa(unescape(encodeURIComponent(JSON.stringify({a:a,b:b})))));
+    } catch(e) {}
+  }
+  function loadHash() {
+    try {
+      if (location.hash.length < 2) return null;
+      return JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(1)))));
+    } catch(e) { return null; }
+  }
+  window.addEventListener('load', function() {
+    var s = loadHash();
+    if (s) {
+      if (s.a) document.getElementById('jsonEl').value = s.a;
+      if (s.b) document.getElementById('yamlEl').value = s.b;
+      document.getElementById('jsonEl').dispatchEvent(new Event('input', {bubbles:true}));
+    }
+    ['jsonEl','yamlEl'].forEach(function(id) {
+      document.getElementById(id).addEventListener('input', function() {
+        clearTimeout(_st); _st = setTimeout(saveHash, 400);
+      });
+    });
+  });
+})();
+
 </script>
 </body>
 </html>

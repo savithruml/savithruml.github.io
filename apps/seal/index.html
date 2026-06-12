@@ -308,6 +308,96 @@
     /* copy icon btn */
     .icon-btn svg { display: block; }
     .icon-btn.copied { color: #10b981; border-color: #10b981; }
+
+    /* ── Expiry countdown badge ── */
+    .expiry-badge {
+      display: none;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .expiry-badge.visible { display: flex; }
+    .expiry-badge.eb-ok   { background: rgba(16,185,129,0.15);  color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+    .expiry-badge.eb-warn { background: rgba(245,158,11,0.15);  color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+    .expiry-badge.eb-red  { background: rgba(239,68,68,0.15);   color: #ef4444; border: 1px solid rgba(239,68,68,0.3); }
+
+    /* ── Chain visualization ── */
+    .chain-viz {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0;
+      padding: 16px 14px;
+      overflow-x: auto;
+    }
+    .chain-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      min-width: 160px;
+      max-width: 220px;
+      flex-shrink: 0;
+    }
+    .chain-card.cc-leaf {
+      border-color: rgba(167,139,250,0.5);
+      background: rgba(167,139,250,0.05);
+    }
+    .chain-card.cc-inter {
+      border-color: rgba(136,136,136,0.4);
+      background: rgba(136,136,136,0.04);
+    }
+    .chain-card.cc-root {
+      border-color: rgba(251,191,36,0.45);
+      background: rgba(251,191,36,0.05);
+    }
+    .chain-card-role {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-bottom: 5px;
+    }
+    .cc-leaf  .chain-card-role { color: #a78bfa; }
+    .cc-inter .chain-card-role { color: #888; }
+    .cc-root  .chain-card-role { color: #fbbf24; }
+    .chain-card-cn {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      color: var(--text);
+      word-break: break-all;
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+    .chain-card-issuer {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--font-mono);
+      word-break: break-all;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+    .chain-card-validity {
+      font-size: 10px;
+      color: #555;
+      font-family: var(--font-mono);
+    }
+    .chain-arrow {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      padding: 0 6px;
+      color: #444;
+      font-size: 18px;
+      line-height: 1;
+      align-self: center;
+    }
   </style>
 </head>
 <body>
@@ -324,6 +414,7 @@
           stroke="#c4b5fd" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   </svg>
   <h1>Seal</h1>
+  <span class="expiry-badge" id="expiryBadge"></span>
   <span class="status-dot" id="statusDot">paste a PEM certificate</span>
 </header>
 
@@ -470,6 +561,59 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+// ── Chain visualization ───────────────────────────────────────
+function renderChainViz(pemBlocks) {
+  // Parse all certs best-effort
+  const parsed = [];
+  for (const pem of pemBlocks) {
+    try {
+      parsed.push(forge.pki.certificateFromPem(pem));
+    } catch(e) { /* skip unparseable */ }
+  }
+  if (parsed.length < 2) return '';
+
+  // Determine roles: root = self-signed, leaf = first (index 0), rest = intermediates
+  const cards = parsed.map((c, i) => {
+    const isSelf = c.subject.hash === c.issuer.hash;
+    const extBC  = c.extensions?.find(e => e.name === 'basicConstraints');
+    const isCA   = extBC?.cA === true;
+
+    let role, cls;
+    if (i === 0) {
+      role = 'Leaf'; cls = 'cc-leaf';
+    } else if (isSelf || (isCA && i === parsed.length - 1)) {
+      role = 'Root CA'; cls = 'cc-root';
+    } else {
+      role = 'Intermediate'; cls = 'cc-inter';
+    }
+
+    const cn  = getAttr(c.subject.attributes, 'CN') || getAttr(c.subject.attributes, 'O') || '—';
+    const icn = getAttr(c.issuer.attributes,  'CN') || getAttr(c.issuer.attributes,  'O') || '—';
+    const nb  = c.validity.notBefore.toISOString().slice(0,10);
+    const na  = c.validity.notAfter.toISOString().slice(0,10);
+
+    return `<div class="chain-card ${cls}">
+  <div class="chain-card-role">${escHtml(role)}</div>
+  <div class="chain-card-cn">${escHtml(cn)}</div>
+  <div class="chain-card-issuer">issued by ${escHtml(icn)}</div>
+  <div class="chain-card-validity">${escHtml(nb)} – ${escHtml(na)}</div>
+</div>`;
+  });
+
+  // Interleave arrows between cards
+  const parts = [];
+  for (let i = 0; i < cards.length; i++) {
+    parts.push(cards[i]);
+    if (i < cards.length - 1) {
+      parts.push(`<div class="chain-arrow">›</div>`);
+    }
+  }
+
+  return section('Certificate Chain',
+    `<div class="chain-viz">${parts.join('')}</div>`
+  );
+}
+
 // ── Render cert ───────────────────────────────────────────────
 function renderCert(pem) {
   // handle multiple certs — pick first
@@ -485,6 +629,11 @@ function renderCert(pem) {
   }
 
   const html = [];
+
+  // ── Chain visualization (prepended when multiple certs present)
+  if (count > 1) {
+    html.push(renderChainViz(certs));
+  }
 
   // ── Subject
   const subjRows_ = subjRows(cert.subject.attributes);
@@ -607,22 +756,49 @@ function renderCert(pem) {
     ));
   }
 
-  if (count > 1) {
-    html.push(`<div style="text-align:center;font-size:11px;color:#555;padding:8px 0;">${count - 1} additional cert${count > 2 ? 's' : ''} in chain (showing leaf)</div>`);
-  }
-
   return { html: html.join(''), cert };
 }
 
 // ── Update UI ─────────────────────────────────────────────────
-const editor    = document.getElementById('editor');
-const certView  = document.getElementById('certView');
-const statusDot = document.getElementById('statusDot');
-const copyBtn   = document.getElementById('copyBtn');
+const editor      = document.getElementById('editor');
+const certView    = document.getElementById('certView');
+const statusDot   = document.getElementById('statusDot');
+const expiryBadge = document.getElementById('expiryBadge');
+const copyBtn     = document.getElementById('copyBtn');
 
 let lastCert    = null;
 let lastPem     = null;   // raw PEM string of the first block (for fingerprints + copy)
 let copyTimeout = null;
+
+function setExpiryBadge(notAfter) {
+  if (!notAfter) {
+    expiryBadge.className = 'expiry-badge';
+    expiryBadge.textContent = '';
+    return;
+  }
+  const days = daysUntil(notAfter);
+  let cls, text;
+  if (days < 0) {
+    cls = 'eb-red';
+    text = `expired ${-days} day${-days !== 1 ? 's' : ''} ago`;
+  } else if (days < 30) {
+    cls = 'eb-red';
+    text = `expires in ${days} day${days !== 1 ? 's' : ''}`;
+  } else if (days <= 90) {
+    cls = 'eb-warn';
+    text = `expires in ${days} days`;
+  } else {
+    cls = 'eb-ok';
+    text = `expires in ${days} days`;
+  }
+  expiryBadge.className = `expiry-badge visible ${cls}`;
+  expiryBadge.textContent = text;
+}
+
+function hideExpiryBadge() {
+  expiryBadge.className = 'expiry-badge';
+  expiryBadge.textContent = '';
+}
 
 const ICON_COPY  = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M3 9H2.5C1.67 9 1 8.33 1 7.5V2.5C1 1.67 1.67 1 2.5 1H7.5C8.33 1 9 1.67 9 2.5V3" stroke="currentColor" stroke-width="1.2"/></svg>`;
 const ICON_CHECK = `<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M2.5 6.5L5.5 9.5L10.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -751,6 +927,7 @@ function update() {
       <p>Decoded fields will appear here</p>
     </div>`;
     setStatus('', 'paste or drop a PEM file');
+    hideExpiryBadge();
     lastCert = null; lastPem = null;
     return;
   }
@@ -768,24 +945,28 @@ function update() {
       if (days > 30)       setStatus('ok',    `${escHtml(cn)} · ${days} days left`);
       else if (days >= 0)  setStatus('warn',  `${escHtml(cn)} · expiring soon`);
       else                 setStatus('error', `${escHtml(cn)} · expired`);
+      setExpiryBadge(cert.validity.notAfter);
 
     } else if (type === 'key') {
       const { html, summary } = renderKey(pem);
       certView.innerHTML = `<div class="cert-wrap">${html}</div>`;
       lastCert = null; lastPem = null;
       setStatus('warn', summary);
+      hideExpiryBadge();
 
     } else if (type === 'pubkey') {
       const { html, summary } = renderPubKey(pem);
       certView.innerHTML = `<div class="cert-wrap">${html}</div>`;
       lastCert = null; lastPem = null;
       setStatus('ok', summary);
+      hideExpiryBadge();
 
     } else if (type === 'csr') {
       const { html, summary } = renderCSR(pem);
       certView.innerHTML = `<div class="cert-wrap">${html}</div>`;
       lastCert = null; lastPem = null;
       setStatus('ok', summary);
+      hideExpiryBadge();
 
     } else {
       // Try as cert anyway
@@ -795,15 +976,18 @@ function update() {
         lastCert = cert;
         lastPem  = pem.match(/-----BEGIN [^-]+-----[\s\S]+?-----END [^-]+-----/)[0];
         setStatus('ok', 'certificate');
+        setExpiryBadge(cert.validity.notAfter);
       } catch(e) {
         certView.innerHTML = `<div class="empty-state"><p style="color:#ef4444">${escHtml('Unknown PEM type: ' + (pem.match(/-----BEGIN ([^-]+)-----/)?.[1] || '?'))}</p></div>`;
         setStatus('error', 'unknown PEM type');
+        hideExpiryBadge();
         lastCert = null; lastPem = null;
       }
     }
   } catch(e) {
     certView.innerHTML = `<div class="empty-state"><p style="color:#ef4444">${escHtml(e.message)}</p></div>`;
     setStatus('error', 'parse error');
+    hideExpiryBadge();
     lastCert = null; lastPem = null;
   }
 }

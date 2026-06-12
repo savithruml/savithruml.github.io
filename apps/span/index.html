@@ -247,6 +247,76 @@
     .chart-section.expanded .chart-body { display: block; }
     #chartSvg { display: block; width: 100%; }
 
+    /* ── Horizontal bar chart rows ── */
+    .chart-body {
+      padding: 8px 0 4px;
+    }
+    .chart-row {
+      display: flex;
+      align-items: center;
+      padding: 3px 16px;
+      gap: 0;
+      min-height: 28px;
+    }
+    .chart-row:hover { background: rgba(255,255,255,0.02); }
+    .chart-row-label {
+      flex: 0 0 160px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      padding-right: 10px;
+    }
+    .chart-hop-num {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-family: var(--font-mono);
+      color: #444;
+      width: 18px;
+      text-align: right;
+    }
+    .chart-hop-host {
+      font-size: 11px;
+      color: #777;
+      font-family: var(--font-mono);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .chart-bar-wrap {
+      flex: 1;
+      height: 16px;
+      position: relative;
+      border-radius: 3px;
+      overflow: visible;
+    }
+    .chart-bar {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
+      min-width: 3px;
+    }
+    .chart-bar-timeout {
+      height: 100%;
+      border-radius: 3px;
+      border: 1px dashed #3a3a3a;
+      background: repeating-linear-gradient(
+        90deg,
+        #222 0px, #222 4px,
+        transparent 4px, transparent 8px
+      );
+      width: 48px;
+    }
+    .chart-rtt-val {
+      flex: 0 0 72px;
+      text-align: right;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding-left: 8px;
+    }
+
     /* ── Footer ── */
     footer {
       height: 36px;
@@ -681,58 +751,84 @@ new ResizeObserver(() => {
 const chartSection = document.getElementById('chartSection');
 const chartSvg     = document.getElementById('chartSvg');
 
+// Color scale for the horizontal bar chart (uses spec thresholds)
+function barColor(ms) {
+  if (ms == null) return '#555';
+  if (ms < 50)   return '#10b981';
+  if (ms < 150)  return '#f59e0b';
+  return '#ef4444';
+}
+
 function renderChart(hops) {
-  chartSvg.innerHTML = '';
-  const visible = hops.filter(h => !h.timeout && avg(h.rtts) != null);
-  if (!visible.length) { chartSection.classList.remove('visible'); return; }
+  // Use a div-based layout for the horizontal bar chart
+  // Find or create the chart body container
+  const chartBody = chartSection.querySelector('.chart-body');
+  chartBody.innerHTML = '';
+
+  // Hide the SVG (not used for horizontal layout)
+  chartSvg.style.display = 'none';
+
+  if (!hops.length) { chartSection.classList.remove('visible'); return; }
   chartSection.classList.add('visible');
 
-  const W      = canvasWrap.clientWidth || 700;
-  const H      = 120;
-  const PAD_L  = 52;
-  const PAD_R  = 20;
-  const PAD_T  = 14;
-  const PAD_B  = 32;
-  const chartW = W - PAD_L - PAD_R;
-  const n      = hops.length;
-  const barW   = Math.max(6, Math.min(36, (chartW / n) * 0.6));
-  const gap    = chartW / n;
-  const maxRtt = Math.max(...visible.map(h => avg(h.rtts)));
-  const scale  = maxRtt > 0 ? (H - PAD_T - PAD_B) / maxRtt : 1;
+  const visible = hops.filter(h => !h.timeout && avg(h.rtts) != null);
+  const maxRtt = visible.length ? Math.max(...visible.map(h => avg(h.rtts))) : 1;
 
-  chartSvg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-  chartSvg.setAttribute('height', H);
+  hops.forEach(hop => {
+    const a = avg(hop.rtts);
+    const color = hop.timeout ? '#555' : barColor(a);
 
-  // Y-axis grid lines
-  const gridVals = [0, Math.round(maxRtt * 0.5), Math.round(maxRtt)];
-  gridVals.forEach(v => {
-    const gy = H - PAD_B - v * scale;
-    el('line', { x1: PAD_L, y1: gy, x2: W - PAD_R, y2: gy, stroke: '#1c1c1c', 'stroke-width': 1 }, chartSvg);
-    txt(v + ' ms', { x: PAD_L - 6, y: gy + 4, 'text-anchor': 'end', 'font-size': '9', fill: '#333', 'font-family': 'SF Mono, monospace' }, chartSvg);
-  });
+    // Label: hop number
+    const numEl = document.createElement('div');
+    numEl.className = 'chart-hop-num';
+    numEl.textContent = hop.num;
 
-  // Bars
-  hops.forEach((hop, i) => {
-    const cx  = PAD_L + i * gap + gap / 2;
-    const a   = avg(hop.rtts);
-    const col = hop.timeout ? '#1e1e1e' : rttColor(a);
-    const bh  = hop.timeout ? 4 : Math.max(2, a * scale);
-    const by  = H - PAD_B - bh;
+    // Label: host/IP
+    const hostEl = document.createElement('div');
+    hostEl.className = 'chart-hop-host';
+    const hostText = hop.hostname
+      ? (hop.ip && hop.hostname !== hop.ip ? hop.hostname + ' (' + hop.ip + ')' : hop.hostname)
+      : (hop.ip || '*');
+    hostEl.textContent = hostText;
+    hostEl.title = hostText; // full text on hover
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'chart-row-label';
+    labelEl.appendChild(numEl);
+    labelEl.appendChild(hostEl);
 
     // Bar
-    el('rect', { x: cx - barW / 2, y: by, width: barW, height: bh, rx: 3, fill: col, opacity: hop.timeout ? '0.3' : '0.75' }, chartSvg);
+    const barWrap = document.createElement('div');
+    barWrap.className = 'chart-bar-wrap';
 
-    // Hop label
-    txt(String(hop.num), { x: cx, y: H - PAD_B + 14, 'text-anchor': 'middle', 'font-size': '9', fill: '#3a3a3a', 'font-family': 'SF Mono, monospace' }, chartSvg);
-
-    // Value on top of bar
-    if (!hop.timeout && a != null) {
-      txt(fmt(a), { x: cx, y: by - 4, 'text-anchor': 'middle', 'font-size': '8.5', fill: col, 'font-family': 'SF Mono, monospace' }, chartSvg);
+    if (hop.timeout) {
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar-timeout';
+      barWrap.appendChild(bar);
+    } else {
+      const pct = maxRtt > 0 ? (a / maxRtt) * 100 : 0;
+      const bar = document.createElement('div');
+      bar.className = 'chart-bar';
+      bar.style.width = Math.max(0.5, pct) + '%';
+      bar.style.background = color;
+      bar.style.opacity = '0.85';
+      barWrap.appendChild(bar);
     }
-  });
 
-  // Baseline
-  el('line', { x1: PAD_L, y1: H - PAD_B, x2: W - PAD_R, y2: H - PAD_B, stroke: '#2a2a2a', 'stroke-width': 1 }, chartSvg);
+    // RTT value
+    const valEl = document.createElement('div');
+    valEl.className = 'chart-rtt-val';
+    valEl.style.color = hop.timeout ? '#444' : color;
+    valEl.textContent = hop.timeout ? '* * *' : fmt(a);
+
+    const row = document.createElement('div');
+    row.className = 'chart-row';
+    row.appendChild(labelEl);
+    row.appendChild(barWrap);
+    row.appendChild(valEl);
+
+    chartBody.appendChild(row);
+  });
 }
 
 // ── Sample ────────────────────────────────────────────────────────────────────
@@ -764,6 +860,34 @@ document.getElementById('chartToggle').addEventListener('click', () => {
 });
 
 render({ hops: [], destination: null });
+
+// ── URL state persistence ─────────────────────────────────────
+(function() {
+  var _st;
+  function saveHash() {
+    try {
+      var v = document.getElementById('editor').value;
+      history.replaceState(null,'', v.trim() ? '#'+btoa(unescape(encodeURIComponent(v))) : location.pathname);
+    } catch(e) {}
+  }
+  function loadHash() {
+    try {
+      if (location.hash.length < 2) return null;
+      return decodeURIComponent(escape(atob(location.hash.slice(1))));
+    } catch(e) { return null; }
+  }
+  window.addEventListener('load', function() {
+    var v = loadHash();
+    if (v) {
+      document.getElementById('editor').value = v;
+      document.getElementById('editor').dispatchEvent(new Event('input', {bubbles:true}));
+    }
+    document.getElementById('editor').addEventListener('input', function() {
+      clearTimeout(_st); _st = setTimeout(saveHash, 400);
+    });
+  });
+})();
+
 </script>
 </body>
 </html>
