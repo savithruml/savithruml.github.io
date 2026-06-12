@@ -845,27 +845,62 @@
   // ─── Event listeners ─────────────────────────────────────────────────────────
 
   tabBtns.forEach(btn => {
-    btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+    btn.addEventListener('click', () => { switchTab(btn.dataset.tab); pushHash(); });
   });
 
   valueInput.addEventListener('input', () => {
     if (activeTab === 'currency') renderCurrency();
     else renderResults();
+    pushHash();
   });
 
   unitSelect.addEventListener('change', () => {
     if (activeTab === 'currency') renderCurrency();
     else renderResults();
+    pushHash();
   });
+
+  // ─── URL state ───────────────────────────────────────────────────────────────
+
+  function pushHash() {
+    const unit = activeTab === 'currency' ? (selectedCurrencyCode || 'USD') : (unitSelect.value || '');
+    const state = { tab: activeTab, value: valueInput.value, unit };
+    const hash = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+    history.replaceState(null, '', '#' + hash);
+  }
+
+  function loadHash() {
+    const raw = window.location.hash.slice(1);
+    if (!raw) return;
+    try {
+      const state = JSON.parse(decodeURIComponent(escape(atob(raw))));
+      if (state.tab) {
+        // Switch tab first to populate selects
+        switchTab(state.tab);
+        if (state.value != null) valueInput.value = state.value;
+        if (state.unit) {
+          if (state.tab === 'currency') {
+            selectedCurrencyCode = state.unit;
+            populateCurrencySelect(state.unit);
+            renderCurrency();
+          } else {
+            unitSelect.value = state.unit;
+            renderResults();
+          }
+        }
+      }
+    } catch (e) { /* ignore bad hash */ }
+  }
 
   // ─── Init ────────────────────────────────────────────────────────────────────
 
-  switchTab('datasize');
+  if (!window.location.hash) switchTab('datasize');
+  else loadHash();
 
   // ── Share button ─────────────────────────────────────────────────────────────
   document.getElementById('shareBtn').addEventListener('click', function() {
-    const url = window.location.href;
-    navigator.clipboard.writeText(url).then(() => {
+    pushHash();
+    navigator.clipboard.writeText(window.location.href).then(() => {
       this.classList.add('copied');
       this.innerHTML = `<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Copied!`;
       setTimeout(() => {
