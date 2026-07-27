@@ -392,6 +392,25 @@
   .ovfoot{grid-row:2;align-self:end;padding:18px 20px 18px;text-align:center;
     font-family:var(--mono);font-size:12.5px;font-weight:400;
     color:#4d6488;letter-spacing:1px}
+  /* ── demo video ── */
+  .watch{display:inline-flex;align-items:center;gap:9px;margin-top:96px;cursor:pointer;
+    background:none;border:none;font-family:var(--mono);font-size:16px;letter-spacing:1.6px;
+    color:#8fa6c8;text-transform:uppercase;padding:8px 4px;transition:color .15s}
+  .watch:hover{color:var(--cyan)}
+  .watch .tri{width:30px;height:30px;border-radius:50%;border:2px solid currentColor;
+    display:grid;place-items:center;font-size:11px;padding-left:2px}
+  #vid{position:fixed;inset:0;z-index:58;display:none;align-items:center;justify-content:center;
+    background:rgba(3,5,10,.92);backdrop-filter:blur(8px);padding:24px}
+  #vid.show{display:flex}
+  .vwrap{width:min(1160px,94vw);max-height:88vh}
+  .vhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;gap:16px}
+  .vhead .vt{font-family:'Baloo 2',var(--mono);font-size:19px;font-weight:800;color:#e8f0ff}
+  .vhead .vs{font-family:var(--mono);font-size:11.5px;color:var(--faint);letter-spacing:1px}
+  #vid video{width:100%;border-radius:14px;border:2px solid rgba(120,150,200,.26);
+    background:#05070c;box-shadow:0 24px 70px rgba(0,0,0,.7);display:block}
+  .vclose{background:rgba(255,93,114,.12);border:1px solid rgba(255,93,114,.4);color:var(--red);
+    font-family:var(--mono);font-size:13px;border-radius:9px;padding:8px 14px;cursor:pointer}
+  .vclose:hover{background:rgba(255,93,114,.24)}
   /* touch devices: the HUD needs ~1150px and the camera is mouse-driven,
      so say so plainly rather than letting someone tap Play and get stuck */
   .touchnote{display:none;margin:22px auto 0;max-width:420px;padding:13px 18px;border-radius:14px;
@@ -616,6 +635,17 @@
 <div id="warn"></div>
 <div id="toasts"></div>
 <div id="tip"></div>
+<div id="vid">
+  <div class="vwrap">
+    <div class="vhead">
+      <div><div class="vt">Surge</div>
+        <div class="vs">Become a datacenter tycoon in 60s</div></div>
+      <button class="vclose" id="vidClose">Close &#10005;</button>
+    </div>
+    <video id="vidEl" controls playsinline preload="none"
+           poster="demo-poster.jpg" src="demo.mp4"></video>
+  </div>
+</div>
 <div id="boot"><div id="bootLines"></div></div>
 <div id="dirBar"></div>
 <div id="dir"><span id="dirCap"></span></div>
@@ -691,6 +721,7 @@
     </div>
     <div class="saveline" id="saveLine"></div>
     <div class="telem" id="telem"></div>
+    <button class="watch" id="watchBtn"><span class="tri">&#9654;</span>Watch a demo</button>
     <div class="touchnote">Built for a desktop browser. The controls are mouse driven and
       the dashboard needs a wide screen, so this will not play well on a phone.<br>
       <b>Come back on a laptop.</b></div>
@@ -3425,6 +3456,13 @@ function boot(){
     try{localStorage.removeItem(SAVE_KEY);}catch(e){}
     launch(startNew);
   };
+  const vid=$('vid'), vidEl=$('vidEl');
+  const closeVid=()=>{ vid.classList.remove('show'); try{vidEl.pause();}catch(e){} };
+  $('watchBtn').onclick=()=>{ vid.classList.add('show');
+    try{ vidEl.play().catch(()=>{}); }catch(e){} };
+  $('vidClose').onclick=closeVid;
+  vid.onclick=e=>{ if(e.target===vid) closeVid(); };
+  addEventListener('keydown',e=>{ if(e.key==='Escape'&&vid.classList.contains('show')) closeVid(); });
   $('btnCont').onclick=()=>launch(startContinue);
   // ?demo → skip the menu and perform the scripted 30 seconds for capture
   if(/[?&]demo\b/.test(location.search)){
