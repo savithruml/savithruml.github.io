@@ -205,6 +205,93 @@
   .lgrad{height:9px;border-radius:5px;margin:5px 0 4px}
   .lrow{display:flex;justify-content:space-between;font-size:11px;color:var(--faint)}
 
+  /* ── tutorial ── */
+  #tut{position:fixed;bottom:200px;left:50%;transform:translateX(-50%);z-index:44;width:min(500px,90vw);
+    padding:18px 20px 15px;display:none}
+  #tut.show{display:block;animation:tutin .3s cubic-bezier(.34,1.56,.64,1)}
+  @keyframes tutin{from{opacity:0;transform:translateX(-50%) translateY(14px) scale(.96)}
+    to{opacity:1;transform:translateX(-50%)}}
+  #tut .step{font-size:11px;letter-spacing:2px;color:var(--cyan);text-transform:uppercase;font-weight:700}
+  #tut .txt{font-size:14.5px;line-height:1.65;color:var(--ink);margin-top:8px}
+  #tut .txt b{color:var(--cyan);font-weight:700}
+  #tut .row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px}
+  #tut .wait{font-size:12px;color:var(--amber);font-weight:600;display:flex;align-items:center;gap:7px}
+  #tut .wait::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--amber);
+    animation:pulse 1.2s ease-in-out infinite}
+  .tbtn{padding:9px 20px;border-radius:10px;border:1px solid var(--cyan);background:rgba(72,224,255,.16);
+    color:var(--cyan);font-family:var(--mono);font-size:12.5px;font-weight:700;letter-spacing:1px;cursor:pointer}
+  .tbtn:hover{background:rgba(72,224,255,.28)}
+  .tskip{background:none;border:none;color:var(--faint);font-family:var(--mono);font-size:11.5px;
+    cursor:pointer;text-decoration:underline;padding:4px}
+  .tskip:hover{color:var(--dim)}
+  /* pulsing ring around whatever the current step is talking about */
+  .tut-hl{position:relative;z-index:43;
+    animation:hlpulse 1.5s ease-in-out infinite;border-radius:12px}
+  @keyframes hlpulse{0%,100%{box-shadow:0 0 0 2px rgba(72,224,255,.85),0 0 22px rgba(72,224,255,.5)}
+    50%{box-shadow:0 0 0 4px rgba(72,224,255,.95),0 0 34px rgba(72,224,255,.8)}}
+
+  /* ── decision modal ── */
+  #decision{position:fixed;inset:0;z-index:47;display:none;align-items:center;justify-content:center;
+    background:rgba(4,7,12,.72);backdrop-filter:blur(5px)}
+  #decision.show{display:flex}
+  .dcard{width:min(520px,92vw);padding:24px 26px;text-align:center}
+  .dcard .ic{font-size:44px}
+  .dcard h3{font-size:20px;font-weight:800;margin-top:6px}
+  .dcard p{font-size:13.5px;line-height:1.7;color:var(--dim);margin-top:12px}
+  .dcard p b{color:var(--ink)}
+  .dopts{display:flex;gap:10px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+  .dopt{padding:12px 24px;border-radius:11px;border:1px solid var(--cyan);
+    background:rgba(72,224,255,.14);color:var(--cyan);font-family:var(--mono);font-size:13px;
+    font-weight:700;letter-spacing:1px;cursor:pointer}
+  .dopt:hover{background:rgba(72,224,255,.28)}
+  .dopt.alt{border-color:rgba(255,159,58,.6);background:rgba(255,159,58,.12);color:var(--amber)}
+  .dopt.alt:hover{background:rgba(255,159,58,.24)}
+  .dtimer{font-size:11px;color:var(--faint);margin-top:12px;letter-spacing:1px}
+
+  /* ── chaos / difficulty panel ── */
+  #chaos{position:fixed;inset:0;z-index:46;display:none;align-items:center;justify-content:center;
+    background:rgba(4,7,12,.8);backdrop-filter:blur(6px)}
+  #chaos.show{display:flex}
+  .ccard{width:min(880px,94vw);max-height:88vh;overflow-y:auto;padding:22px 26px}
+  .ccard::-webkit-scrollbar{width:6px}
+  .ccard::-webkit-scrollbar-thumb{background:rgba(90,120,170,.32);border-radius:3px}
+  .difftiers{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0 6px}
+  @media (max-width:660px){.difftiers{grid-template-columns:1fr}}
+  .tier{padding:13px 14px;border-radius:12px;border:2px solid var(--line);background:rgba(255,255,255,.03);
+    cursor:pointer;text-align:left;transition:.14s;font-family:var(--mono)}
+  .tier:hover{border-color:rgba(72,224,255,.5)}
+  .tier.on{border-color:var(--cyan);background:rgba(72,224,255,.13);box-shadow:0 0 20px rgba(72,224,255,.2)}
+  .tier .tn{font-size:15px;font-weight:800;letter-spacing:.6px}
+  .tier .td{font-size:11.5px;color:var(--faint);line-height:1.55;margin-top:5px}
+  .tier .tm{font-size:10.5px;color:var(--dim);margin-top:7px;letter-spacing:.4px}
+  .cgroup{margin-top:16px}
+  .cglabel{font-size:11px;letter-spacing:2px;color:var(--faint);text-transform:uppercase;margin-bottom:7px}
+  .cbtns{display:flex;gap:6px;flex-wrap:wrap}
+  .cinj{padding:8px 12px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.03);
+    color:var(--dim);font-family:var(--mono);font-size:11.5px;font-weight:600;cursor:pointer;transition:.14s}
+  .cinj:hover{border-color:var(--red);color:#ff9aa8;background:rgba(255,93,114,.12)}
+  .cinj.good:hover{border-color:var(--green);color:var(--green);background:rgba(60,232,168,.12)}
+  .cnow{font-size:12px;color:var(--dim);margin-top:4px;line-height:1.7}
+  .cnow b{color:var(--amber)}
+  /* ── reference panel ── */
+  #helpModal{position:fixed;inset:0;z-index:46;display:none;align-items:center;justify-content:center;
+    background:rgba(4,7,12,.8);backdrop-filter:blur(6px)}
+  #helpModal.show{display:flex}
+  .hcard{width:min(860px,94vw);max-height:88vh;overflow-y:auto;padding:22px 26px}
+  .hcard::-webkit-scrollbar{width:6px}
+  .hcard::-webkit-scrollbar-thumb{background:rgba(90,120,170,.32);border-radius:3px}
+  .hhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+  .hhead h2{font-size:19px;font-weight:800;letter-spacing:.4px}
+  .hgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:16px}
+  @media (max-width:720px){.hgrid{grid-template-columns:1fr}}
+  .hsec{padding:13px 15px;border-radius:12px;background:rgba(255,255,255,.03);border:1px solid var(--line)}
+  .hsec h3{font-size:13px;font-weight:700;letter-spacing:.6px;margin-bottom:7px;display:flex;align-items:center;gap:8px}
+  .hsec p{font-size:12.5px;line-height:1.7;color:var(--dim)}
+  .hsec p b{color:var(--ink)}
+  .hkeys{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .hk{font-size:11px;padding:4px 9px;border-radius:7px;background:rgba(255,255,255,.05);
+    border:1px solid var(--line);color:var(--dim)}
+  .hk b{color:var(--cyan)}
   /* ── landing: deliberately cartoonish, unlike the sleek in-game HUD ── */
   .ov{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;
     justify-content:center;text-align:center;font-family:'Baloo 2',var(--mono);
@@ -328,6 +415,108 @@
   <button class="vb" data-ov="net">Fabric</button>
   <div class="vsep"></div>
   <button class="vb" id="walkBtn">◉ Walk [V]</button>
+  <button class="vb" id="chaosBtn" title="Difficulty and scenario injection">⚡ Chaos</button>
+  <button class="vb" id="helpBtn" title="How it all works">? Help</button>
+</div>
+
+<div id="decision">
+  <div class="dcard glass">
+    <div class="ic" id="decIcon">📞</div>
+    <h3 id="decTitle">Decision</h3>
+    <p id="decText"></p>
+    <div class="dopts" id="decOpts"></div>
+    <div class="dtimer" id="decTimer"></div>
+  </div>
+</div>
+
+<div id="chaos">
+  <div class="ccard glass">
+    <div class="hhead">
+      <h2>Scenarios &amp; difficulty</h2>
+      <button class="cb close" id="chaosClose">✕</button>
+    </div>
+    <div style="font-size:12.5px;color:var(--dim);line-height:1.7">
+      The world pushes back. Difficulty changes how often it happens, how hard it hits,
+      and how much warning you get — switch it any time.
+    </div>
+    <div class="difftiers" id="tiers"></div>
+    <div class="cnow" id="chaosNow"></div>
+    <div id="chaosList"></div>
+    <div style="font-size:11.5px;color:var(--faint);margin-top:16px;line-height:1.6">
+      Injecting a scenario fires it immediately at the current difficulty — useful for finding
+      out whether your hall actually survives the thing you are worried about.
+    </div>
+  </div>
+</div>
+
+<div id="tut" class="glass">
+  <div class="step" id="tutStep">Step 1</div>
+  <div class="txt" id="tutTxt"></div>
+  <div class="row">
+    <button class="tskip" id="tutSkip">Skip tutorial</button>
+    <div id="tutAction"></div>
+  </div>
+</div>
+
+<div id="helpModal">
+  <div class="hcard glass">
+    <div class="hhead">
+      <h2>How Silicon Hall works</h2>
+      <button class="cb close" id="helpClose">✕</button>
+    </div>
+    <div style="font-size:12.5px;color:var(--dim);line-height:1.7">
+      You buy accelerators, feed them power, keep them cool, connect them to the fabric,
+      and sell the compute. Everything below is a way that plan goes wrong.
+    </div>
+    <div class="hgrid">
+      <div class="hsec"><h3 style="color:var(--gold)">◈ The loop</h3>
+        <p>Build a <b>GPU Rack</b>, click it, and fill it with accelerators. Compute is sold
+        automatically at the <b>spot price</b>, or committed to <b>contracts</b> and
+        <b>forwards</b> that pay more. Profit buys more racks.</p></div>
+      <div class="hsec"><h3 style="color:var(--green)">⚡ Power</h3>
+        <p>Every accelerator draws watts. Each <b>Power Unit</b> adds 28 kW. Go over capacity
+        and the <b>entire hall</b> browns out at once — not just the newest rack.
+        A <b>UPS</b> adds a small surge buffer.</p></div>
+      <div class="hsec"><h3 style="color:var(--amber)">🔥 Heat is local</h3>
+        <p>Every watt becomes heat <b>on that tile</b>. A <b>CRAC Cooler</b> only cools tiles within
+        2 squares, so total capacity is not enough — placement matters. Open the
+        <b>Heat overlay</b> and put cooling next to whatever glows. Past 32° clocks drop; past 45° it is severe.</p></div>
+      <div class="hsec"><h3 style="color:var(--violet)">◈ Fabric</h3>
+        <p>Every accelerator needs a switch port or it sits dark and earns nothing.
+        Each <b>Fabric Switch</b> gives 32 ports. The <b>Fabric overlay</b> shows which racks
+        are connected and which are stranded.</p></div>
+      <div class="hsec"><h3 style="color:var(--pink)">🔧 Crew &amp; parts</h3>
+        <p>Hardware fails — faster when hot, faster on the fragile high-end classes.
+        Build an <b>Ops Room</b> to unlock hiring, then hire a <b>Hardware Tech</b>. They walk
+        the floor and repair, but only if you have <b>spare parts</b> in stock. Order early;
+        they take days to arrive.</p></div>
+      <div class="hsec"><h3 style="color:var(--teal)">📈 Market</h3>
+        <p>Spot price drifts between roughly 0.4× and 2.6×, so revenue swings.
+        <b>Forwards</b> lock a price for a fixed capacity — good when prices are low, painful if
+        you under-deliver, because shortfalls carry penalties and cost reputation.</p></div>
+      <div class="hsec"><h3 style="color:var(--cyan)">★ Growing</h3>
+        <p><b>Milestones</b> unlock better accelerator classes. <b>Reputation</b> from delivered
+        contracts unlocks the serious research — aisle containment, immersion cooling,
+        a bigger substation. Hover any stat in the top bar for live advice.</p></div>
+      <div class="hsec"><h3 style="color:var(--red)">⚡ Disruptions</h3>
+        <p>31 scenarios push back on you — heatwaves, grid curtailment, chiller failures,
+        allocation cuts, fibre cuts, poached staff — plus upside like bulk deals and
+        anchor customers. Most are <b>forecast before they land</b>, so you get a chance to prepare.
+        <b>Difficulty</b> changes frequency, severity and how much warning you get, and can be
+        switched mid-run from the <b>⚡ Chaos</b> button — where you can also fire any scenario
+        at will to test your hall.</p></div>
+      <div class="hsec"><h3 style="color:var(--dim)">⌨ Controls</h3>
+        <p>Drag to orbit, right-drag to pan, scroll to zoom.</p>
+        <div class="hkeys">
+          <span class="hk"><b>1-7</b> build</span><span class="hk"><b>V</b> walk the aisles</span>
+          <span class="hk"><b>H</b> heat map</span><span class="hk"><b>Space</b> pause</span>
+          <span class="hk"><b>Esc</b> cancel</span><span class="hk"><b>?</b> this panel</span>
+        </div></div>
+    </div>
+    <div style="display:flex;gap:9px;margin-top:18px;flex-wrap:wrap">
+      <button class="cb" id="helpTut">▶ Run the guided tutorial</button>
+    </div>
+  </div>
 </div>
 
 <div id="left">
@@ -450,6 +639,7 @@
     <div class="cta">
       <button class="big" id="btnNew">PLAY ▶</button>
       <button class="ghostbtn hide" id="btnCont">CONTINUE RUN</button>
+      <button class="ghostbtn" id="btnTut">HOW TO PLAY</button>
     </div>
     <div class="saveline" id="saveLine"></div>
   </div>
@@ -543,16 +733,90 @@ const JOB_NAMES=['LLM Pretrain','Diffusion Finetune','Protein Fold','Weather Ens
 const CLIENTS=['Northwind AI','Kestrel Labs','Meridian Bio','Helios Systems','Vantage Robotics',
   'Cobalt Research','Solstice Media','Ironwood Capital','Tessellate','Aurora Dynamics'];
 
+// ── difficulty: frequency, severity, how much warning, and whether damage sticks ──
+const DIFF={
+  soft:  {label:'Soft',   gap:[9,15],  sev:0.55, warn:3.0, permanent:false, goodBias:1.7,
+          blurb:'Rare, gentle, and forecast three days ahead. Nothing is ever destroyed for good.'},
+  normal:{label:'Normal', gap:[6,10],  sev:1.00, warn:1.3, permanent:false, goodBias:1.0,
+          blurb:'A steady drumbeat of trouble with about a day of warning.'},
+  hard:  {label:'Hard',   gap:[3.5,6], sev:1.40, warn:0.35,permanent:true,  goodBias:0.55,
+          blurb:'Frequent, severe, barely any warning, and events stack. Hardware can be lost outright.'},
+};
+// ── scenario catalogue ──
+// mods are multipliers applied to a named dial; severity scales the deviation from 1.
 const EVENTS=[
-  {id:'heat',  name:'Regional Heatwave',icon:'🔥',days:[3,6],bad:1,desc:'cooling capacity −30%'},
-  {id:'grid',  name:'Grid Instability', icon:'⚡',days:[2,5],bad:1,desc:'power capacity −25%'},
-  {id:'surge', name:'Spot Price Surge', icon:'📈',days:[3,6],bad:0,desc:'spot price climbs'},
-  {id:'crash', name:'Compute Glut',     icon:'📉',days:[3,6],bad:1,desc:'spot price falls'},
-  {id:'short', name:'Silicon Shortage', icon:'⛏',days:[4,8],bad:1,desc:'accelerator + parts prices +45%'},
-  {id:'dust',  name:'Filter Fouling',   icon:'🌫',days:[3,5],bad:1,desc:'failure rate ×2.2'},
-  {id:'grant', name:'Research Grant',   icon:'🎁',days:[1,1],bad:0,desc:'one-off capital injection'},
-  {id:'demand',name:'Demand Spike',     icon:'🔔',days:[2,4],bad:0,desc:'extra contracts, better pay'},
+ // grid & power
+ {id:'demand_response',cat:'Grid',name:'Demand Response Call',icon:'📞',days:[1.2,2],bad:1,
+  desc:'utility asks you to curtail',decision:true},
+ {id:'transformer',cat:'Grid',name:'Transformer Failure',icon:'💥',days:[0,0],bad:1,
+  desc:'a power unit blows',instant:'breakPower'},
+ {id:'energy',cat:'Grid',name:'Energy Price Spike',icon:'💸',days:[5,9],bad:1,
+  desc:'electricity ×2.5',mods:{opex:2.5}},
+ {id:'interconnect',cat:'Grid',name:'Interconnect Freeze',icon:'🚧',days:[4,7],bad:1,
+  desc:'no new power capacity',mods:{blockPower:true}},
+ // thermal & environment
+ {id:'heat',cat:'Thermal',name:'Regional Heatwave',icon:'🔥',days:[3,6],bad:1,
+  desc:'cooling −30%',mods:{cool:0.70}},
+ {id:'water',cat:'Thermal',name:'Water Restriction',icon:'🚱',days:[5,9],bad:1,
+  desc:'cooling −35%',mods:{cool:0.65}},
+ {id:'chiller',cat:'Thermal',name:'Chiller Failure',icon:'❄',days:[0,0],bad:1,
+  desc:'a CRAC unit dies',instant:'breakCool'},
+ {id:'smoke',cat:'Thermal',name:'Wildfire Smoke',icon:'🌫',days:[4,7],bad:1,
+  desc:'failures ×2.0',mods:{failRate:2.0}},
+ {id:'coldsnap',cat:'Thermal',name:'Cold Snap',icon:'🥶',days:[3,5],bad:1,
+  desc:'grid strained, cooling helped',mods:{powerCap:0.85,cool:1.12}},
+ // supply chain
+ {id:'short',cat:'Supply',name:'Silicon Shortage',icon:'⛏',days:[4,8],bad:1,
+  desc:'hardware +45%',mods:{gpuPrice:1.45,partPrice:1.45}},
+ {id:'allocation',cat:'Supply',name:'Allocation Cut',icon:'🔒',days:[5,9],bad:1,
+  desc:'top tier unbuyable',mods:{blockTop:true}},
+ {id:'customs',cat:'Supply',name:'Customs Delay',icon:'🛳',days:[6,10],bad:1,
+  desc:'parts take twice as long',mods:{partLead:2.2}},
+ {id:'badbatch',cat:'Supply',name:'Bad Batch',icon:'🧪',days:[2,3],bad:1,
+  desc:'failures ×3',mods:{failRate:3.0}},
+ // market
+ {id:'surge',cat:'Market',name:'Spot Price Surge',icon:'📈',days:[3,6],bad:0,
+  desc:'prices climbing',mods:{spotPush:0.42}},
+ {id:'crash',cat:'Market',name:'Compute Glut',icon:'📉',days:[3,6],bad:1,
+  desc:'prices falling',mods:{spotPush:-0.38}},
+ {id:'megacluster',cat:'Market',name:'Competitor Megacluster',icon:'🏭',days:[10,16],bad:1,
+  desc:'prices depressed for a long stretch',mods:{spotPush:-0.22}},
+ {id:'default',cat:'Market',name:'Customer Default',icon:'📄',days:[0,0],bad:1,
+  desc:'a contract is cancelled',instant:'cancelContract'},
+ {id:'modelrelease',cat:'Market',name:'Frontier Model Release',icon:'🚀',days:[3,5],bad:0,
+  desc:'demand and prices spike',mods:{spotPush:0.50,offers:2.0}},
+ {id:'flight',cat:'Market',name:'Flight to Quality',icon:'🏛',days:[5,8],bad:1,
+  desc:'fewer offers unless well regarded',mods:{offers:0.4}},
+ // network & ops
+ {id:'fibercut',cat:'Network',name:'Upstream Fibre Cut',icon:'✂',days:[0.35,0.8],bad:1,
+  desc:'cannot sell — power still burning',mods:{revenue:0.0}},
+ {id:'firmware',cat:'Network',name:'Fabric Firmware Bug',icon:'🐛',days:[3,6],bad:1,
+  desc:'usable ports −30%',mods:{ports:0.70}},
+ {id:'security',cat:'Network',name:'Security Incident',icon:'🛡',days:[3,5],bad:1,
+  desc:'compute diverted to forensics',mods:{revenue:0.75}},
+ // people
+ {id:'poached',cat:'People',name:'Poached',icon:'🎯',days:[0,0],bad:1,
+  desc:'your best technician quits',instant:'poach'},
+ {id:'onleave',cat:'People',name:'Key Person On Leave',icon:'🌴',days:[4,7],bad:1,
+  desc:'staff bonuses halved',mods:{staffBonus:0.5}},
+ {id:'labour',cat:'People',name:'Tight Labour Market',icon:'👔',days:[6,10],bad:1,
+  desc:'hiring costs doubled',mods:{hireCost:2.0}},
+ // upside
+ {id:'grant',cat:'Upside',name:'Research Grant',icon:'🎁',days:[0,0],bad:0,
+  desc:'one-off capital',instant:'grant'},
+ {id:'bulk',cat:'Upside',name:'Bulk Hardware Deal',icon:'🏷',days:[4,7],bad:0,
+  desc:'accelerators −35%',mods:{gpuPrice:0.65}},
+ {id:'anchor',cat:'Upside',name:'Anchor Customer',icon:'🤝',days:[0,0],bad:0,
+  desc:'a premium forward appears',instant:'anchor'},
+ {id:'breakthrough',cat:'Upside',name:'Efficiency Breakthrough',icon:'💡',days:[0,0],bad:0,
+  desc:'free research',instant:'breakthrough'},
+ {id:'districtheat',cat:'Upside',name:'District Heating Deal',icon:'♨',days:[8,14],bad:0,
+  desc:'waste heat sold, opex −20%',mods:{opex:0.8}},
+ {id:'windfall',cat:'Upside',name:'Talent Windfall',icon:'⭐',days:[0,0],bad:0,
+  desc:'an exceptional candidate appears',instant:'windfall'},
 ];
+const EV_BY_ID=Object.fromEntries(EVENTS.map(e=>[e.id,e]));
+const EV_CATS=['Grid','Thermal','Supply','Market','Network','People','Upside'];
 
 const PART_PRICE=520;
 const PART_ORDERS=[{qty:10,disc:1.0,lead:2},{qty:50,disc:0.9,lead:3},
@@ -566,6 +830,7 @@ function freshState(){
     jobs:[], offers:[], forwards:[], fwdOffers:[], orders:[],
     msDone:{}, events:[], log:[],
     tool:null, sel:null, offerTimer:1.0, eventTimer:6, candTimer:0, fwdTimer:2,
+    diff:'normal', forecast:null, decision:null, mods:null,
     jobSeq:1, staffSeq:1, flow:0, hist:[], histT:0, spotHist:[],
     at:{d:[],m:[],f:[],p:[]}, atT:0,
     tempField:new Float32Array(NT).fill(21), drawField:new Float32Array(NT),
@@ -860,7 +1125,8 @@ function updateFx(dt){
   }
 }
 const slotsUsed=r=>r.gpus.reduce((s,id)=>s+GPU_BY_ID[id].sl,0);
-const priceMult=()=>hasEvent('short')?1.45:1;
+const priceMult=()=>(S&&S.mods?S.mods.gpuPrice:1);
+const partMult=()=>(S&&S.mods?S.mods.partPrice:1);
 const gpuPrice=g=>Math.round(g.cost*priceMult());
 
 function installGPU(rack,gid,count){
@@ -883,10 +1149,10 @@ function uninstallGPU(rack){
 // ═══════════════ PARTS ═══════════════
 function orderParts(idx){
   const o=PART_ORDERS[idx];
-  const cost=Math.round(o.qty*PART_PRICE*o.disc*priceMult());
+  const cost=Math.round(o.qty*PART_PRICE*o.disc*partMult());
   if(S.money<cost){toast('Not enough capital','var(--amber)');return;}
   S.money-=cost;
-  S.orders.push({qty:o.qty,left:o.lead});
+  S.orders.push({qty:o.qty,left:o.lead*M().partLead});
   toast('Ordered '+o.qty+' spares · arrives in '+o.lead+'d','var(--amber)');
   logLine('Ordered '+o.qty+' spare parts for $'+fmt(cost),'var(--amber)');
   renderOps();
@@ -906,8 +1172,9 @@ function hire(cid){
   const i=S.candidates.findIndex(c=>c.id===cid); if(i<0)return;
   const c=S.candidates[i];
   if(S.staff.length>=staffCap()){toast('No capacity — build an Ops Room','var(--amber)');return;}
-  if(S.money<c.hire){toast('Cannot afford signing bonus','var(--amber)');return;}
-  S.money-=c.hire; S.candidates.splice(i,1);
+  const hireCost=Math.round(c.hire*M().hireCost);
+  if(S.money<hireCost){toast('Cannot afford signing bonus','var(--amber)');return;}
+  S.money-=hireCost; S.candidates.splice(i,1);
   const mesh=mkStaffMesh(c.role);
   mesh.position.copy(tileToWorld(0,Math.floor(GRID_H/2)));
   staffGroup.add(mesh);
@@ -993,19 +1260,175 @@ function idleWander(s,dt){
 
 // ═══════════════ EVENTS ═══════════════
 const hasEvent=id=>S&&S.events.some(e=>e.id===id);
-function fireEvent(){
-  const d=EVENTS[(Math.random()*EVENTS.length)|0];
-  if(hasEvent(d.id))return;
-  if(d.id==='grant'){
-    const amt=Math.round(8000+S.rep*2200+Math.random()*12000);
-    S.money+=amt; logLine('🎁 Research Grant — +$'+fmt(amt),'var(--gold)');
-    toast('🎁 Research grant · +$'+fmt(amt),'var(--gold)'); return;
+const diff=()=>DIFF[S.diff]||DIFF.normal;
+
+// Every active scenario contributes to one shared set of dials, so the rest of
+// the sim reads S.mods instead of asking about individual events.
+function baseMods(){
+  return {cool:1,powerCap:1,failRate:1,gpuPrice:1,partPrice:1,partLead:1,opex:1,
+          ports:1,revenue:1,spotPush:0,hireCost:1,staffBonus:1,offers:1,
+          blockPower:false,blockTop:false};
+}
+function computeMods(){
+  const m=baseMods();
+  if(!S) return m;
+  for(const e of S.events){
+    const def=EV_BY_ID[e.id];
+    const src=e.adhoc||(def&&def.mods);      // adhoc covers player-chosen outcomes
+    if(!src) continue;
+    const sev=e.adhoc?1:(e.sev||1);
+    for(const k in src){
+      const v=src[k];
+      if(typeof v==='boolean') m[k]=m[k]||v;
+      else if(k==='spotPush') m[k]+=v*sev;
+      else m[k]*=1+(v-1)*sev;                 // severity scales the deviation
+    }
   }
-  S.events.push({id:d.id,name:d.name,icon:d.icon,desc:d.desc,
-    left:d.days[0]+Math.random()*(d.days[1]-d.days[0]),bad:d.bad});
-  logLine(d.icon+' '+d.name+' — '+d.desc,d.bad?'var(--red)':'var(--green)');
-  toast(d.icon+' '+d.name,d.bad?'var(--red)':'var(--green)');
-  if(d.id==='demand'){for(let i=0;i<2;i++)S.offers.push(genOffer(computeStats()));renderJobs();}
+  return m;
+}
+// ── scheduling: pick the next scenario, then forecast it before it lands ──
+function scheduleNext(){
+  const d=diff();
+  S.eventTimer=d.gap[0]+Math.random()*(d.gap[1]-d.gap[0]);
+  const pool=EVENTS.filter(e=>!hasEvent(e.id)&&!(S.forecast&&S.forecast.id===e.id));
+  if(!pool.length){ S.forecast=null; return; }
+  // difficulty tilts the good/bad mix
+  const weighted=[];
+  for(const e of pool){
+    const w=e.bad?1:d.goodBias;
+    for(let i=0;i<Math.max(1,Math.round(w*10));i++) weighted.push(e);
+  }
+  const def=weighted[(Math.random()*weighted.length)|0];
+  S.forecast={id:def.id, at:S.day+S.eventTimer, warned:false};
+}
+function fireEvent(id){
+  const def=EV_BY_ID[id]||EVENTS[(Math.random()*EVENTS.length)|0];
+  if(hasEvent(def.id)&&!def.instant) return;
+  const d=diff();
+  const sev=d.sev;
+  if(def.decision){ askDecision(def); return; }
+  if(def.instant){ runInstant(def,sev); return; }
+  const len=def.days[0]+Math.random()*(def.days[1]-def.days[0]);
+  S.events.push({id:def.id,name:def.name,icon:def.icon,desc:def.desc,
+    left:len,bad:def.bad,sev});
+  logLine(def.icon+' '+def.name+' — '+def.desc,def.bad?'var(--red)':'var(--green)');
+  toast(def.icon+' '+def.name,def.bad?'var(--red)':'var(--green)');
+  if(def.id==='modelrelease'){for(let i=0;i<2;i++)S.offers.push(genOffer(computeStats()));renderJobs();}
+}
+// one-shot scenarios that change the world rather than setting a dial
+function runInstant(def,sev){
+  const permanent=diff().permanent;
+  switch(def.instant){
+    case 'breakPower':{
+      const pool=S.objects.filter(o=>o.type==='power'&&!o.broken);
+      if(!pool.length) return;
+      const t=pool[(Math.random()*pool.length)|0];
+      if(permanent&&Math.random()<0.5){ removeObjectSilently(t);
+        say(def,'a power unit was destroyed outright'); }
+      else { t.broken=true; t.repair=0; say(def,'a power unit needs rebuilding'); }
+      break;}
+    case 'breakCool':{
+      const pool=S.objects.filter(o=>o.type==='cool'&&!o.broken);
+      if(!pool.length) return;
+      const t=pool[(Math.random()*pool.length)|0];
+      if(permanent&&Math.random()<0.5){ removeObjectSilently(t);
+        say(def,'a CRAC unit was destroyed outright'); }
+      else { t.broken=true; t.repair=0; say(def,'a CRAC unit is down'); }
+      break;}
+    case 'cancelContract':{
+      if(!S.jobs.length){ return; }
+      const i=(Math.random()*S.jobs.length)|0;
+      const j=S.jobs.splice(i,1)[0];
+      S.rep=Math.max(0,S.rep-1);
+      say(def,`${j.client||'A client'} cancelled "${j.name}"`);
+      renderJobs(); break;}
+    case 'poach':{
+      const techs=S.staff.filter(s=>s.role==='tech');
+      const pool=techs.length?techs:S.staff;
+      if(!pool.length) return;
+      pool.sort((a,b)=>b.skill-a.skill);
+      const s=pool[0];
+      say(def,`${s.name} was poached`);
+      fire(s.id); break;}
+    case 'grant':{
+      const amt=Math.round((8000+S.rep*2200+Math.random()*12000)*(2-diff().sev));
+      S.money+=amt; say(def,'+$'+fmt(amt)); break;}
+    case 'anchor':{
+      const st=computeStats();
+      const f=genForward(st);
+      f.price=Math.round(f.price*1.5); f.repGain+=3; f.name='★ '+f.name;
+      S.fwdOffers.unshift(f);
+      say(def,`premium forward at $${f.price}/PF-day`);
+      if(currentRTab==='market')renderMarket(); break;}
+    case 'breakthrough':{
+      const left=UPGRADES.filter(u=>!S.upgrades[u.id]&&S.rep>=u.rep);
+      if(!left.length){ S.money+=25000; say(def,'+$25.0k (nothing left to research)'); return; }
+      const u=left[(Math.random()*left.length)|0];
+      S.upgrades[u.id]=true;
+      say(def,u.name+' granted free'); renderRnd(); break;}
+    case 'windfall':{
+      const c=genCandidate(); c.skill=5;
+      c.salary=Math.round(ROLES[c.role].base*(0.6+5*0.42)); c.hire=c.salary*4;
+      S.candidates.unshift(c);
+      say(def,`${c.name}, skill 5 ${ROLES[c.role].name}`);
+      if(currentTab==='ops')renderOps(); break;}
+  }
+}
+function say(def,detail){
+  logLine(def.icon+' '+def.name+' — '+detail,def.bad?'var(--red)':'var(--gold)');
+  toast(def.icon+' '+def.name,def.bad?'var(--red)':'var(--gold)');
+}
+function removeObjectSilently(o){
+  buildGroup.remove(o.mesh);
+  if(o.mesh.userData.fan) fans=fans.filter(f=>f!==o.mesh.userData.fan);
+  disposeGroup(o.mesh);
+  delete S.occ[kk(o.c,o.r)];
+  S.objects=S.objects.filter(x=>x!==o);
+  S.staff.forEach(t=>{ if(t.target===o){t.target=null;t.state='idle';} });
+  if(S.sel===o){ S.sel=null; renderInspector(); }
+}
+// ── forecast → fire ──
+function tickSchedule(dd){
+  if(S.decision){ S.decision.timer-=dd*DAY_SECONDS; if(S.decision.timer<=0) chooseDecision(0); }
+  S.eventTimer-=dd;
+  if(S.forecast){
+    const away=S.forecast.at-S.day;
+    if(!S.forecast.warned&&away<=diff().warn){
+      S.forecast.warned=true;
+      const def=EV_BY_ID[S.forecast.id];
+      if(def){
+        toast('⚠ Forecast: '+def.name+' inbound','var(--amber)');
+        logLine('⚠ Forecast — '+def.name+' expected in '+away.toFixed(1)+'d','var(--amber)');
+      }
+    }
+    if(away<=0){ const id=S.forecast.id; S.forecast=null; fireEvent(id); scheduleNext(); return; }
+  } else if(S.eventTimer<=0){ scheduleNext(); }
+}
+// ── player-facing decision ──
+function askDecision(def){
+  const capLoss=0.7, days=1.6;
+  S.decision={
+    icon:def.icon, title:def.name,
+    text:'The utility is asking you to shed load during a regional peak. '+
+         'Comply and you run at <b>70% power capacity</b> for about a day and a half. '+
+         'Refuse and you keep full capacity but pay a <b>penalty</b>.',
+    options:[
+      {label:'COMPLY',  fn:()=>{
+        S.events.push({id:'demand_response',name:def.name,icon:def.icon,
+          desc:'curtailed to 70% capacity',left:days,bad:1,sev:1,
+          adhoc:{powerCap:capLoss}});
+        logLine('📞 Curtailed to 70% capacity for the peak','var(--amber)');
+      }},
+      {label:'REFUSE & PAY', fn:()=>{
+        const fee=Math.round(Math.max(4000,S.money*0.05));
+        S.money-=fee;
+        logLine('📞 Refused curtailment — paid $'+fmt(fee)+' penalty','var(--red)');
+        toast('Penalty −$'+fmt(fee),'var(--red)');
+      }},
+    ],
+    timer:18
+  };
+  renderDecision();
 }
 
 // ═══════════════ THERMAL FIELD ═══════════════
@@ -1013,7 +1436,7 @@ function computeThermal(u,thermalEff,powerEff){
   const gen=new Float32Array(NT),cool=new Float32Array(NT);
   let totGen=0,totCool=0;
   let coolMult=(u.liquid?1.6:1)*(u.immersion?1.8:1)*thermalEff;
-  if(hasEvent('heat'))coolMult*=0.7;
+  coolMult*=M().cool;
   for(const o of S.objects){
     const i=ti(o.c,o.r);
     if(o.type==='rack'){
@@ -1068,7 +1491,10 @@ function computeThermal(u,thermalEff,powerEff){
 }
 
 // ═══════════════ SIM ═══════════════
+// current modifier dials — recomputed once per stats pass, read everywhere as M()
+const M=()=>(S&&S.mods)||baseMods();
 function computeStats(){
+  S.mods=computeMods();
   const u=S.upgrades;
   let racks=0,coolers=0,powers=0,nets=0,upss=0,stores=0,opss=0,brokenN=0;
   let gpuCount=0,deadCount=0,rawPF=0,gpuKW=0,maxVram=0;
@@ -1090,10 +1516,11 @@ function computeStats(){
       else if(o.type==='storage'&&!o.broken)stores++; else if(o.type==='ops')opss++;
     }
   }
-  const thermalEff=Math.min(2.1,1+0.07*roleSkill('thermal'));
-  const netEff=Math.min(1.9,1+0.06*roleSkill('network'));
-  const powerEff=Math.max(0.65,1-0.035*roleSkill('power'));
-  const salesMult=Math.min(1.8,1+0.06*roleSkill('sales'));
+  const sb=M().staffBonus;
+  const thermalEff=Math.min(2.1,1+0.07*roleSkill('thermal')*sb);
+  const netEff=Math.min(1.9,1+0.06*roleSkill('network')*sb);
+  const powerEff=Math.max(0.65,1-0.035*roleSkill('power')*sb);
+  const salesMult=Math.min(1.8,1+0.06*roleSkill('sales')*sb);
 
   if(u.oc)rawPF*=1.18;
   if(u.sched)rawPF*=1.12;
@@ -1104,12 +1531,12 @@ function computeStats(){
     .reduce((a,o)=>a+(BUILD[o.type].draw||0),0);
   const totalKW=gpuKW+infraKW;
   let powerCap=powers*BUILD.power.cap*(u.grid?1.45:1)+upss*BUILD.ups.surge;
-  if(hasEvent('grid'))powerCap*=0.75;
+  powerCap*=M().powerCap;
   const powerFactor=totalKW<=0?1:Math.min(1,powerCap/totalKW);
 
   const th=computeThermal(u,thermalEff,powerEff);
 
-  const ports=Math.floor(nets*BUILD.net.ports*(u.fabric?1.6:1)*netEff);
+  const ports=Math.floor(nets*BUILD.net.ports*(u.fabric?1.6:1)*netEff*M().ports);
   const netFactor=gpuCount<=0?1:Math.min(1,ports/gpuCount);
   // greedy per-rack switch assignment (for the fabric overlay)
   let used=0;
@@ -1151,16 +1578,13 @@ function simulate(dt){
     S.events[i].left-=dd;
     if(S.events[i].left<=0){logLine(S.events[i].name+' ended','var(--dim)');S.events.splice(i,1);}
   }
-  S.eventTimer-=dd;
-  if(S.eventTimer<=0){fireEvent();S.eventTimer=7+Math.random()*9;}
+  tickSchedule(dd);
 
   // spot price random walk (mean-reverting)
   const drift=(1-S.spot)*0.06*dd;
   const shock=(Math.random()*2-1)*0.24*Math.sqrt(Math.max(dd,0));
   S.spot+=drift+shock;
-  if(hasEvent('surge'))S.spot+=0.42*dd;
-  if(hasEvent('crash'))S.spot-=0.38*dd;
-  if(hasEvent('demand'))S.spot+=0.2*dd;
+  S.spot+=M().spotPush*dd;
   S.spot=Math.max(0.42,Math.min(2.6,S.spot));
 
   // parts orders
@@ -1175,7 +1599,7 @@ function simulate(dt){
   }
 
   // failures
-  const failMult=(S.upgrades.telemetry?0.55:1)*(S.upgrades.immersion?0.8:1)*(hasEvent('dust')?2.2:1);
+  const failMult=(S.upgrades.telemetry?0.55:1)*(S.upgrades.immersion?0.8:1)*M().failRate;
   for(const o of S.objects){
     if(o.type==='rack'){
       const heatStress=1+Math.max(0,S.tempField[ti(o.c,o.r)]-28)/22;
@@ -1243,15 +1667,17 @@ function simulate(dt){
   }
 
   // spot revenue + costs
-  const rev=free*RATE*S.spot*st.salesMult;
-  const cost=st.totalKW*24*KWH+st.racks*40+st.coolers*55+st.nets*45+st.powers*25
+  const rev=free*RATE*S.spot*st.salesMult*M().revenue;
+  const cost=st.totalKW*24*KWH*M().opex+st.racks*40+st.coolers*55+st.nets*45+st.powers*25
     +st.stores*50+st.opss*60+st.upss*30+st.salaries;
   S.flow=rev-cost;
   S.money+=S.flow*dd;
 
   // offers
   S.offerTimer-=dd;
-  if(S.offerTimer<=0&&S.offers.length<4){S.offers.push(genOffer(st));S.offerTimer=1.0;renderJobs();}
+  if(S.offerTimer<=0&&S.offers.length<4){
+    if(Math.random()<M().offers) S.offers.push(genOffer(st));
+    S.offerTimer=1.0/Math.max(0.25,M().offers);renderJobs();}
   S.fwdTimer-=dd;
   if(S.fwdTimer<=0){S.fwdTimer=2.5;
     if(S.fwdOffers.length<3)S.fwdOffers.push(genForward(st));
@@ -1681,7 +2107,7 @@ function renderOps(){
   const row=document.createElement('div');
   row.style.cssText='display:flex;gap:5px;margin-bottom:9px';
   PART_ORDERS.forEach((o,i)=>{
-    const cost=Math.round(o.qty*PART_PRICE*o.disc*priceMult());
+    const cost=Math.round(o.qty*PART_PRICE*o.disc*partMult());
     const b=document.createElement('button');
     b.className='mini'+(S.money>=cost?'':' no');
     b.style.cssText='margin:0;flex:1;padding:6px 0';
@@ -1994,7 +2420,12 @@ function updateTopBar(st){
   if(st.brokenN>0)ch.push([st.brokenN+' INFRA FAILED','']);
   if(st.deadCount>0&&S.spares<=0)ch.push(['OUT OF SPARE PARTS','']);
   if(st.deadCount>0&&roleSkill('tech')===0)ch.push([st.deadCount+' DOWN · HIRE A TECH','']);
-  S.events.forEach(e=>ch.push([e.icon+' '+e.name+' · '+Math.ceil(e.left)+'d','ev']));
+  S.events.forEach(e=>ch.push([e.icon+' '+e.name+' · '+Math.max(0,e.left).toFixed(1)+'d','ev']));
+  if(S.forecast&&S.forecast.warned){
+    const f=EV_BY_ID[S.forecast.id];
+    if(f) ch.push(['⚠ '+f.name+' in '+Math.max(0,S.forecast.at-S.day).toFixed(1)+'d','amber']);
+  }
+  if(S.decision) $('decTimer').textContent='auto-complying in '+Math.ceil(S.decision.timer)+'s';
   $('warn').innerHTML=ch.map(([t,c])=>`<div class="wchip ${c}">${t}</div>`).join('');
 }
 // ═══════════════ STAT TOOLTIPS ═══════════════
@@ -2083,6 +2514,172 @@ document.querySelectorAll('.stat[data-stat]').forEach(el=>{
   el.addEventListener('mouseenter',()=>showTip(el));
   el.addEventListener('mouseleave',hideTip);
 });
+
+// ═══════════════ DECISION + CHAOS UI ═══════════════
+function renderDecision(){
+  const d=S.decision, el=$('decision');
+  if(!d){ el.classList.remove('show'); return; }
+  $('decIcon').textContent=d.icon; $('decTitle').textContent=d.title;
+  $('decText').innerHTML=d.text;
+  const o=$('decOpts'); o.innerHTML='';
+  d.options.forEach((opt,i)=>{
+    const b=document.createElement('button');
+    b.className='dopt'+(i?' alt':''); b.textContent=opt.label;
+    b.onclick=()=>chooseDecision(i);
+    o.appendChild(b);
+  });
+  el.classList.add('show');
+}
+function chooseDecision(i){
+  const d=S.decision; if(!d) return;
+  S.decision=null;
+  $('decision').classList.remove('show');
+  const opt=d.options[i]||d.options[0];
+  if(opt&&opt.fn) opt.fn();
+}
+function openChaos(){ renderChaos(); $('chaos').classList.add('show'); }
+function closeChaos(){ $('chaos').classList.remove('show'); }
+function setDiff(k){
+  S.diff=k;
+  // re-roll the schedule so the new pacing takes effect from here on
+  S.forecast=null; scheduleNext();
+  toast('Difficulty: '+DIFF[k].label,'var(--cyan)');
+  logLine('Difficulty set to '+DIFF[k].label,'var(--cyan)');
+  renderChaos();
+}
+function renderChaos(){
+  const t=$('tiers'); t.innerHTML='';
+  for(const k of ['soft','normal','hard']){
+    const d=DIFF[k];
+    const b=document.createElement('button');
+    b.className='tier'+(S.diff===k?' on':'');
+    b.innerHTML=`<div class="tn" style="color:${k==='soft'?'var(--green)':k==='hard'?'var(--red)':'var(--cyan)'}">${d.label}</div>
+      <div class="td">${d.blurb}</div>
+      <div class="tm">every ${d.gap[0]}–${d.gap[1]}d · ${Math.round(d.sev*100)}% severity ·
+        ${d.warn>=1?d.warn+'d':Math.round(d.warn*24)+'h'} warning</div>`;
+    b.onclick=()=>setDiff(k);
+    t.appendChild(b);
+  }
+  const f=S.forecast?EV_BY_ID[S.forecast.id]:null;
+  $('chaosNow').innerHTML = f
+    ? `Next up: <b>${f.icon} ${f.name}</b> in ${Math.max(0,S.forecast.at-S.day).toFixed(1)} days`
+    : 'Nothing scheduled yet.';
+  const list=$('chaosList'); list.innerHTML='';
+  for(const cat of EV_CATS){
+    const evs=EVENTS.filter(e=>e.cat===cat);
+    if(!evs.length) continue;
+    const g=document.createElement('div'); g.className='cgroup';
+    g.innerHTML=`<div class="cglabel">${cat}</div>`;
+    const row=document.createElement('div'); row.className='cbtns';
+    for(const e of evs){
+      const b=document.createElement('button');
+      b.className='cinj'+(e.bad?'':' good');
+      b.textContent=e.icon+' '+e.name;
+      b.title=e.desc;
+      b.onclick=()=>{ fireEvent(e.id); renderChaos(); };
+      row.appendChild(b);
+    }
+    g.appendChild(row); list.appendChild(g);
+  }
+}
+
+// ═══════════════ TUTORIAL ═══════════════
+// Each step either waits for the player to actually do the thing (`done`)
+// or just explains something and waits for a click (`btn`).
+let tut={on:false,i:0}, tutMarker=null;
+const firstRack=()=>S.objects.find(o=>o.type==='rack');
+const TUT=[
+ {txt:"You run a datacenter. You buy accelerators, feed them power, keep them cool, "+
+      "and sell the compute. Let's get the first rack earning.",
+  btn:"Show me"},
+ {txt:"That tall cabinet in the middle is a <b>GPU Rack</b> with four accelerators in it. "+
+      "<b>Click it</b> to open the rack panel.",
+  mark:'rack', done:()=>S.sel&&S.sel.type==='rack'},
+ {txt:"This rack has empty slots. Hit <b>⤒ Fill</b> to pack it with accelerators — "+
+      "more silicon means more compute to sell.",
+  hl:'#insp', done:st=>st.gpuCount>=8},
+ {txt:"Look at <b>Compute</b> up top. <b>Sellable</b> is what you can actually deliver right now; "+
+      "<b>raw</b> is what your silicon could do at full clocks. The gap is what power, heat and "+
+      "fabric are stealing from you.",
+  hl:'[data-stat="compute"]', btn:"Got it"},
+ {txt:"Time to grow. Pick <b>GPU Rack</b> from the Build panel, then click any empty floor tile.",
+  hl:'#paneBuild', done:st=>st.racks>=2},
+ {txt:"Two limits bite instantly. <b>Power</b> over 100% browns out the whole hall at once. "+
+      "And every accelerator needs a <b>fabric port</b> — unswitched ones sit dark and earn nothing.",
+  hl:'[data-stat="power"]', btn:"Understood"},
+ {txt:"Heat is <b>local</b>, not a hall average. Open the <b>Heat</b> overlay and look at your floor.",
+  hl:'[data-ov="heat"]', done:()=>overlay==='heat'},
+ {txt:"Red tiles are cooking. A <b>CRAC Cooler</b> only cools within 2 tiles, so total capacity "+
+      "isn't enough — it has to be <b>near</b> the racks. Spread racks out, tuck cooling between them.",
+  btn:"Makes sense"},
+ {txt:"Silicon fails, and faster when it's hot. Build an <b>Ops Room</b>, hire a <b>Hardware Tech</b>, "+
+      "and keep <b>spare parts</b> stocked — a tech with no parts just stands there.",
+  hl:'[data-tab="ops"]', btn:"Noted"},
+ {txt:"Contracts in the right panel pay better than spot. Take one you can actually feed — "+
+      "starving a contract costs you money and reputation.",
+  hl:'#right', btn:"Got it"},
+ {txt:"The world pushes back — heatwaves, grid curtailment, dead chillers, poached staff. "+
+      "Most arrive with a <b>forecast</b> first. Use <b>⚡ Chaos</b> to change difficulty mid-run, "+
+      "or fire a scenario yourself to see if your hall survives it.",
+  hl:'#chaosBtn', btn:"Good to know"},
+ {txt:"That's the whole game. Speed time up with <b>3x</b>, hover any stat for live advice, "+
+      "press <b>V</b> to walk the aisles, and <b>?</b> reopens the full reference whenever you want.",
+  btn:"Let's build"},
+];
+function startTutorial(){
+  tut={on:true,i:0};
+  closeHelp();
+  showTutStep();
+}
+function showTutStep(){
+  const el=$('tut');
+  if(!tut.on||tut.i>=TUT.length){ endTutorial(); return; }
+  const s=TUT[tut.i];
+  clearHL(); clearMarker();
+  $('tutStep').textContent='Step '+(tut.i+1)+' of '+TUT.length;
+  $('tutTxt').innerHTML=s.txt;
+  const act=$('tutAction'); act.innerHTML='';
+  if(s.btn){
+    const b=document.createElement('button');
+    b.className='tbtn'; b.textContent=s.btn;
+    b.onclick=()=>{ tut.i++; showTutStep(); };
+    act.appendChild(b);
+  } else {
+    const w=document.createElement('div');
+    w.className='wait'; w.textContent='waiting for you…';
+    act.appendChild(w);
+  }
+  if(s.hl){ const t=document.querySelector(s.hl); if(t) t.classList.add('tut-hl'); }
+  if(s.mark==='rack') markRack();
+  el.classList.add('show');
+}
+function checkTut(st){
+  if(!tut.on||tut.i>=TUT.length) return;
+  const s=TUT[tut.i];
+  if(s.done&&s.done(st)){ tut.i++; showTutStep(); }
+}
+function endTutorial(){
+  tut.on=false; clearHL(); clearMarker();
+  $('tut').classList.remove('show');
+}
+function clearHL(){ document.querySelectorAll('.tut-hl').forEach(e=>e.classList.remove('tut-hl')); }
+function markRack(){
+  const r=firstRack(); if(!r) return;
+  const g=new THREE.Group();
+  const ring=new THREE.Mesh(new THREE.TorusGeometry(2.2,0.16,8,28),
+    new THREE.MeshBasicMaterial({color:0x48e0ff,transparent:true,opacity:0.9}));
+  ring.rotation.x=Math.PI/2; g.add(ring);
+  const cone=new THREE.Mesh(new THREE.ConeGeometry(0.55,1.3,14),
+    new THREE.MeshBasicMaterial({color:0x48e0ff}));
+  cone.rotation.x=Math.PI; cone.position.y=1.6; g.add(cone);
+  g.position.copy(r.mesh.position); g.position.y=4.6;
+  scene.add(g); tutMarker=g;
+}
+function clearMarker(){
+  if(tutMarker){ scene.remove(tutMarker); disposeGroup(tutMarker); tutMarker=null; }
+}
+function openHelp(){ $('helpModal').classList.add('show'); }
+function closeHelp(){ $('helpModal').classList.remove('show'); }
 
 // ═══════════════ ALL-TIME CHART ═══════════════
 let bigSeries='m';
@@ -2196,6 +2793,7 @@ let uiT=0;
 function tickUI(dt,st){
   lastSt=st;
   updateTopBar(st);
+  checkTut(st);
   uiT-=dt;
   if(uiT<=0){uiT=0.5;drawGraph();
     if($('chartModal').classList.contains('show'))drawBig();
@@ -2234,7 +2832,7 @@ function save(){
       forwards:S.forwards.map(f=>({id:f.id,name:f.name,cap:f.cap,days:f.days,price:f.price,
         left:f.left,delivered:f.delivered,owed:f.owed,pen:f.pen,repGain:f.repGain})),
       staff:S.staff.map(s=>({id:s.id,name:s.name,role:s.role,skill:s.skill,salary:s.salary,hire:s.hire})),
-      at:S.at,
+      at:S.at, diff:S.diff, forecast:S.forecast,
       objects:S.objects.map(o=>({type:o.type,c:o.c,r:o.r,gpus:o.gpus,dead:o.dead,broken:o.broken}))
     }));
   }catch(e){
@@ -2267,6 +2865,7 @@ function load(){
       jobSeq:d.jobSeq||1,staffSeq:d.staffSeq||1,
       jobs:(d.jobs||[]).map(j=>({...j,starved:false})),
       at:(d.at&&d.at.d)?d.at:{d:[],m:[],f:[],p:[]},
+      diff:DIFF[d.diff]?d.diff:'normal', forecast:d.forecast||null,
       offers:d.offers||[],fwdOffers:d.fwdOffers||[],orders:d.orders||[],
       forwards:d.forwards||[],events:d.events||[],candidates:d.candidates||[]});
     (d.objects||[]).forEach(o=>{
@@ -2300,6 +2899,8 @@ function frame(ms){
   let dt=clock.last?now-clock.last:0;clock.last=now;
   if(dt>0.06)dt=0.06;
   updateCamera(dt);updateFx(dt);
+  if(tutMarker){ tutMarker.rotation.y+=dt*1.4;
+    tutMarker.position.y=4.6+Math.sin(now*2.6)*0.34; }
   if(demo&&S){
     // landing-page showreel: slow orbit over a decorative hall
     cam.tTheta+=dt*0.055;
@@ -2345,6 +2946,9 @@ addEventListener('keydown',e=>{
     if(k==='escape'||k==='v')setWalk(false);
     return;
   }
+  if(k==='?'||(k==='/'&&e.shiftKey)){ $('helpModal').classList.contains('show')?closeHelp():openHelp(); return; }
+  if(k==='escape'&&$('chaos').classList.contains('show')){closeChaos();return;}
+  if(k==='escape'&&$('helpModal').classList.contains('show')){closeHelp();return;}
   if(k==='escape'&&$('chartModal').classList.contains('show')){closeChart();return;}
   if(k==='escape'){S.tool=null;S.sel=null;refreshLeft();renderInspector();}
   else if(k===' '){e.preventDefault();setSpeed(S.speed===0?1:0);}
@@ -2367,6 +2971,14 @@ function setSpeed(v){
 document.querySelectorAll('.sp').forEach(b=>b.onclick=()=>{if(S)setSpeed(parseInt(b.dataset.sp));});
 document.querySelectorAll('[data-ov]').forEach(b=>b.onclick=()=>setOverlay(b.dataset.ov));
 $('walkBtn').onclick=()=>setWalk(camMode!=='walk');
+$('helpBtn').onclick=openHelp;
+$('chaosBtn').onclick=openChaos;
+$('chaosClose').onclick=closeChaos;
+$('chaos').onclick=e=>{ if(e.target===$('chaos')) closeChaos(); };
+$('helpClose').onclick=closeHelp;
+$('helpModal').onclick=e=>{ if(e.target===$('helpModal')) closeHelp(); };
+$('helpTut').onclick=()=>{ closeHelp(); startTutorial(); };
+$('tutSkip').onclick=endTutorial;
 function syncTabs(){
   document.querySelectorAll('[data-tab]').forEach(b=>b.classList.toggle('on',b.dataset.tab===currentTab));
   [['build','paneBuild'],['ops','paneOps'],['rnd','paneRnd']].forEach(([t,p])=>
@@ -2436,7 +3048,8 @@ function startContinue(){
   clearWorld();if(!load()){startNew();return;}begin();
 }
 function begin(){
-  demo=false; running=true; closeChart();
+  demo=false; running=true; closeChart(); closeHelp(); closeChaos();
+  S.mods=computeMods(); scheduleNext();
   document.body.classList.remove('booting');
   $('start').classList.add('hide');
   cam.tRad=46; cam.tPhi=0.92; cam.tTarget.set(0,1.5,0);
@@ -2472,6 +3085,12 @@ function boot(){
     startNew();
   };
   $('btnCont').onclick=startContinue;
+  // Start a fresh hall and walk them through it step by step.
+  $('btnTut').onclick=()=>{
+    try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+    startNew();
+    startTutorial();
+  };
 }
 if(typeof THREE==='undefined'){
   $('loading').innerHTML='<div style="text-align:center;line-height:2">COULD NOT LOAD 3D LIBRARY<br>'+
