@@ -392,6 +392,13 @@
   .ovfoot{grid-row:2;align-self:end;padding:18px 20px 18px;text-align:center;
     font-family:var(--mono);font-size:12.5px;font-weight:400;
     color:#4d6488;letter-spacing:1px}
+  /* touch devices: the HUD needs ~1150px and the camera is mouse-driven,
+     so say so plainly rather than letting someone tap Play and get stuck */
+  .touchnote{display:none;margin:22px auto 0;max-width:420px;padding:13px 18px;border-radius:14px;
+    background:rgba(255,159,58,.12);border:2px solid rgba(255,159,58,.45);
+    font-family:var(--mono);font-size:12.5px;line-height:1.65;color:#ffbc74;letter-spacing:.2px}
+  .touchnote b{color:#ffd9a8}
+  body.istouch .touchnote{display:block}
   .saveline{margin-top:20px;font-family:'Baloo 2',var(--mono);font-size:15px;font-weight:600;
     color:#8fa6c8;letter-spacing:.4px;min-height:18px}
   .saveline b{color:#ffd24a;font-weight:800}
@@ -684,6 +691,9 @@
     </div>
     <div class="saveline" id="saveLine"></div>
     <div class="telem" id="telem"></div>
+    <div class="touchnote">Built for a desktop browser. The controls are mouse driven and
+      the dashboard needs a wide screen, so this will not play well on a phone.<br>
+      <b>Come back on a laptop.</b></div>
   </div>
   <div class="ovfoot">Savithru Lokanath © 2026</div>
 </div>
@@ -3380,6 +3390,11 @@ function begin(){
   toast('Hall online — try the HEAT overlay and press V to walk','var(--cyan)');
 }
 function boot(){
+  try{
+    const coarse=matchMedia('(pointer:coarse)').matches&&!matchMedia('(hover:hover)').matches;
+    if(coarse||('ontouchstart' in window&&innerWidth<1024))
+      document.body.classList.add('istouch');
+  }catch(e){}
   initThree();initControls();
   document.body.classList.add('booting');
   buildDemoHall();
