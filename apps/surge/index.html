@@ -301,7 +301,7 @@
     justify-items:center;text-align:center;font-family:'Baloo 2',var(--mono);overflow-y:auto;
     background:radial-gradient(ellipse 92% 74% at 50% 48%,rgba(5,7,12,.22) 0%,rgba(5,7,12,.80) 60%,rgba(3,4,8,.96) 100%)}
   .ov.hide{display:none}
-  .card{grid-row:1;align-self:center;padding:24px;animation:pop .55s cubic-bezier(.34,1.56,.64,1)}
+  .card{grid-row:1;margin:auto;padding:24px;animation:pop .55s cubic-bezier(.34,1.56,.64,1)}
   @keyframes pop{0%{opacity:0;transform:scale(.86) translateY(22px)}100%{opacity:1;transform:none}}
 
   /* mascot */
@@ -326,18 +326,36 @@
     margin:20px 0 0;letter-spacing:.6px;
     text-shadow:-2px -2px 0 #0a1424,2px -2px 0 #0a1424,-2px 2px 0 #0a1424,2px 2px 0 #0a1424,0 6px 0 rgba(8,16,31,.85)}
   /* chunky press-down buttons */
-  .cta{margin-top:34px;display:inline-flex;gap:14px;align-items:center}
+  .cta{margin-top:34px;display:flex;justify-content:center;align-items:center;
+    gap:14px;flex-wrap:wrap}
   .big,.ghostbtn{font-family:'Baloo 2',var(--mono);cursor:pointer;border-radius:18px;
-    font-weight:800;transition:transform .09s ease,box-shadow .09s ease;position:relative}
-  .big{padding:16px 46px;font-size:25px;letter-spacing:2px;color:#0a1424;
+    font-weight:800;transition:transform .09s ease,box-shadow .09s ease;position:relative;
+    font-size:21px;line-height:1;padding:0 12px;border:4px solid #0a1424;
+    display:inline-flex;align-items:center;justify-content:center;
+    width:196px;height:62px;box-sizing:border-box}
+  .big{width:246px;height:70px;font-size:24px;letter-spacing:2px;color:#0a1424;
     background:linear-gradient(180deg,#8af2ff 0%,#48e0ff 55%,#25c2e6 100%);
-    border:4px solid #0a1424;box-shadow:0 8px 0 #0a1424,0 16px 30px rgba(0,0,0,.5)}
+    box-shadow:0 8px 0 #0a1424,0 16px 30px rgba(0,0,0,.5)}
   .big:hover{transform:translateY(-3px);box-shadow:0 11px 0 #0a1424,0 20px 34px rgba(0,0,0,.55)}
   .big:active{transform:translateY(6px);box-shadow:0 2px 0 #0a1424,0 6px 14px rgba(0,0,0,.5)}
-  .ghostbtn{padding:16px 30px;font-size:20px;letter-spacing:1.4px;color:#cfe0f7;
-    background:#1b2b45;border:4px solid #0a1424;box-shadow:0 8px 0 #0a1424,0 16px 26px rgba(0,0,0,.45)}
+  .ghostbtn{letter-spacing:1.4px;color:#cfe0f7;
+    background:#1b2b45;box-shadow:0 8px 0 #0a1424,0 16px 26px rgba(0,0,0,.45)}
   .ghostbtn:hover{transform:translateY(-3px);color:#fff;box-shadow:0 11px 0 #0a1424,0 20px 30px rgba(0,0,0,.5)}
   .ghostbtn:active{transform:translateY(6px);box-shadow:0 2px 0 #0a1424,0 6px 12px rgba(0,0,0,.45)}
+  /* ── director mode: scripted run for screen capture ── */
+  #dir{position:fixed;left:0;right:0;bottom:0;z-index:53;display:none;pointer-events:none;
+    padding:0 0 46px;text-align:center}
+  #dir.show{display:block}
+  #dirCap{display:inline-block;padding:16px 34px;border-radius:16px;
+    background:rgba(8,14,26,.9);border:2px solid rgba(120,160,215,.32);backdrop-filter:blur(10px);
+    font-family:'Baloo 2',var(--mono);font-size:30px;font-weight:800;color:#fff;letter-spacing:.4px;
+    box-shadow:0 14px 46px rgba(0,0,0,.7);opacity:0;transition:opacity .4s ease;
+    max-width:min(900px,92vw);line-height:1.25}
+  #dirCap.in{opacity:1}
+  #dirCap b{color:var(--cyan);font-weight:700}
+  #dirBar{position:fixed;left:0;top:0;height:3px;width:0%;z-index:54;display:none;
+    background:linear-gradient(90deg,var(--cyan),var(--green));box-shadow:0 0 12px rgba(72,224,255,.7)}
+  #dirBar.show{display:block}
   /* POST-style boot log, timed to the lights coming on */
   #boot{position:fixed;inset:0;z-index:52;display:none;align-items:center;justify-content:center;
     pointer-events:none;background:radial-gradient(ellipse 80% 60% at 50% 50%,
@@ -488,7 +506,7 @@
       <div class="hsec"><h3 style="color:var(--green)">⚡ Power</h3>
         <p>Every accelerator draws watts. Each <b>Power Unit</b> adds 28 kW. Go over capacity
         and the <b>entire hall</b> browns out at once — not just the newest rack.
-        A <b>UPS</b> adds a small surge buffer.</p></div>
+        <b>Power Storage</b> banks a little energy to ride out dips.</p></div>
       <div class="hsec"><h3 style="color:var(--amber)">🔥 Heat is local</h3>
         <p>Every watt becomes heat <b>on that tile</b>. A <b>CRAC Cooler</b> only cools tiles within
         2 squares, so total capacity is not enough — placement matters. Open the
@@ -579,6 +597,8 @@
 <div id="toasts"></div>
 <div id="tip"></div>
 <div id="boot"><div id="bootLines"></div></div>
+<div id="dirBar"></div>
+<div id="dir"><span id="dirCap"></span></div>
 
 <div id="chartModal">
   <div class="chartCard glass">
@@ -674,7 +694,7 @@ const BUILD={
   power:  {name:'Power Unit',    cost:2600, icon:'⚡', desc:'+28 kW capacity',       color:0x3ce8a8, cap:28,   k:'2'},
   cool:   {name:'CRAC Cooler',   cost:2300, icon:'❄', desc:'+22 kW · cools nearby', color:0x48e0ff, cool:22, draw:2.6, k:'3'},
   net:    {name:'Fabric Switch', cost:3600, icon:'◈', desc:'+32 fabric ports',      color:0xa98bff, ports:32, draw:1.8, k:'4'},
-  ups:    {name:'UPS Battery',   cost:4400, icon:'▮', desc:'+12 kW surge buffer',   color:0xffd24a, surge:12, draw:0.4, k:'5'},
+  ups:    {name:'Power Storage', cost:4400, icon:'▮', desc:'+12 kW banked for dips', color:0xffd24a, surge:12, draw:0.4, k:'5'},
   storage:{name:'Storage Array', cost:5200, icon:'▦', desc:'+8 PB · needed by jobs',color:0x2fd8c3, pb:8, draw:2.2, k:'6'},
   ops:    {name:'Ops Room',      cost:6800, icon:'⌂', desc:'+4 staff capacity',     color:0xff6bc4, staff:4, draw:1.2, k:'7'},
 };
@@ -682,14 +702,14 @@ const BUILD_ORDER=['rack','power','cool','net','ups','storage','ops'];
 const INFRA=['cool','power','net','ups','storage'];
 
 const GPUS=[
-  {id:'t', name:'T-Class',   cost:420,  pf:0.12, kw:0.07, vram:16,  rel:0.990, tier:0, sl:1, hot:0.90, color:0x8fa3c4, note:'edge inference'},
-  {id:'a', name:'A-Class',   cost:900,  pf:0.45, kw:0.34, vram:40,  rel:0.970, tier:0, sl:1, hot:1.00, color:0x3ce8a8, note:'workhorse'},
-  {id:'l', name:'L-Class',   cost:1500, pf:0.75, kw:0.30, vram:48,  rel:0.980, tier:1, sl:1, hot:0.85, color:0x2fd8c3, note:'efficient · low draw'},
-  {id:'h', name:'H-Class',   cost:2900, pf:1.70, kw:0.68, vram:80,  rel:0.955, tier:1, sl:1, hot:1.05, color:0x48e0ff, note:'training standard'},
-  {id:'hx',name:'H-Class X', cost:4200, pf:2.60, kw:1.00, vram:96,  rel:0.930, tier:2, sl:1, hot:1.20, color:0x5cc8ff, note:'overclocked · runs hot'},
-  {id:'b', name:'B-Class',   cost:8200, pf:5.60, kw:1.15, vram:192, rel:0.935, tier:3, sl:1, hot:1.10, color:0xa98bff, note:'next-gen'},
-  {id:'bu',name:'B-Ultra',   cost:13500,pf:9.20, kw:1.60, vram:288, rel:0.905, tier:4, sl:1, hot:1.25, color:0xc9a0ff, note:'flagship · fragile'},
-  {id:'gx',name:'GX Superchip',cost:26000,pf:20.0,kw:2.90,vram:576, rel:0.880, tier:5, sl:2, hot:1.35, color:0xff6bc4, note:'2 slots · very hot'},
+  {id:'t', name:'Class A',   cost:420,  pf:0.12, kw:0.07, vram:16,  rel:0.990, tier:0, sl:1, hot:0.90, color:0x8fa3c4, note:'edge inference'},
+  {id:'a', name:'Class B',   cost:900,  pf:0.45, kw:0.34, vram:40,  rel:0.970, tier:0, sl:1, hot:1.00, color:0x3ce8a8, note:'workhorse'},
+  {id:'l', name:'Class C',   cost:1500, pf:0.75, kw:0.30, vram:48,  rel:0.980, tier:1, sl:1, hot:0.85, color:0x2fd8c3, note:'efficient · low draw'},
+  {id:'h', name:'Class D',   cost:2900, pf:1.70, kw:0.68, vram:80,  rel:0.955, tier:1, sl:1, hot:1.05, color:0x48e0ff, note:'training standard'},
+  {id:'hx',name:'Class E', cost:4200, pf:2.60, kw:1.00, vram:96,  rel:0.930, tier:2, sl:1, hot:1.20, color:0x5cc8ff, note:'overclocked · runs hot'},
+  {id:'b', name:'Class F',   cost:8200, pf:5.60, kw:1.15, vram:192, rel:0.935, tier:3, sl:1, hot:1.10, color:0xa98bff, note:'next-gen'},
+  {id:'bu',name:'Class G',   cost:13500,pf:9.20, kw:1.60, vram:288, rel:0.905, tier:4, sl:1, hot:1.25, color:0xc9a0ff, note:'flagship · fragile'},
+  {id:'gx',name:'Class H',cost:26000,pf:20.0,kw:2.90,vram:576, rel:0.880, tier:5, sl:2, hot:1.35, color:0xff6bc4, note:'2 slots · very hot'},
 ];
 const GPU_BY_ID=Object.fromEntries(GPUS.map(g=>[g.id,g]));
 
@@ -721,15 +741,15 @@ const UPGRADES=[
 
 const MILESTONES=[
   {id:'m1',name:'First Light',      need:'5 PF of compute',          reward:5000,  test:s=>s.rawPF>=5},
-  {id:'m2',name:'L & H Access',     need:'20 PF · unlocks L/H',      reward:12000, test:s=>s.rawPF>=20,unlock:1},
+  {id:'m2',name:'Class C & D',       need:'20 PF of compute',        reward:12000, test:s=>s.rawPF>=20,unlock:1},
   {id:'m3',name:'Staffed Up',       need:'hire 3 people',            reward:14000, test:s=>s.staffCount>=3},
-  {id:'m4',name:'H-Class X Access', need:'60 PF of compute',         reward:26000, test:s=>s.rawPF>=60,unlock:2},
+  {id:'m4',name:'Class E',          need:'60 PF of compute',         reward:26000, test:s=>s.rawPF>=60,unlock:2},
   {id:'m5',name:'Six Figures',      need:'$100k capital',            reward:18000, test:s=>s.money>=100000},
-  {id:'m6',name:'Blackwell Access', need:'150 PF · unlocks B-Class', reward:55000, test:s=>s.rawPF>=150,unlock:3},
+  {id:'m6',name:'Class F',          need:'150 PF of compute',        reward:55000, test:s=>s.rawPF>=150,unlock:3},
   {id:'m7',name:'Trusted Partner',  need:'25 reputation',            reward:70000, test:s=>s.rep>=25},
-  {id:'m8',name:'B-Ultra Access',   need:'450 PF of compute',        reward:140000,test:s=>s.rawPF>=450,unlock:4},
+  {id:'m8',name:'Class G',          need:'450 PF of compute',        reward:140000,test:s=>s.rawPF>=450,unlock:4},
   {id:'m9',name:'Exascale',         need:'1 EF (1000 PF)',           reward:400000,test:s=>s.rawPF>=1000},
-  {id:'m10',name:'Superchip Access',need:'50 reputation',            reward:600000,test:s=>s.rep>=50,unlock:5},
+  {id:'m10',name:'Class H',         need:'50 reputation',            reward:600000,test:s=>s.rep>=50,unlock:5},
 ];
 
 const JOB_NAMES=['LLM Pretrain','Diffusion Finetune','Protein Fold','Weather Ensemble','Recsys Train',
@@ -2413,7 +2433,7 @@ function renderInspector(){
     const d=BUILD[o.type];
     const info={power:`provides ${d.cap} kW capacity`,
       cool:`removes ${d.cool} kW · cools tiles within ${COOL_RAD}`,
-      net:`${d.ports} fabric ports`,ups:`+${d.surge} kW surge buffer`,
+      net:`${d.ports} fabric ports`,ups:`banks ${d.surge} kW to ride out dips`,
       storage:`+${d.pb} PB storage`,ops:`+${d.staff} staff capacity`}[o.type];
     el.innerHTML=`<div class="irow">
       <div><div class="ititle">${d.name} ${o.broken?'<span style="color:var(--red)">— FAILED</span>':''}</div>
@@ -2539,7 +2559,7 @@ const TIPS={
     b:'Earned by delivering contracts, lost by under-delivering on forwards. It gates the <b>larger contracts</b> and the advanced <b>research</b>.',
     a:[OK,'Next unlock at '+(S.rep<8?'8 (Predictive Telemetry)':S.rep<12?'12 (Aisle Containment)':
         S.rep<16?'16 (Immersion Tanks)':S.rep<24?'24 (Elastic Scheduler)':S.rep<34?'34 (On-site Substation)':
-        S.rep<50?'50 (GX Superchip)':'— everything unlocked')+'.']}),
+        S.rep<50?'50 (Class H)':'everything unlocked')+'.']}),
 };
 const tipEl=$('tip');
 function showTip(el){
@@ -2605,6 +2625,195 @@ function tickTelemetry(dt,st){
     `<span><b>${S.maxTemp.toFixed(1)}</b>°C</span><i>·</i>`+
     `<span>PUE <b>${pue.toFixed(2)}</b></span><i>·</i>`+
     `<span><b>${pfs(st.rawPF)}</b></span>`;
+}
+
+// ═══════════════ DIRECTOR MODE ═══════════════
+// Open with ?demo on the URL and the game performs a scripted 30 seconds,
+// so a screen recording gets a clean take without anyone driving the mouse.
+let dir=null;
+const DIR_LEN=62;
+const CAMS={
+  wide:   {theta:-0.72, phi:0.78, rad:50, tgt:[0,1.5,0]},
+  build:  {theta:-1.05, phi:0.94, rad:22, tgt:[0,1.2,-1]},
+  infra:  {theta: 0.55, phi:0.90, rad:21, tgt:[10,1.2,-1]},
+  hot:    {theta:-0.30, phi:0.92, rad:19, tgt:[0,1.2,8]},
+  floor:  {theta: 0.35, phi:0.38, rad:46, tgt:[0,1.0,0]},
+  ops:    {theta:-1.90, phi:1.00, rad:17, tgt:[8,1.4,5]},
+  crew:   {theta: 0.95, phi:1.04, rad:16, tgt:[0,1.4,3]},
+  panel:  {theta:-1.15, phi:0.86, rad:34, tgt:[0,1.3,0]},
+};
+// staged one at a time so each drop is visible
+function dropSeq(list,gap){
+  list.forEach(([type,c,r],i)=>setTimeout(()=>{ if(dir) placeObject(type,c,r,true); },i*gap));
+}
+function camCut(name,ease){
+  const c=CAMS[name]; if(!c) return;
+  cam.tTheta=c.theta; cam.tPhi=c.phi; cam.tRad=c.rad;
+  cam.tTarget.set(c.tgt[0],c.tgt[1],c.tgt[2]);
+  if(!ease){ cam.theta=c.theta; cam.phi=c.phi; cam.rad=c.rad; cam.target.copy(cam.tTarget); }
+}
+const DIR_SCRIPT=[
+ {t:0.0,  cap:'Build a GPU datacenter.', cam:'wide'},
+
+ // ── infrastructure, in the order you would lay it down ──
+ {t:2.5,  cap:'Start with <b>power</b>.', cam:'infra',
+          act:()=>dropSeq([['power',11,4],['power',11,5]],300)},
+ {t:4.8,  cap:'<b>Power storage</b> to ride out dips.',
+          act:()=>dropSeq([['ups',12,4]],200)},
+ {t:7.0,  cap:'<b>Cooling</b>, close to the racks.',
+          act:()=>dropSeq([['cool',5,4],['cool',5,5],['cool',9,4],['cool',9,5]],230)},
+ {t:9.3,  cap:'<b>Switching</b> to connect the GPUs together.',
+          act:()=>dropSeq([['net',10,4],['net',10,5]],300)},
+ {t:11.6, cap:'Create <b>storage racks</b>.',
+          act:()=>dropSeq([['storage',11,6],['storage',12,6]],280)},
+
+ {t:13.8, cap:'Now the <b>GPU racks</b>.', cam:'build', act:()=>dropSeq(
+    [['rack',6,4],['rack',7,4],['rack',8,4],
+     ['rack',6,5],['rack',7,5],['rack',8,5],
+     ['rack',6,8],['rack',7,8],['rack',8,8]],220)},
+
+ {t:17.0, cap:'Fill them with <b>accelerators</b>.', act:()=>{
+    S.objects.filter(o=>o.type==='rack').forEach((rk,i)=>setTimeout(()=>{
+      if(!dir) return;
+      const av=GPUS.filter(g=>g.tier<=S.unlocked), g=av[av.length-1];
+      while(slotsUsed(rk)+g.sl<=SLOTS) rk.gpus.push(g.id);
+    }, i*150));
+ }},
+
+ {t:20.0, cap:'An <b>ops room</b>, so you can hire.', cam:'ops',
+          act:()=>{ dropSeq([['ops',10,7]],150); S.speed=3; }},
+
+ // ── the business ──
+ {t:22.2, cap:'<b>Take a contract.</b>', cam:'panel', act:()=>{
+    currentRTab='jobs'; syncTabs();
+    const st=computeStats();
+    while(S.offers.length<3) S.offers.push(genOffer(st));
+    const ok=S.offers.find(o=>offerOK(o,st));
+    if(ok) acceptOffer(ok.id); else S.jobs.push({...S.offers[0],prog:0,starved:false,sla:0});
+    renderJobs();
+ }},
+ {t:24.5, cap:'Or <b>lock a price</b> with a forward.', act:()=>{
+    currentRTab='market'; syncTabs();
+    if(!S.fwdOffers.length) S.fwdOffers.push(genForward(computeStats()));
+    acceptForward(S.fwdOffers[0].id);
+    renderMarket();
+ }},
+
+ {t:26.8, cap:'<b>Hire the crew</b> that keeps it alive.', cam:'crew', act:()=>{
+    currentTab='ops'; syncTabs();
+    while(S.candidates.length<6) S.candidates.push(genCandidate());
+    ['tech','thermal','network'].forEach((role,i)=>setTimeout(()=>{
+      if(!dir) return;
+      let c=S.candidates.find(x=>x.role===role);
+      if(!c){ c=genCandidate(); c.role=role; c.skill=4; S.candidates.push(c); }
+      hire(c.id); renderOps();
+    }, i*620));
+ }},
+
+ {t:30.0, cap:'<b>Invest in research.</b>', act:()=>{
+    currentTab='rnd'; syncTabs(); renderRnd();
+    [0,1].forEach(k=>setTimeout(()=>{
+      if(!dir) return;
+      const u=UPGRADES.find(x=>!S.upgrades[x.id]&&S.rep>=x.rep);
+      if(u){ S.upgrades[u.id]=true; toast('Research complete · '+u.name,'var(--violet)'); renderRnd(); }
+    }, 500+k*900));
+ }},
+
+ // ── the overlays ──
+ {t:32.8, cap:'<b>Heat is local.</b> Red means throttling.', cam:'floor',
+          act:()=>{ setOverlay('heat'); fireEvent('heat'); }},
+ {t:35.5, cap:'This cluster has <b>no cooling nearby</b>.', cam:'hot'},
+ {t:38.0, cap:'<b>Power draw</b>, tile by tile.', cam:'floor', act:()=>setOverlay('power')},
+ {t:40.3, cap:'<b>Fabric</b> coverage across the floor.', act:()=>setOverlay('net')},
+
+ // ── first person ──
+ {t:42.6, cap:'<b>Walk your own floor.</b>', act:()=>{
+    setOverlay('none');
+    camMode='walk';
+    walk.pos.set(9,1.68,2.6); walk.yaw=Math.PI*0.5; walk.pitch=-0.02;
+    $('walkHud').classList.add('show');
+    dir.walking={until:dir.t+5.2, speed:3.3, turn:0.035};
+ }},
+
+ // ── the numbers ──
+ {t:48.0, cap:'<b>Track the business</b> over time.', cam:'panel', act:()=>{
+    bigSeries='f'; openChart();
+ }},
+
+ // ── chaos ──
+ {t:51.5, cap:'Turn the <b>difficulty up</b>, then break something.', act:()=>{
+    closeChart(); openChaos();
+    setTimeout(()=>{ if(dir) setDiff('hard'); },600);
+    setTimeout(()=>{ if(dir) fireEvent('chiller'); },1500);
+    setTimeout(()=>{ if(dir){ fireEvent('transformer'); closeChaos(); } },2500);
+ }},
+
+ {t:55.0, cap:'Hardware dies. <b>The crew fixes it.</b>', cam:'crew', act:()=>{
+    S.spares=Math.max(S.spares,50);
+    S.objects.filter(o=>o.type==='rack'&&o.gpus.length).slice(0,3)
+      .forEach(rk=>{ if(!rk.dead.length) rk.dead.push(0); });
+ }},
+
+ {t:58.5, cap:'<b>Make the GPUs go brrrrr.</b>', cam:'wide',
+          act:()=>{ setOverlay('none'); S.speed=3; }},
+
+ {t:61.5, cap:''},
+];
+function startDirector(){
+  dir={t:0,i:0};
+  // a demo must never stall on affordability or an empty parts bin
+  S.money=6000000; S.spares=60; S.unlocked=Math.max(S.unlocked,3);
+  $('dir').classList.add('show');
+  $('dirBar').classList.add('show');
+  camCut('wide',false);
+  setOverlay('none');
+  S.speed=1;
+}
+function stopDirector(){
+  if(!dir) return;
+  if(dir.walking){ camMode='orbit'; $('walkHud').classList.remove('show'); }
+  dir=null;
+  closeChart(); closeChaos();
+  $('dir').classList.remove('show');
+  $('dirBar').classList.remove('show');
+  $('dirCap').classList.remove('in');
+  setOverlay('none');
+}
+function tickDirector(dt){
+  if(!dir) return;
+  dir.t+=dt;
+  // Scripted first-person stroll. We drive walk.pos/yaw directly rather than
+  // calling setWalk(), because requestPointerLock() needs a real user gesture
+  // and would be rejected mid-demo.
+  if(dir.walking){
+    if(dir.t<dir.walking.until){
+      walk.yaw+=dir.walking.turn*dt;
+      walk.pos.x-=Math.sin(walk.yaw)*dir.walking.speed*dt;
+      walk.pos.z-=Math.cos(walk.yaw)*dir.walking.speed*dt;
+      clampWalk(walk.pos);
+      // nudge around anything solid so we don't wade through a rack
+      if(blocked(walk.pos.x,walk.pos.z)){
+        walk.pos.x+=Math.sin(walk.yaw)*dir.walking.speed*dt*1.2;
+        walk.pos.z+=Math.cos(walk.yaw)*dir.walking.speed*dt*1.2;
+        walk.yaw+=1.5*dt;
+      }
+    } else {
+      dir.walking=null; camMode='orbit';
+      $('walkHud').classList.remove('show');
+    }
+  }
+  $('dirBar').style.width=Math.min(100,(dir.t/DIR_LEN)*100)+'%';
+  while(dir.i<DIR_SCRIPT.length && dir.t>=DIR_SCRIPT[dir.i].t){
+    const s=DIR_SCRIPT[dir.i];
+    if(s.cam) camCut(s.cam,true);
+    const cap=$('dirCap');
+    if(s.cap){ cap.classList.remove('in');
+      setTimeout(()=>{ if(!dir)return; cap.innerHTML=s.cap; cap.classList.add('in'); },220); }
+    else cap.classList.remove('in');
+    if(s.act) try{ s.act(); }catch(e){}
+    dir.i++;
+  }
+  if(dir.t>=DIR_LEN) stopDirector();
 }
 
 // ═══════════════ DECISION + CHAOS UI ═══════════════
@@ -3021,6 +3230,7 @@ function frame(ms){
         tileHi.material.opacity=S.tool?0.26:0.12;
       } else tileHi.visible=false;
     }
+    tickDirector(dt);
     saveT-=dt;if(saveT<=0){saveT=6;save();}
   }
   renderer.render(scene,camera);
@@ -3041,6 +3251,7 @@ addEventListener('keydown',e=>{
     return;
   }
   if(k==='?'||(k==='/'&&e.shiftKey)){ $('helpModal').classList.contains('show')?closeHelp():openHelp(); return; }
+  if(k==='escape'&&dir){ stopDirector(); return; }
   if(k==='escape'&&$('chaos').classList.contains('show')){closeChaos();return;}
   if(k==='escape'&&$('helpModal').classList.contains('show')){closeHelp();return;}
   if(k==='escape'&&$('chartModal').classList.contains('show')){closeChart();return;}
@@ -3145,7 +3356,7 @@ function startContinue(){
   clearWorld();if(!load()){startNew();return;}begin();
 }
 function begin(){
-  $('boot').classList.remove('show');
+  $('boot').classList.remove('show'); stopDirector();
   demo=false; demoLights=1; running=true; closeChart(); closeHelp(); closeChaos();
   S.mods=computeMods(); scheduleNext();
   document.body.classList.remove('booting');
@@ -3170,9 +3381,10 @@ function boot(){
   if(saved){
     $('btnCont').classList.remove('hide');
     $('btnCont').className='big';        $('btnCont').textContent='CONTINUE ▶';
-    $('btnCont').style.order='1';
+    $('btnTut').style.order='1';
+    $('btnCont').style.order='2';
     $('btnNew').className='ghostbtn';    $('btnNew').textContent='NEW RUN';
-    $('btnNew').style.order='2';
+    $('btnNew').style.order='3';
     const pl=(n,w)=>n+' '+w+(n===1?'':'s');
     $('saveLine').innerHTML='Saved run · day <b>'+saved.day+'</b> · <b>$'+fmt(saved.money)+
       '</b> · <b>'+saved.racks+'</b> '+pl(saved.racks,'rack').split(' ')[1]+
@@ -3186,6 +3398,11 @@ function boot(){
     launch(startNew);
   };
   $('btnCont').onclick=()=>launch(startContinue);
+  // ?demo → skip the menu and perform the scripted 30 seconds for capture
+  if(/[?&]demo\b/.test(location.search)){
+    try{localStorage.removeItem(SAVE_KEY);}catch(e){}
+    setTimeout(()=>launch(()=>{ startNew(); startDirector(); }),450);
+  }
   // Start a fresh hall and walk them through it step by step.
   $('btnTut').onclick=()=>{
     try{localStorage.removeItem(SAVE_KEY);}catch(e){}
