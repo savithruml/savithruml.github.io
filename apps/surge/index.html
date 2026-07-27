@@ -8,7 +8,7 @@
 <link rel="apple-touch-icon" href="favicon.svg"/>
 <meta name="description" content="Surge — a GPU datacenter tycoon game. Rack the silicon, feed it power, fight the heat, and sell compute into a market that never sits still."/>
 <meta property="og:title" content="Surge — GPU Datacenter Tycoon"/>
-<meta property="og:description" content="Rack it. Cool it. Cash in."/>
+<meta property="og:description" content="Make GPUs go brrr. One rack at a time."/>
 <meta property="og:type" content="website"/>
 <style>
   /* chunky rounded face, used only on the landing screen */
@@ -321,16 +321,8 @@
   .line{color:#fff;font-family:'Baloo 2',var(--mono);font-size:27px;font-weight:700;
     margin:20px 0 0;letter-spacing:.6px;
     text-shadow:-2px -2px 0 #0a1424,2px -2px 0 #0a1424,-2px 2px 0 #0a1424,2px 2px 0 #0a1424,0 6px 0 rgba(8,16,31,.85)}
-  .pills{display:flex;gap:10px;justify-content:center;margin:26px 0 0;flex-wrap:wrap}
-  .pill{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;border-radius:999px;
-    background:#16233a;border:3px solid #0a1424;font-family:'Baloo 2',var(--mono);
-    font-size:13px;font-weight:700;letter-spacing:1.6px;color:#dce8fb;text-transform:uppercase;
-    box-shadow:0 4px 0 #0a1424}
-  .pill:nth-child(odd){transform:rotate(-1.6deg)}
-  .pill:nth-child(even){transform:rotate(1.6deg)}
-  .pdot{width:11px;height:11px;border-radius:50%;border:2px solid #0a1424}
   /* chunky press-down buttons */
-  .cta{margin-top:34px;display:inline-flex;gap:14px;align-items:center}
+  .cta{margin-top:40px;display:inline-flex;gap:14px;align-items:center}
   .big,.ghostbtn{font-family:'Baloo 2',var(--mono);cursor:pointer;border-radius:18px;
     font-weight:800;transition:transform .09s ease,box-shadow .09s ease;position:relative}
   .big{padding:16px 46px;font-size:25px;letter-spacing:2px;color:#0a1424;
@@ -345,10 +337,6 @@
   .saveline{margin-top:20px;font-family:'Baloo 2',var(--mono);font-size:15px;font-weight:600;
     color:#8fa6c8;letter-spacing:.4px;min-height:18px}
   .saveline b{color:#ffd24a;font-weight:800}
-  /* drifting sparks */
-  .spark{position:absolute;pointer-events:none;opacity:.85;
-    animation:drift linear infinite;filter:drop-shadow(0 3px 8px rgba(0,0,0,.5))}
-  @keyframes drift{0%{transform:translateY(18px) rotate(-8deg);opacity:0}
     12%{opacity:.9}88%{opacity:.9}100%{transform:translateY(-120px) rotate(10deg);opacity:0}}
   .ovfoot{position:absolute;bottom:22px;left:0;right:0;display:flex;justify-content:center;align-items:center;
     gap:14px;font-size:13px;color:var(--faint);letter-spacing:.6px}
@@ -364,7 +352,6 @@
     .mascot{width:108px;height:108px}
     h1{font-size:72px}
     .line{font-size:22px;margin-top:16px}
-    .pills{margin-top:18px}
     .cta{margin-top:24px}
   }
   @media (max-width:700px){
@@ -375,7 +362,6 @@
     .big{padding:14px 32px;font-size:21px}
     .ghostbtn{padding:14px 22px;font-size:17px}
     .cta{flex-direction:column;gap:11px}
-    .pill{font-size:11.5px;padding:6px 13px}
   }
   #loading{position:fixed;inset:0;z-index:60;display:grid;place-items:center;background:var(--bg);color:var(--dim);
     font-size:15.5px;letter-spacing:3px}
@@ -508,7 +494,7 @@
       <div class="hsec"><h3 style="color:var(--dim)">⌨ Controls</h3>
         <p>Drag to orbit, right-drag to pan, scroll to zoom.</p>
         <div class="hkeys">
-          <span class="hk"><b>1-7</b> build</span><span class="hk"><b>V</b> walk the aisles</span>
+          <span class="hk"><b>1-7</b> build</span><span class="hk"><b>Del</b> / <b>D</b> remove hovered</span><span class="hk"><b>V</b> walk the aisles</span>
           <span class="hk"><b>H</b> heat map</span><span class="hk"><b>Space</b> pause</span>
           <span class="hk"><b>Esc</b> cancel</span><span class="hk"><b>?</b> this panel</span>
         </div></div>
@@ -589,7 +575,8 @@
 
 <div id="hint" class="glass">
   <b>drag</b> orbit · <b>right-drag</b> pan · <b>scroll</b> zoom<br>
-  <b>1-7</b> build · <b>V</b> walk · <b>esc</b> cancel · <b>space</b> pause
+  <b>1-7</b> build · <b>del</b> or <b>D</b> remove · <b>V</b> walk<br>
+  <b>esc</b> cancel · <b>space</b> pause
 </div>
 
 <div class="ov hide" id="start">
@@ -629,13 +616,7 @@
     </svg>
     <h1>SURGE</h1>
     <div class="tag">gpu datacenter tycoon</div>
-    <div class="line">Rack it. Cool it. Cash in.</div>
-    <div class="pills">
-      <span class="pill"><i class="pdot" style="background:#3ce8a8"></i>Power</span>
-      <span class="pill"><i class="pdot" style="background:#ff9f3a"></i>Heat</span>
-      <span class="pill"><i class="pdot" style="background:#a98bff"></i>Fabric</span>
-      <span class="pill"><i class="pdot" style="background:#ff6bc4"></i>Crew</span>
-    </div>
+    <div class="line">Make GPUs go brrr. One rack at a time.</div>
     <div class="cta">
       <button class="big" id="btnNew">PLAY ▶</button>
       <button class="ghostbtn hide" id="btnCont">CONTINUE RUN</button>
@@ -643,10 +624,6 @@
     </div>
     <div class="saveline" id="saveLine"></div>
   </div>
-  <svg class="spark" style="left:12%;top:64%;animation-duration:7s;animation-delay:0s" width="26" height="26" viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="#ffd24a" stroke="#0a1424" stroke-width="2.2" stroke-linejoin="round"/></svg>
-  <svg class="spark" style="left:84%;top:58%;animation-duration:9s;animation-delay:1.6s" width="22" height="22" viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="#48e0ff" stroke="#0a1424" stroke-width="2.2" stroke-linejoin="round"/></svg>
-  <svg class="spark" style="left:22%;top:34%;animation-duration:11s;animation-delay:3.4s" width="18" height="18" viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="#3ce8a8" stroke="#0a1424" stroke-width="2.4" stroke-linejoin="round"/></svg>
-  <svg class="spark" style="left:76%;top:28%;animation-duration:8.5s;animation-delay:5s" width="20" height="20" viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6l1-8z" fill="#ff9f3a" stroke="#0a1424" stroke-width="2.3" stroke-linejoin="round"/></svg>
   <div class="ovfoot">Savithru Lokanath © 2026</div>
 </div>
 
@@ -841,7 +818,8 @@ function freshState(){
 let scene,camera,renderer,raycaster,mouseNDC,groundPlane;
 let hallGroup,buildGroup,fxGroup,staffGroup,overlayGroup,netLines=null;
 let tileHi=null,GLOW=null,overlayTiles=[];
-let packets=[],fans=[];
+let packets=[],fans=[],ceilStrips=[];
+let demoLights=0;
 const clock={last:0};
 let overlay='none', camMode='orbit';
 
@@ -883,6 +861,7 @@ function buildLights(){
     const s=new THREE.Mesh(new THREE.PlaneGeometry(1.1,HALL_D*0.84),
       new THREE.MeshBasicMaterial({color:0xcfe6ff,transparent:true,opacity:0.42,side:THREE.DoubleSide}));
     s.rotation.x=Math.PI/2; s.position.set(i*13,11.4,0); hallGroup.add(s);
+    s.userData.baseOpacity=0.42; ceilStrips.push(s);
   }
 }
 function makeGlowTex(){
@@ -1768,6 +1747,15 @@ function acceptForward(id){
 
 // ═══════════════ VISUALS ═══════════════
 const _c=new THREE.Color(),_RED=new THREE.Color(0xff5d72);
+// Sweep of light across the hall during the title screen. Returns a 0-1 brightness
+// for something at world-x, with a stutter while its lights are striking.
+function lightOn(x){
+  if(!demo) return 1;
+  const u=(x+HALL_W/2)/HALL_W;                 // 0 at the west wall, 1 at the east
+  const v=Math.max(0,Math.min(1,(demoLights-u*0.74)/0.11));
+  if(v>0&&v<1) return v*(Math.random()<0.32?0.3:1);
+  return v;
+}
 function syncVisuals(st,t,dt){
   const load=st.rawPF>0?st.effPF/st.rawPF:0;
   for(const o of S.objects){
@@ -1823,6 +1811,27 @@ function syncVisuals(st,t,dt){
       ud.glow.material.color.setHex(0xff5d72);
       ud.glow.material.opacity=0.4+0.35*Math.sin(t*9);
     }
+  }
+  // ── landing power-up: lights strike on in a sweep across the floor ──
+  // Purely material-level (emissive + opacity). No geometry is touched, so this
+  // can't leave anything squashed or hidden once the run starts.
+  if(demo){
+    for(const o of S.objects){
+      const ud2=o.mesh.userData;
+      const lf=lightOn(o.mesh.position.x);
+      if(o.type==='rack'){
+        for(const sl of ud2.slots) sl.material.emissiveIntensity*=lf;
+        if(ud2.led) ud2.led.material.opacity*=lf;
+        if(ud2.floorGlow) ud2.floorGlow.material.opacity*=lf;
+      } else if(ud2.glow) ud2.glow.material.opacity*=lf;
+    }
+    const cl=Math.max(0,Math.min(1,(demoLights-0.04)/0.22));
+    for(const st3 of ceilStrips){
+      const f2=cl<1&&Math.random()<0.3?0.25:1;      // strip lights stutter as they strike
+      st3.material.opacity=st3.userData.baseOpacity*cl*f2;
+    }
+  } else {
+    for(const st3 of ceilStrips) st3.material.opacity=st3.userData.baseOpacity;
   }
   const spin=dt*(2.5+Math.max(0,Math.min(1,(S.maxTemp-30)/22))*14);
   for(const f of fans)f.rotation.y+=spin;
@@ -2042,6 +2051,17 @@ function handleClick(){
     placeObject(S.tool,t.c,t.r,false);
     if(S.money<BUILD[S.tool].cost){S.tool=null;renderBuild();}
   } else {S.sel=ex||null;renderInspector();}
+}
+
+// Delete whatever sits under the cursor — falls back to the current selection.
+function deleteHovered(){
+  if(!running||camMode==='walk') return;
+  if($('chaos').classList.contains('show')||$('helpModal').classList.contains('show')
+     ||$('chartModal').classList.contains('show')||S.decision) return;
+  const t=pickTile();
+  const o=(t&&S.occ[kk(t.c,t.r)])||S.sel;
+  if(!o){ toast('Point at something to delete it','var(--faint)'); return; }
+  removeObject(o);
 }
 
 // ═══════════════ UI ═══════════════
@@ -2902,8 +2922,9 @@ function frame(ms){
   if(tutMarker){ tutMarker.rotation.y+=dt*1.4;
     tutMarker.position.y=4.6+Math.sin(now*2.6)*0.34; }
   if(demo&&S){
-    // landing-page showreel: slow orbit over a decorative hall
+    // landing-page showreel: slow orbit while the hall powers up
     cam.tTheta+=dt*0.055;
+    demoLights=Math.min(1,demoLights+dt*0.40);
     const st=computeStats();
     const k=Math.min(1,dt*0.9);
     for(let i=0;i<NT;i++)S.tempField[i]+=(st.thermalTarget[i]-S.tempField[i])*k;
@@ -2953,6 +2974,9 @@ addEventListener('keydown',e=>{
   if(k==='escape'){S.tool=null;S.sel=null;refreshLeft();renderInspector();}
   else if(k===' '){e.preventDefault();setSpeed(S.speed===0?1:0);}
   else if(k==='v'){setWalk(true);}
+  // On a Mac the key marked "Delete" reports as Backspace, so accept both.
+  // D stays as a one-handed alternative next to the 1-7 build keys.
+  else if(k==='delete'||k==='backspace'||k==='d'){ e.preventDefault(); deleteHovered(); }
   else if(k==='h'){setOverlay(overlay==='heat'?'none':'heat');}
   else if('1234567'.includes(k)){
     const t=BUILD_ORDER[parseInt(k)-1];
@@ -3025,7 +3049,7 @@ function buildDemoHall(){
   cam.tTheta=-0.72; cam.theta=-0.72;
   cam.tPhi=cam.phi=0.86; cam.tRad=cam.rad=44;
   cam.target.set(0,1.5,0); cam.tTarget.set(0,1.5,0);
-  demo=true;
+  demo=true; demoLights=0;
 }
 
 function startNew(){
@@ -3048,7 +3072,7 @@ function startContinue(){
   clearWorld();if(!load()){startNew();return;}begin();
 }
 function begin(){
-  demo=false; running=true; closeChart(); closeHelp(); closeChaos();
+  demo=false; demoLights=1; running=true; closeChart(); closeHelp(); closeChaos();
   S.mods=computeMods(); scheduleNext();
   document.body.classList.remove('booting');
   $('start').classList.add('hide');
