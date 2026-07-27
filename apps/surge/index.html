@@ -293,11 +293,15 @@
     border:1px solid var(--line);color:var(--dim)}
   .hk b{color:var(--cyan)}
   /* ── landing: deliberately cartoonish, unlike the sleek in-game HUD ── */
-  .ov{position:fixed;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;text-align:center;font-family:'Baloo 2',var(--mono);
+  /* two rows: the card takes all the free space and centres in it, the footer
+     is the last row so it always sits on the bottom edge. no absolute positioning,
+     so it cannot drift or collide however tall the card gets. */
+  .ov{position:fixed;inset:0;z-index:50;display:grid;grid-template-rows:1fr auto;
+    padding-bottom:8px;
+    justify-items:center;text-align:center;font-family:'Baloo 2',var(--mono);overflow-y:auto;
     background:radial-gradient(ellipse 92% 74% at 50% 48%,rgba(5,7,12,.22) 0%,rgba(5,7,12,.80) 60%,rgba(3,4,8,.96) 100%)}
   .ov.hide{display:none}
-  .card{padding:0 24px;animation:pop .55s cubic-bezier(.34,1.56,.64,1)}
+  .card{grid-row:1;align-self:center;padding:24px;animation:pop .55s cubic-bezier(.34,1.56,.64,1)}
   @keyframes pop{0%{opacity:0;transform:scale(.86) translateY(22px)}100%{opacity:1;transform:none}}
 
   /* mascot */
@@ -322,7 +326,7 @@
     margin:20px 0 0;letter-spacing:.6px;
     text-shadow:-2px -2px 0 #0a1424,2px -2px 0 #0a1424,-2px 2px 0 #0a1424,2px 2px 0 #0a1424,0 6px 0 rgba(8,16,31,.85)}
   /* chunky press-down buttons */
-  .cta{margin-top:40px;display:inline-flex;gap:14px;align-items:center}
+  .cta{margin-top:34px;display:inline-flex;gap:14px;align-items:center}
   .big,.ghostbtn{font-family:'Baloo 2',var(--mono);cursor:pointer;border-radius:18px;
     font-weight:800;transition:transform .09s ease,box-shadow .09s ease;position:relative}
   .big{padding:16px 46px;font-size:25px;letter-spacing:2px;color:#0a1424;
@@ -334,21 +338,43 @@
     background:#1b2b45;border:4px solid #0a1424;box-shadow:0 8px 0 #0a1424,0 16px 26px rgba(0,0,0,.45)}
   .ghostbtn:hover{transform:translateY(-3px);color:#fff;box-shadow:0 11px 0 #0a1424,0 20px 30px rgba(0,0,0,.5)}
   .ghostbtn:active{transform:translateY(6px);box-shadow:0 2px 0 #0a1424,0 6px 12px rgba(0,0,0,.45)}
+  /* POST-style boot log, timed to the lights coming on */
+  #boot{position:fixed;inset:0;z-index:52;display:none;align-items:center;justify-content:center;
+    pointer-events:none;background:radial-gradient(ellipse 80% 60% at 50% 50%,
+      rgba(5,8,15,.55) 0%,rgba(4,6,11,.86) 70%,rgba(3,4,8,.94) 100%)}
+  #boot.show{display:flex}
+  #bootLines{font-family:var(--mono);font-size:13.5px;line-height:2.05;color:var(--dim);
+    text-shadow:0 2px 10px rgba(0,0,0,.8);min-width:340px}
+  #bootLines div{opacity:0;white-space:nowrap}
+  #bootLines div.in{animation:bootin .34s ease-out forwards}
+  @keyframes bootin{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+  #bootLines .ok{color:var(--green);font-weight:700}
+  #bootLines .dots{color:#2f3f5c}
+  #bootLines .val{color:var(--ink)}
+  /* live telemetry from the hall running behind the title */
+  .telem{margin-top:16px;font-family:var(--mono);font-size:12.5px;letter-spacing:.6px;
+    color:#7f95bb;display:flex;gap:0;justify-content:center;flex-wrap:wrap;
+    opacity:0;transition:opacity .7s ease .3s}
+  .telem.in{opacity:1}
+  .telem i{font-style:normal;color:#3d5171;margin:0 9px}
+  .telem b{color:#c6d8f2;font-weight:600}
+  .ovfoot{grid-row:2;align-self:end;padding:18px 20px 40px;text-align:center;
+    font-family:var(--mono);font-size:12.5px;font-weight:400;
+    color:#4d6488;letter-spacing:1px}
   .saveline{margin-top:20px;font-family:'Baloo 2',var(--mono);font-size:15px;font-weight:600;
     color:#8fa6c8;letter-spacing:.4px;min-height:18px}
   .saveline b{color:#ffd24a;font-weight:800}
-    12%{opacity:.9}88%{opacity:.9}100%{transform:translateY(-120px) rotate(10deg);opacity:0}}
-  .ovfoot{position:absolute;bottom:22px;left:0;right:0;display:flex;justify-content:center;align-items:center;
-    gap:14px;font-size:13px;color:var(--faint);letter-spacing:.6px}
-  .ovfoot a{color:var(--faint);text-decoration:none;border-bottom:1px solid rgba(90,120,170,.25);padding-bottom:1px}
-  .ovfoot a:hover{color:var(--cyan);border-color:var(--cyan)}
-  .ovfoot .sep{opacity:.4}
+  /* quiet credit line: monospace at true weight 400, well below the card.
+     Baloo 2 only ships 600/700/800 here, so leaving it on the display face
+     made the browser synthesise a heavier cut and it read far too loud. */
   /* hide all HUD chrome until the sim starts */
   body.booting #top,body.booting #left,body.booting #right,body.booting #graph,body.booting #hint,
   body.booting #viewbar,body.booting #insp,body.booting #warn,body.booting #toasts,
   body.booting #legend,body.booting #walkHud{display:none!important}
-  /* keep the cartoon stack on screen in short windows and on phones */
-  @media (max-height:760px){
+  /* keep the cartoon stack on screen in short windows and on phones.
+     Laptop viewports land around 650-780px once browser chrome and the dock
+     are taken out, so this has to start shrinking well before 760px. */
+  @media (max-height:880px){
     .mascot{width:108px;height:108px}
     h1{font-size:72px}
     .line{font-size:22px;margin-top:16px}
@@ -552,6 +578,7 @@
 <div id="warn"></div>
 <div id="toasts"></div>
 <div id="tip"></div>
+<div id="boot"><div id="bootLines"></div></div>
 
 <div id="chartModal">
   <div class="chartCard glass">
@@ -623,6 +650,7 @@
       <button class="ghostbtn" id="btnTut">HOW TO PLAY</button>
     </div>
     <div class="saveline" id="saveLine"></div>
+    <div class="telem" id="telem"></div>
   </div>
   <div class="ovfoot">Savithru Lokanath © 2026</div>
 </div>
@@ -2535,6 +2563,50 @@ document.querySelectorAll('.stat[data-stat]').forEach(el=>{
   el.addEventListener('mouseleave',hideTip);
 });
 
+// ═══════════════ LANDING: BOOT LOG · TELEMETRY · EASTER EGG ═══════════════
+const BOOT_LINES=[
+  ['power bus',    '480V nominal'],
+  ['thermal loop', 'engaged'],
+  ['fabric',       'all ports up'],
+  ['accelerators', 'enumerated'],
+  ['hall',         'online'],
+];
+// Plays as the transition into a run: title fades, the hall boots, then you're in.
+function runBootLog(done){
+  const wrap=$('boot'), el=$('bootLines');
+  el.innerHTML=''; wrap.classList.add('show');
+  BOOT_LINES.forEach(([label,val],i)=>{
+    const d=document.createElement('div');
+    const pad='.'.repeat(Math.max(2,20-label.length));
+    d.innerHTML=`<span class="ok">[ OK ]</span>  ${label} <span class="dots">${pad}</span> `+
+                `<span class="val">${val}</span>`;
+    el.appendChild(d);
+    setTimeout(()=>d.classList.add('in'), 180+i*240);
+  });
+  setTimeout(()=>{ wrap.classList.remove('show'); if(done) done(); },
+    180+BOOT_LINES.length*240+520);
+}
+// every entry point into a run goes through the boot sequence
+function launch(fn){
+  $('start').classList.add('hide');
+  runBootLog(fn);
+}
+// Real numbers, pulled from the hall that is genuinely simulating behind the title.
+let telemT=0;
+function tickTelemetry(dt,st){
+  telemT-=dt;
+  if(telemT>0) return;
+  telemT=0.45;
+  const kw=st.totalKW, pue=kw>0?(1+(st.coolers*BUILD.cool.draw+st.nets*BUILD.net.draw+
+        st.racks*BUILD.rack.idle)/Math.max(1,st.gpuKW)):1;
+  $('telem').innerHTML=
+    `<span><b>${st.gpuCount}</b> GPU</span><i>·</i>`+
+    `<span><b>${kw.toFixed(0)}</b> kW</span><i>·</i>`+
+    `<span><b>${S.maxTemp.toFixed(1)}</b>°C</span><i>·</i>`+
+    `<span>PUE <b>${pue.toFixed(2)}</b></span><i>·</i>`+
+    `<span><b>${pfs(st.rawPF)}</b></span>`;
+}
+
 // ═══════════════ DECISION + CHAOS UI ═══════════════
 function renderDecision(){
   const d=S.decision, el=$('decision');
@@ -2931,6 +3003,7 @@ function frame(ms){
     S.maxTemp=st.maxTemp;
     updateStaff(dt,0);
     syncVisuals(st,now,dt);
+    tickTelemetry(dt,st);
   }
   if(running&&S){
     const simDt=dt*S.speed;
@@ -3072,6 +3145,7 @@ function startContinue(){
   clearWorld();if(!load()){startNew();return;}begin();
 }
 function begin(){
+  $('boot').classList.remove('show');
   demo=false; demoLights=1; running=true; closeChart(); closeHelp(); closeChaos();
   S.mods=computeMods(); scheduleNext();
   document.body.classList.remove('booting');
@@ -3085,6 +3159,7 @@ function boot(){
   initThree();initControls();
   document.body.classList.add('booting');
   buildDemoHall();
+  setTimeout(()=>$('telem').classList.add('in'),600);
   requestAnimationFrame(frame);
   $('loading').style.display='none';
   $('start').classList.remove('hide');
@@ -3098,22 +3173,23 @@ function boot(){
     $('btnCont').style.order='1';
     $('btnNew').className='ghostbtn';    $('btnNew').textContent='NEW RUN';
     $('btnNew').style.order='2';
+    const pl=(n,w)=>n+' '+w+(n===1?'':'s');
     $('saveLine').innerHTML='Saved run · day <b>'+saved.day+'</b> · <b>$'+fmt(saved.money)+
-      '</b> · <b>'+saved.racks+'</b> racks · <b>'+saved.gpus+'</b> accelerators';
+      '</b> · <b>'+saved.racks+'</b> '+pl(saved.racks,'rack').split(' ')[1]+
+      ' · <b>'+saved.gpus+'</b> '+pl(saved.gpus,'accelerator').split(' ')[1];
   } else {
     $('saveLine').textContent='';
   }
   $('btnNew').onclick=()=>{
     if(savedSummary()&&!confirm('Start a new run?\n\nYour saved hall will be erased permanently.')) return;
     try{localStorage.removeItem(SAVE_KEY);}catch(e){}
-    startNew();
+    launch(startNew);
   };
-  $('btnCont').onclick=startContinue;
+  $('btnCont').onclick=()=>launch(startContinue);
   // Start a fresh hall and walk them through it step by step.
   $('btnTut').onclick=()=>{
     try{localStorage.removeItem(SAVE_KEY);}catch(e){}
-    startNew();
-    startTutorial();
+    launch(()=>{ startNew(); startTutorial(); });
   };
 }
 if(typeof THREE==='undefined'){
