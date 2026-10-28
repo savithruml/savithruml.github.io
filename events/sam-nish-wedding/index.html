@@ -28,6 +28,9 @@ html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
 body{font-family:var(--serif);background:var(--ivory);color:var(--ink);overflow-x:hidden;font-size:19px;line-height:1.5;-webkit-font-smoothing:antialiased}
 body.lock{overflow:hidden;height:100vh;height:100dvh;touch-action:none}
 body.kn{font-size:17px;line-height:1.7}
+body.kn *{letter-spacing:0!important}
+body.kn .nm-big{line-height:1.4;font-style:normal;font-weight:600;font-size:clamp(48px,14vw,84px)}
+body.kn .sur{margin-top:14px}
 body.kn .label,body.kn .lbl{letter-spacing:.04em!important;text-transform:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 a{color:inherit;text-decoration:none}
@@ -642,7 +645,7 @@ try{var sv=localStorage.getItem('sn-lang');if(sv==='kn')lang='kn'}catch(e){}
 
 function splitLetters(node,txt){
   node.textContent='';node.setAttribute('aria-label',txt);
-  Array.from(txt).forEach(function(c,i){var s=document.createElement('span');s.textContent=c;s.style.setProperty('--k',i);s.setAttribute('aria-hidden','true');node.appendChild(s)});
+  (lang==='kn'?[txt]:Array.from(txt)).forEach(function(c,i){var s=document.createElement('span');s.textContent=c;s.style.setProperty('--k',i);s.setAttribute('aria-hidden','true');node.appendChild(s)});
 }
 function renderEvents(){
   var box=$('#evlist');box.innerHTML='';
@@ -1117,7 +1120,7 @@ function drawCert(){
   var nx=(W-(w1+w2+wa+GAP*2))/2,ng=goldG(x,1310,1420);x.textAlign='left';x.fillStyle=ng;x.font=nf();x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=8;x.shadowOffsetY=3;
   x.fillText(t.bride,nx,1394);x.fillText('&',nx+w1+GAP,1394);x.fillText(t.groom,nx+w1+wa+GAP*2,1394);
   x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0;x.textAlign='center';
-  tx(t.dates,1460,"28px Marcellus,'Noto Serif Kannada',serif",'#E8BC6E',kn?1:5);
+  tx(t.dates,1460,"28px Marcellus,'Noto Serif Kannada',serif",'#E8BC6E',kn?0:5);
   tx(t.c4,1506,"italic 30px "+SER,'#f2d9ac',0);
   tx(t.cLove+' '+t.fam,1556,"italic 32px "+SER,'#E8BC6E',0);
 }
