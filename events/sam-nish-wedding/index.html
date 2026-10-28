@@ -305,7 +305,12 @@ body.kn .hudline b{letter-spacing:.02em;text-transform:none;font-size:13px}
 #close .om-big{color:var(--gold-l);text-shadow:0 0 30px rgba(232,188,110,.6)}
 #close .bl{font-size:clamp(24px,6vw,32px);font-style:italic;margin-top:22px;color:#fff2d4;line-height:1.3}
 #close .label{color:var(--gold-l);margin-top:22px;display:block}
+#close .famn{display:block;margin-top:22px;font-style:italic;font-size:22px;line-height:1.4;letter-spacing:0;color:var(--gold-l)}
+body.kn #close .famn{font-style:normal;font-size:18px}
 .stripe{height:7px;background:repeating-linear-gradient(90deg,var(--gold-l) 0 10px,#3B8A3E 10px 14px)}
+.wishes{margin-top:46px}.wishes .label{margin-top:0!important}.wishes ul{list-style:none;margin-top:16px}.wishes li{font-style:italic;font-size:19px;line-height:1.55;color:#f2d9ac;padding:5px 0}body.kn .wishes li{font-style:normal;font-size:16px;line-height:1.7}
+.heart{display:inline-block;width:1.2em;height:1.2em;vertical-align:-.2em;margin:0 .25em;color:#e3182d;filter:drop-shadow(0 0 6px rgba(227,24,45,.65));transform-origin:50% 55%;animation:beat 1.4s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}12%{transform:scale(1.3)}24%{transform:scale(1)}36%{transform:scale(1.22)}60%{transform:scale(1)}}
 .foot{margin-top:40px;font-size:15px;color:#caa97a;opacity:.85}
 
 @media (max-width:480px){
@@ -531,8 +536,9 @@ body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
     <div class="om-big rv">ॐ</div>
     <div class="div rv"><i></i></div>
     <p class="bl rv d1" data-t="bye">We look forward to your presence and blessings.</p>
-    <span class="label rv d2" data-t="fam">The Lokanath Family</span>
-    <p class="foot rv d3">Samruddhi ♡ Nishanth<br>25.12.2026</p>
+    <span class="famn rv d2" data-t="fam">Smt. Sudha Lokanath &amp; M. R. Lokanath</span>
+    <div class="wishes rv d3"><div class="div"><i></i></div><div class="label" data-t="wishT">With best compliments from</div><ul id="wishes"></ul></div>
+    <p class="foot rv d3">Samruddhi <svg class="heart" viewBox="0 0 24 24" aria-label="love" role="img"><path fill="currentColor" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg> Nishanth<br>25.12.2026</p>
   </div>
 </section>
 <div class="stripe"></div>
@@ -558,12 +564,12 @@ en:{
  lampLbl:'Mangala Deepam',lampH:'Light the lamp, seek the blessings',lampHint:'Tap each diya to light it',
  lampMsg:'May this light bless Samruddhi & Nishanth with love, laughter and a lifetime together.',shower:'Shower flowers',
  cdLbl:'The auspicious moment',cdH:'Muhurtham in',d:'Days',h:'Hours',m:'Mins',s:'Secs',
- cdNow:'The Muhurtham is here',
+ cdNow:'The Muhurtham is here',wishT:'With best compliments from',
  evLbl:'Functions & Ceremonies',evH:'Two days of celebration',thu:'Thursday',fri:'Friday',tip:'Tap a ceremony to read more',cal:'Add to calendar',
  venLbl:'Venue',venLoc:'JP Nagar, Bangalore',dir:'Get directions',
  rsLbl:'Your presence, our blessing',rsH:'Will you grace us?',rsName:'Your name',c24:'24 Dec',c25:'25 Dec',cBoth:'Both days',
  wa:'Confirm on WhatsApp',call:'Call the family',from:'With love,',famName:'M.R. Lokanath & Sudha Lokanath',
- bye:'We look forward to your presence and blessings.',fam:'The Lokanath Family',
+ bye:'We look forward to your presence and blessings.',fam:'Smt. Sudha Lokanath & M. R. Lokanath',
  hi:'Namaskara, ',
  hudT:'Blessings',q_open:'Open the doors',q_diya:'Light the five diyas',q_learn:'Explore 4 ceremonies',q_catch:'Catch 15 flowers',q_quiz:'Ace the tradition quiz',q_swing:'Push the oonjal 10 times',
  r0:'Guest',r1:'Well-wisher',r2:'Honoured guest',r3:'Blessed family',got:'Blessing unlocked',all:'All blessings collected!',allSub:'Tap to claim your Aashirvad card',
@@ -585,12 +591,12 @@ kn:{
  lampLbl:'ಮಂಗಳ ದೀಪ',lampH:'ದೀಪ ಬೆಳಗಿಸಿ, ಆಶೀರ್ವಾದ ಪಡೆಯಿರಿ',lampHint:'ಪ್ರತಿ ದೀಪವನ್ನು ಒತ್ತಿ ಬೆಳಗಿಸಿ',
  lampMsg:'ಸಮೃದ್ಧಿ ಮತ್ತು ನಿಶಾಂತ್ ಅವರ ಬಾಳಿನಲ್ಲಿ ಪ್ರೀತಿ, ನಗು ಮತ್ತು ಜೀವನಪರ್ಯಂತ ಸಾಂಗತ್ಯವನ್ನು ಈ ದೀಪ ತುಂಬಲಿ.',shower:'ಪುಷ್ಪವೃಷ್ಟಿ ಮಾಡಿ',
  cdLbl:'ಶುಭ ಮುಹೂರ್ತ',cdH:'ಮುಹೂರ್ತಕ್ಕೆ ಇನ್ನು',d:'ದಿನ',h:'ಗಂಟೆ',m:'ನಿಮಿಷ',s:'ಸೆಕೆಂಡ್',
- cdNow:'ಮುಹೂರ್ತದ ಶುಭ ಘಳಿಗೆ',
+ cdNow:'ಮುಹೂರ್ತದ ಶುಭ ಘಳಿಗೆ',wishT:'ತಮ್ಮ ಸುಖಾಗಮನ ಬಯಸುವವರು',
  evLbl:'ಶುಭ ಕಾರ್ಯಕ್ರಮಗಳು',evH:'ಎರಡು ದಿನಗಳ ಸಂಭ್ರಮ',thu:'ಗುರುವಾರ',fri:'ಶುಕ್ರವಾರ',tip:'ಹೆಚ್ಚು ತಿಳಿಯಲು ಕಾರ್ಯಕ್ರಮವನ್ನು ಒತ್ತಿ',cal:'ಕ್ಯಾಲೆಂಡರ್‌ಗೆ ಸೇರಿಸಿ',
  venLbl:'ಸ್ಥಳ',venLoc:'ಜೆ.ಪಿ. ನಗರ, ಬೆಂಗಳೂರು',dir:'ದಾರಿ ನಕ್ಷೆ',
  rsLbl:'ತಮ್ಮ ಉಪಸ್ಥಿತಿ, ನಮ್ಮ ಭಾಗ್ಯ',rsH:'ತಾವು ಬರುವಿರಾ?',rsName:'ನಿಮ್ಮ ಹೆಸರು',c24:'24 ಡಿಸೆಂ',c25:'25 ಡಿಸೆಂ',cBoth:'ಎರಡೂ ದಿನ',
  wa:'ವಾಟ್ಸ್‌ಆ್ಯಪ್ ಮೂಲಕ ದೃಢಪಡಿಸಿ',call:'ಕರೆ ಮಾಡಿ',from:'ಪ್ರೀತಿಯಿಂದ,',famName:'ಎಂ.ಆರ್. ಲೋಕನಾಥ್ ಮತ್ತು ಸುಧಾ ಲೋಕನಾಥ್',
- bye:'ತಾವು ಆಗಮಿಸಿ ವಧೂವರರನ್ನು ಆಶೀರ್ವದಿಸಬೇಕೆಂದು ಕೋರುತ್ತೇವೆ.',fam:'ಲೋಕನಾಥ್ ಕುಟುಂಬ',
+ bye:'ತಾವು ಆಗಮಿಸಿ ವಧೂವರರನ್ನು ಆಶೀರ್ವದಿಸಬೇಕೆಂದು ಕೋರುತ್ತೇವೆ.',fam:'ಶ್ರೀಮತಿ ಸುಧಾ ಲೋಕನಾಥ್ ಮತ್ತು ಎಂ. ಆರ್. ಲೋಕನಾಥ್',
  hi:'ನಮಸ್ಕಾರ, ',
  hudT:'ಆಶೀರ್ವಾದ',q_open:'ಬಾಗಿಲು ತೆರೆಯಿರಿ',q_diya:'ಐದು ದೀಪ ಬೆಳಗಿಸಿ',q_learn:'4 ಕಾರ್ಯಕ್ರಮಗಳನ್ನು ತಿಳಿಯಿರಿ',q_catch:'15 ಹೂಗಳನ್ನು ಹಿಡಿಯಿರಿ',q_quiz:'ಸಂಪ್ರದಾಯ ರಸಪ್ರಶ್ನೆ ಗೆಲ್ಲಿರಿ',q_swing:'ಊಂಜಲ್ ಅನ್ನು 10 ಬಾರಿ ತೂಗಿ',
  r0:'ಅತಿಥಿ',r1:'ಹಿತೈಷಿ',r2:'ಗೌರವಾನ್ವಿತ ಅತಿಥಿ',r3:'ಆಶೀರ್ವಾದ ಭಾಗ್ಯ',got:'ಆಶೀರ್ವಾದ ಲಭಿಸಿತು',all:'ಎಲ್ಲಾ ಆಶೀರ್ವಾದ ಗಳಿಸಿದ್ದೀರಿ!',allSub:'ನಿಮ್ಮ ಕಾರ್ಡ್ ಪಡೆಯಲು ಒತ್ತಿ',
@@ -1119,7 +1125,10 @@ $('#photo').addEventListener('change',function(){var f=this.files&&this.files[0]
 $('#rmPhoto').onclick=function(){photo=null;$('#photo').value='';this.hidden=true;drawCert()};
 $('#who').addEventListener('input',drawCert);
 $('#dl').onclick=function(){ensureFonts().then(function(){drawCert();$('#certCv').toBlob(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Aashirvad-Card.png';document.body.appendChild(a);a.click();a.remove();burst(innerWidth/2,innerHeight*.6,60)})})};
-function onLang(){renderQuests();gOv();renderQuiz();drawCert()}
+var WISH={en:['Sri M. R. Diwakar','Smt. Mythily & Sri S. Gururaj & Family','Smt. Malathi & Sri K. V. Srinivas & Family','Smt. Jyothi & Sri K. V. Muralidhar & Family','Smt. Suman & Sri Savithru'],
+ kn:['ಶ್ರೀ ಎಂ. ಆರ್. ದಿವಾಕರ್','ಶ್ರೀಮತಿ ಮೈಥಿಲಿ ಮತ್ತು ಶ್ರೀ ಎಸ್. ಗುರುರಾಜ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಮಾಲತಿ ಮತ್ತು ಶ್ರೀ ಕೆ. ವಿ. ಶ್ರೀನಿವಾಸ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಜ್ಯೋತಿ ಮತ್ತು ಶ್ರೀ ಕೆ. ವಿ. ಮುರಳೀಧರ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಸುಮನ್ ಮತ್ತು ಶ್ರೀ ಸವಿತ್ರು']};
+function renderWishes(){var ul=$('#wishes');ul.innerHTML='';WISH[lang].forEach(function(n){var li=document.createElement('li');li.textContent=n;ul.appendChild(li)})}
+function onLang(){renderWishes();renderQuests();gOv();renderQuiz();drawCert()}
 var FL=["italic 500 40px 'Cormorant Garamond'","40px Marcellus","40px 'Tiro Devanagari Sanskrit'","60px 'Great Vibes'","40px 'Noto Serif Kannada'","600 40px 'Noto Serif Kannada'"];
 function ensureFonts(){
   if(!(document.fonts&&document.fonts.load))return Promise.resolve();
