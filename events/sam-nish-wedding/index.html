@@ -1092,7 +1092,7 @@ function drawCert(){
   x.save();x.translate(22,H-22);x.rotate(-Math.PI/2);kBand(x,H-44);x.restore();
   [[22,22],[W-86,22],[22,H-86],[W-86,H-86]].forEach(function(p){x.save();x.translate(p[0]+32,p[1]+32);x.fillStyle='#0d4426';x.fillRect(-32,-32,64,64);x.strokeStyle=goldG(x,-32,32);x.lineWidth=3;x.strokeRect(-30,-30,60,60);x.fillStyle='#E8BC6E';x.fillRect(-17,-17,34,34);x.rotate(Math.PI/4);x.fillRect(-17,-17,34,34);x.fillStyle='#a3121f';x.beginPath();x.arc(0,0,10,0,7);x.fill();x.fillStyle='#E8BC6E';x.beginPath();x.arc(0,0,4,0,7);x.fill();x.restore()});
   x.strokeStyle=goldG(x,0,H);x.lineWidth=3;x.strokeRect(12,12,W-24,H-24);x.lineWidth=2;x.strokeRect(96,96,W-192,H-192);
-  function tx(str,y,font,fill,ls,sh){x.font=font;x.fillStyle=fill;if(hasLS)x.letterSpacing=(ls||0)+'px';if(sh){x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=sh;x.shadowOffsetY=3}x.fillText(str,W/2+(ls||0)/2,y);x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0;if(hasLS)x.letterSpacing='0px'}
+  function tx(str,y,font,fill,ls,sh,lw){x.font=font;x.fillStyle=fill;if(hasLS)x.letterSpacing=(ls||0)+'px';if(sh){x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=sh;x.shadowOffsetY=3}x.fillText(str,W/2+(ls||0)/2,y);if(lw){x.lineWidth=lw;x.lineJoin='round';x.strokeStyle=fill;x.strokeText(str,W/2+(ls||0)/2,y)}x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0;if(hasLS)x.letterSpacing='0px'}
   function rule(y,half){var g=x.createLinearGradient(W/2-half,0,W/2+half,0);g.addColorStop(0,'rgba(232,188,110,0)');g.addColorStop(.5,'rgba(232,188,110,.95)');g.addColorStop(1,'rgba(232,188,110,0)');x.fillStyle=g;x.fillRect(W/2-half,y,half*2,2);x.save();x.translate(W/2,y+1);x.rotate(Math.PI/4);x.fillStyle='#E8BC6E';x.fillRect(-7,-7,14,14);x.restore()}
   /* toran */
   x.save();x.translate(0,48);toranC(x);x.restore();
@@ -1108,17 +1108,18 @@ function drawCert(){
     x.save();x.beginPath();x.arc(cx,cy,r,0,7);x.clip();cover(x,photo,cx-r,cy-r,r*2,r*2);x.restore();
     x.beginPath();x.arc(cx,cy,r+8,0,7);x.strokeStyle=goldG(x,cy-r,cy+r);x.lineWidth=7;x.stroke();x.beginPath();x.arc(cx,cy,r-4,0,7);x.strokeStyle='#4a0c16';x.lineWidth=2;x.stroke()}
   /* greeting */
-  var gtxt=t.cDear+nm+',',fs=kn?64:94,gf=function(){return (kn?"600 "+fs+"px 'Noto Serif Kannada',serif":fs+"px "+SCR)};
+  var gtxt=t.cDear+nm+',',fs=kn?64:94,gf=function(){return (kn?fs+"px 'Noto Serif Kannada',serif":fs+"px "+SCR)};
   x.font=gf();if(hasLS)x.letterSpacing='0px';while(x.measureText(gtxt).width>780&&fs>34){fs-=4;x.font=gf()}
-  tx(gtxt,1150,gf(),goldG(x,1070,1170),0,8);
+  tx(gtxt,1150,gf(),goldG(x,1070,1170),0,8,kn?2.2:0);
   tx(t.c3,1212,IT+"38px "+SER,'#f2d9ac',kn?0:1);
   rule(1272,150);
   /* names */
-  var fs2=kn?70:104,GAP=kn?34:44,nf=function(){return (kn?"600 "+fs2+"px 'Noto Serif Kannada',serif":fs2+"px "+SCR)},w1,w2,wa;
+  var fs2=kn?70:104,GAP=kn?34:44,nf=function(){return (kn?fs2+"px 'Noto Serif Kannada',serif":fs2+"px "+SCR)},w1,w2,wa;
   function meas(){x.font=nf();if(hasLS)x.letterSpacing='0px';w1=x.measureText(t.bride).width;w2=x.measureText(t.groom).width;wa=x.measureText('&').width}
   meas();while(w1+w2+wa+GAP*2>780&&fs2>40){fs2-=4;meas()}
   var nx=(W-(w1+w2+wa+GAP*2))/2,ng=goldG(x,1310,1420);x.textAlign='left';x.fillStyle=ng;x.font=nf();x.shadowColor='rgba(0,0,0,.55)';x.shadowBlur=8;x.shadowOffsetY=3;
   x.fillText(t.bride,nx,1394);x.fillText('&',nx+w1+GAP,1394);x.fillText(t.groom,nx+w1+wa+GAP*2,1394);
+  if(kn){x.lineWidth=2.6;x.lineJoin='round';x.strokeStyle=ng;x.strokeText(t.bride,nx,1394);x.strokeText(t.groom,nx+w1+wa+GAP*2,1394)}
   x.shadowColor='transparent';x.shadowBlur=0;x.shadowOffsetY=0;x.textAlign='center';
   tx(t.dates,1460,(kn?"28px 'Noto Serif Kannada',serif":"28px Marcellus,'Noto Serif Kannada',serif"),'#E8BC6E',kn?0:5);
   tx(t.c4,1506,IT+"30px "+SER,'#f2d9ac',0);
@@ -1132,7 +1133,7 @@ var WISH={en:['Sri M. R. Diwakar','Smt. Mythily & Sri S. Gururaj & Family','Smt.
  kn:['ಶ್ರೀ ಎಂ. ಆರ್. ದಿವಾಕರ್','ಶ್ರೀಮತಿ ಮೈಥಿಲಿ ಮತ್ತು ಶ್ರೀ ಎಸ್. ಗುರುರಾಜ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಮಾಲತಿ ಮತ್ತು ಶ್ರೀ ಕೆ. ವಿ. ಶ್ರೀನಿವಾಸ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಜ್ಯೋತಿ ಮತ್ತು ಶ್ರೀ ಕೆ. ವಿ. ಮುರಳೀಧರ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಸುಮನ್ ಮತ್ತು ಶ್ರೀ ಸವಿತ್ರು']};
 function renderWishes(){var ul=$('#wishes');ul.innerHTML='';WISH[lang].forEach(function(n){var li=document.createElement('li');li.textContent=n;ul.appendChild(li)})}
 function onLang(){renderWishes();renderQuests();gOv();renderQuiz();drawCert()}
-var FL=["italic 500 40px 'Cormorant Garamond'","40px Marcellus","40px 'Tiro Devanagari Sanskrit'","60px 'Great Vibes'","40px 'Noto Serif Kannada'","600 40px 'Noto Serif Kannada'"];
+var FL=["italic 500 40px 'Cormorant Garamond'","40px Marcellus","40px 'Tiro Devanagari Sanskrit'","60px 'Great Vibes'","40px 'Noto Serif Kannada'"];
 function ensureFonts(){
   if(!(document.fonts&&document.fonts.load))return Promise.resolve();
   return Promise.all(FL.map(function(f){return document.fonts.load(f,'ಅಆ Aa ॐ '+[T.kn.c3,T.kn.c4,T.kn.cDear,T.kn.cLove,T.kn.fam,T.kn.dates,T.kn.bride,T.kn.groom].join(' ')).catch(function(){})})).then(function(){return document.fonts.ready});
