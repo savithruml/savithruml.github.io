@@ -4,12 +4,25 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Samruddhi weds Nishanth · 24 &amp; 25 December 2026</title>
-<meta name="description" content="Sri. Lokanath M R & Smt. Sudha Lokanath cordially invite you to the wedding of Samruddhi and Nishanth. MLR Convention Centre, Bangalore.">
+<meta name="description" content="With blessings, Sri M. R. Lokanath &amp; Smt. Sudha Lokanath invite you to the wedding of Samruddhi &amp; Nishanth. 24 &amp; 25 December 2026, MLR Convention Centre, Bangalore. Open the temple doors.">
+<link rel="canonical" href="https://savithruml.github.io/events/sam-nish-wedding/">
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2231%22 fill=%22%235B0E17%22/%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%2228%22 fill=%22none%22 stroke=%22%23E8BC6E%22 stroke-width=%221.5%22/%3E%3Cg fill=%22%23E8BC6E%22%3E%3Crect x=%2217%22 y=%2217%22 width=%2230%22 height=%2230%22 rx=%221%22/%3E%3Crect x=%2217%22 y=%2217%22 width=%2230%22 height=%2230%22 rx=%221%22 transform=%22rotate%2845 32 32%29%22/%3E%3C/g%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%229%22 fill=%22%235B0E17%22/%3E%3Ccircle cx=%2232%22 cy=%2232%22 r=%224%22 fill=%22%23E8BC6E%22/%3E%3C/svg%3E">
 <meta name="theme-color" content="#3a0a12">
-<meta property="og:title" content="Samruddhi weds Nishanth">
-<meta property="og:description" content="24 & 25 December 2026 · MLR Convention Centre, Bangalore">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Samruddhi weds Nishanth">
+<meta property="og:url" content="https://savithruml.github.io/events/sam-nish-wedding/">
+<meta property="og:title" content="You are invited · Samruddhi &amp; Nishanth">
+<meta property="og:description" content="24 &amp; 25 December 2026 · MLR Convention Centre, Bangalore. Open the temple doors, light the lamps and collect your Aashirvad Card.">
+<meta property="og:image" content="https://savithruml.github.io/events/sam-nish-wedding/assets/og.jpg">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Samruddhi and Nishanth wedding invitation, 24 and 25 December 2026">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="You are invited · Samruddhi &amp; Nishanth">
+<meta name="twitter:description" content="24 &amp; 25 December 2026 · MLR Convention Centre, Bangalore">
+<meta name="twitter:image" content="https://savithruml.github.io/events/sam-nish-wedding/assets/og.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Great+Vibes&family=Marcellus&family=Tiro+Devanagari+Sanskrit&family=Noto+Serif+Kannada:wght@400;600&display=swap" rel="stylesheet">
@@ -491,7 +504,7 @@ body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
     <div class="gcard rv" id="swingCard">
       <h3 data-t="swingT">Push the Oonjal</h3>
       <p data-t="swingD">Tap the swing to rock the couple. Ten pushes send your blessing.</p>
-      <div class="swstage"><div id="swing" role="button" aria-label="Push the swing"><div class="beam"></div><div class="rope l"></div><div class="rope r"></div><img id="swingG" src="assets/swing.jpg" alt="Samruddhi and Nishanth on the oonjal" draggable="false"></div></div>
+      <div class="swstage"><div id="swing" role="button" aria-label="Push the swing"><div class="beam"></div><div class="rope l"></div><div class="rope r"></div><img id="swingG" loading="lazy" decoding="async" src="assets/swing.webp" alt="Samruddhi and Nishanth on the oonjal" draggable="false"></div></div>
       <div class="hudline"><span><b data-t="pushes">Pushes</b> <i id="swN">0/10</i></span></div>
     </div>
     <div class="gcard rv" id="quiz">
@@ -528,7 +541,8 @@ body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
     <div class="certact rv">
       <input class="field" id="who" maxlength="32" autocomplete="name" data-ph="certName" placeholder="Your name">
       <div class="photorow"><label class="btn line" for="photo" data-t="addPhoto">Add your photo (optional)</label><input type="file" id="photo" accept="image/*" hidden><button class="lnk" id="rmPhoto" hidden data-t="rmPhoto">Remove photo</button></div>
-      <button class="btn red" id="dl" data-t="certDl">Download card</button>
+      <button class="btn red" id="sh" data-t="certShare">Share card</button>
+      <button class="btn line" id="dl" data-t="certDl">Download card</button>
     </div>
   </div>
 </section>
@@ -580,7 +594,7 @@ en:{
  play:'Play',again:'Play again',score:'Score',best:'Best',time:'Time',gameGoal:'Catch 15 to bless the couple',gameWin:'Blessing given!',gameTry:'So close. Catch 15 to bless them.',
  swingT:'Push the Oonjal',swingD:'Tap the swing to rock the couple. Ten pushes send your blessing.',pushes:'Pushes',
  quizT:'Tradition quiz',quizWin:'Blessing given!',quizTry:'Get at least 2 right to bless the couple.',quizRetry:'Try again',
- certLbl:'A keepsake from us',certH:'Your Aashirvad Card',certLocked:'Give all 5 blessings to unlock your card',certName:'Your name',certDl:'Download card',certDef:'Guest',addPhoto:'Add your photo (optional)',rmPhoto:'Remove photo',
+ certLbl:'A keepsake from us',certH:'Your Aashirvad Card',certLocked:'Give all 5 blessings to unlock your card',certName:'Your name',certDl:'Download card',certShare:'Share card',shareTxt:'Samruddhi & Nishanth are getting married, 24 & 25 Dec 2026. Here is my Aashirvad Card:',shareSaved:'Card saved. Attach it in WhatsApp.',certDef:'Guest',addPhoto:'Add your photo (optional)',rmPhoto:'Remove photo',
  c1:'Aashirvad',cDear:'Dear ',c3:'thank you for blessing us',c4:'MLR Convention Centre, Bangalore',cLove:'With love,',
  wa:'',
 },
@@ -607,7 +621,7 @@ kn:{
  play:'ಆಡಿ',again:'ಮತ್ತೆ ಆಡಿ',score:'ಅಂಕ',best:'ಉತ್ತಮ',time:'ಸಮಯ',gameGoal:'ಆಶೀರ್ವದಿಸಲು 15 ಹಿಡಿಯಿರಿ',gameWin:'ಆಶೀರ್ವಾದ ನೀಡಿದ್ದೀರಿ!',gameTry:'ಸ್ವಲ್ಪದರಲ್ಲಿ ತಪ್ಪಿತು. 15 ಹಿಡಿಯಿರಿ.',
  swingT:'ಊಂಜಲ್ ತೂಗಿ',swingD:'ವಧೂವರರನ್ನು ತೂಗಲು ಉಯ್ಯಾಲೆಯನ್ನು ಒತ್ತಿ. ಹತ್ತು ಬಾರಿ ತೂಗಿ ಆಶೀರ್ವದಿಸಿ.',pushes:'ತೂಗು',
  quizT:'ಸಂಪ್ರದಾಯ ರಸಪ್ರಶ್ನೆ',quizWin:'ಆಶೀರ್ವಾದ ನೀಡಿದ್ದೀರಿ!',quizTry:'ಆಶೀರ್ವದಿಸಲು ಕನಿಷ್ಠ 2 ಸರಿ ಉತ್ತರಿಸಿ.',quizRetry:'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
- certLbl:'ನಮ್ಮ ಕಡೆಯಿಂದ ನೆನಪಿನ ಕಾಣಿಕೆ',certH:'ನಿಮ್ಮ ಆಶೀರ್ವಾದ ಕಾರ್ಡ್',certLocked:'ಕಾರ್ಡ್ ತೆರೆಯಲು ಎಲ್ಲಾ 5 ಆಶೀರ್ವಾದ ನೀಡಿ',certName:'ನಿಮ್ಮ ಹೆಸರು',certDl:'ಕಾರ್ಡ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ',certDef:'ಅತಿಥಿ',addPhoto:'ನಿಮ್ಮ ಫೋಟೋ ಸೇರಿಸಿ (ಐಚ್ಛಿಕ)',rmPhoto:'ಫೋಟೋ ತೆಗೆಯಿರಿ',
+ certLbl:'ನಮ್ಮ ಕಡೆಯಿಂದ ನೆನಪಿನ ಕಾಣಿಕೆ',certH:'ನಿಮ್ಮ ಆಶೀರ್ವಾದ ಕಾರ್ಡ್',certLocked:'ಕಾರ್ಡ್ ತೆರೆಯಲು ಎಲ್ಲಾ 5 ಆಶೀರ್ವಾದ ನೀಡಿ',certName:'ನಿಮ್ಮ ಹೆಸರು',certDl:'ಕಾರ್ಡ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ',certShare:'ಕಾರ್ಡ್ ಹಂಚಿಕೊಳ್ಳಿ',shareTxt:'ಸಮೃದ್ಧಿ ಮತ್ತು ನಿಶಾಂತ್ ಅವರ ವಿವಾಹ, 24 ಮತ್ತು 25 ಡಿಸೆಂಬರ್ 2026. ನನ್ನ ಆಶೀರ್ವಾದ ಕಾರ್ಡ್:',shareSaved:'ಕಾರ್ಡ್ ಉಳಿಸಲಾಗಿದೆ. ವಾಟ್ಸ್‌ಆ್ಯಪ್‌ನಲ್ಲಿ ಲಗತ್ತಿಸಿ.',certDef:'ಅತಿಥಿ',addPhoto:'ನಿಮ್ಮ ಫೋಟೋ ಸೇರಿಸಿ (ಐಚ್ಛಿಕ)',rmPhoto:'ಫೋಟೋ ತೆಗೆಯಿರಿ',
  c1:'ಆಶೀರ್ವಾದ',cDear:'ಪ್ರಿಯ ',c3:'ಆಶೀರ್ವದಿಸಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು',c4:'ಎಂ.ಎಲ್.ಆರ್. ಕನ್ವೆನ್ಷನ್ ಸೆಂಟರ್, ಬೆಂಗಳೂರು',cLove:'ಪ್ರೀತಿಯಿಂದ,',
  wa:'',
 }};
@@ -788,7 +802,7 @@ function loop(){
 /* ================= sound: background music + bell sfx ================= */
 var AC=null,sndOn=true,MV=.13,bgm=new Audio('assets/music.mp3'),fade=null,started=false;
 try{if(localStorage.getItem('sn-snd')==='0')sndOn=false}catch(e){}
-bgm.loop=true;bgm.preload='auto';bgm.volume=0;
+bgm.loop=true;bgm.preload='none';bgm.volume=0;
 function ctx(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}return AC}
 var REV=null,SCALE=[523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.5];
 function rev(){
@@ -813,16 +827,24 @@ function tickSnd(){
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.05,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+.07);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+.09);
 }
 function chime(){[0,1,2,3,4,5,6,7].forEach(function(i){setTimeout(function(){bell(SCALE[i]*(i>4?1:.5),.8)},i*140)})}
-function fadeTo(v,done){
+var cur=0,bgmG=null;
+/* iPhones ignore audio.volume, so music is routed through a Web Audio gain node, which they do honour */
+function wireBgm(){if(bgmG||!ctx())return;try{var g=AC.createGain();g.gain.value=0;AC.createMediaElementSource(bgm).connect(g);g.connect(AC.destination);bgmG=g;bgm.volume=1}catch(e){bgmG=null}}
+function setVol(v){v=Math.max(0,Math.min(1,v));if(bgmG)bgmG.gain.value=v;else bgm.volume=v}
+/* master level (cur) is faded slowly; a second envelope fades the loop's tail out and its head in so the repeat is seamless */
+function applyVol(){var d=bgm.duration,e=1;if(d&&isFinite(d)){var ct=bgm.currentTime;e=Math.max(0,Math.min(1,ct/3,(d-ct)/4))}setVol(cur*e)}
+setInterval(applyVol,100);
+function fadeTo(v,done,secs){
   clearInterval(fade);
+  var from=cur,t0=Date.now(),ms=(secs||(v>cur?5:2.5))*1000;
   fade=setInterval(function(){
-    var d=v-bgm.volume;
-    if(Math.abs(d)<.01){bgm.volume=v;clearInterval(fade);if(done)done();return}
-    bgm.volume=Math.max(0,Math.min(1,bgm.volume+(d>0?.01:-.02)));
-  },60);
+    var k=Math.min(1,(Date.now()-t0)/ms);k=k*k*(3-2*k);
+    cur=from+(v-from)*k;applyVol();
+    if(k>=1){clearInterval(fade);if(done)done()}
+  },50);
 }
 function playMusic(){
-  if(!sndOn)return;started=true;
+  if(!sndOn)return;started=true;wireBgm();if(AC&&AC.state==='suspended')AC.resume();
   var p=bgm.play();if(p&&p.catch)p.catch(function(){});
   fadeTo(MV);
 }
@@ -832,7 +854,7 @@ $('#sndBtn').onclick=function(){
   syncSnd();
   if(sndOn){playMusic();bell(660)}else fadeTo(0,function(){bgm.pause()});
 };
-document.addEventListener('visibilitychange',function(){if(!started||!sndOn)return;if(document.hidden)bgm.pause();else{var p=bgm.play();if(p&&p.catch)p.catch(function(){})}});
+document.addEventListener('visibilitychange',function(){if(!started||!sndOn)return;if(document.hidden)bgm.pause();else{cur=0;var p=bgm.play();if(p&&p.catch)p.catch(function(){});fadeTo(MV,null,3)}});
 syncSnd();
 
 (function(){
@@ -1138,11 +1160,27 @@ function drawCert(){
   tx(t.dates,1460,(kn?"28px 'Noto Serif Kannada',serif":"28px Marcellus,'Noto Serif Kannada',serif"),'#E8BC6E',kn?0:5);
   tx(t.c4,1506,IT+"30px "+SER,'#f2d9ac',0);
   tx(t.cLove+' '+t.fam,1556,IT+"32px "+SER,'#E8BC6E',0)}
+  prepB();
 }
+var cardB=null,pbT;
+function prepB(){clearTimeout(pbT);pbT=setTimeout(function(){try{$('#certCv').toBlob(function(b){cardB=b},'image/png')}catch(e){}},250)}
 $('#photo').addEventListener('change',function(){var f=this.files&&this.files[0];if(!f)return;var im=new Image();im.onload=function(){photo=im;$('#rmPhoto').hidden=false;drawCert()};im.src=URL.createObjectURL(f)});
 $('#rmPhoto').onclick=function(){photo=null;$('#photo').value='';this.hidden=true;drawCert()};
 $('#who').addEventListener('input',drawCert);
-$('#dl').onclick=function(){ensureFonts().then(function(){drawCert();$('#certCv').toBlob(function(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Aashirvad-Card.png';document.body.appendChild(a);a.click();a.remove();burst(innerWidth/2,innerHeight*.6,60)})})};
+function saveCard(b){var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='Aashirvad-Card.png';document.body.appendChild(a);a.click();a.remove()}
+$('#dl').onclick=function(){ensureFonts().then(function(){drawCert();$('#certCv').toBlob(function(b){saveCard(b);burst(innerWidth/2,innerHeight*.6,60)})})};
+/* share: opens the phone's share sheet (WhatsApp etc.) with the card image; the blob is prepared ahead so share() runs inside the tap */
+$('#sh').onclick=function(){
+  var t=T[lang],url=location.origin+location.pathname;
+  function go(b){
+    var f;try{f=new File([b],'Aashirvad-Card.png',{type:'image/png'})}catch(e){saveCard(b);return}
+    var d={files:[f],text:t.shareTxt+' '+url};
+    if(navigator.share&&navigator.canShare&&navigator.canShare(d)){navigator.share(d).then(function(){burst(innerWidth/2,innerHeight*.6,40)}).catch(function(){})}
+    else{saveCard(b);toast(t.certH,t.shareSaved)}
+  }
+  if(cardB)go(cardB);else $('#certCv').toBlob(go,'image/png');
+};
+if('serviceWorker' in navigator&&location.protocol!=='file:')addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
 var WISH={en:['Sri M. R. Diwakar','Smt. Mythily & Sri S. Gururaj & Family','Smt. Malathi & Sri K. V. Srinivas & Family','Smt. Jyothi & Sri K. V. Muralidhar & Family','Smt. Suman & Sri Savithru'],
  kn:['ಶ್ರೀ ಎಂ. ಆರ್. ದಿವಾಕರ್','ಶ್ರೀಮತಿ ಮೈಥಿಲಿ ಮತ್ತು ಶ್ರೀ ಎಸ್. ಗುರುರಾಜ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಮಾಲತಿ ಮತ್ತು ಶ್ರೀ ಕೆ. ವಿ. ಶ್ರೀನಿವಾಸ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಜ್ಯೋತಿ ಮತ್ತು ಶ್ರೀ ಕೆ. ವಿ. ಮುರಳೀಧರ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಸುಮನ್ ಮತ್ತು ಶ್ರೀ ಸವಿತ್ರು']};
 function renderWishes(){var ul=$('#wishes');ul.innerHTML='';WISH[lang].forEach(function(n){var li=document.createElement('li');li.textContent=n;ul.appendChild(li)})}
