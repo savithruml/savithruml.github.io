@@ -158,7 +158,20 @@ body.kn #gate .medal .nm{font-family:'Noto Serif Kannada',serif;font-weight:600;
 .om-big{font-family:var(--dev);font-size:54px;line-height:1;color:var(--gold-d)}
 .shloka{font-family:'Noto Serif Kannada',serif;font-size:16px;line-height:1.9;color:var(--maroon);margin-top:12px}
 .shree{color:var(--kumkum);margin-top:10px}
-.guest{font-style:italic;font-size:22px;color:var(--kumkum);min-height:1.4em}
+.guest{margin:34px auto 10px}
+.guest:empty{display:none}
+.guest .gh{display:flex;align-items:center;justify-content:center;gap:14px;font-family:var(--label);font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--gold-d)}
+.guest .gh i{width:36px;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
+.guest .gh i:last-child{background:linear-gradient(270deg,transparent,var(--gold))}
+body.kn .guest .gh{letter-spacing:.02em;text-transform:none;font-size:15px}
+.guest svg{display:block;margin:4px auto 0;width:min(88vw,var(--w));height:auto;overflow:visible;filter:drop-shadow(0 4px 12px rgba(163,18,31,.12))}
+.guest text{font-family:'Great Vibes','Noto Serif Kannada',cursive;font-size:56px;text-anchor:middle;fill-opacity:0;stroke:var(--gold-d);stroke-width:1.1;stroke-linejoin:round;stroke-dasharray:420;stroke-dashoffset:420}
+#hero.in .guest text{animation:inkdraw 2.2s cubic-bezier(.45,.05,.35,1) 1.4s forwards,inkfill 1s ease 3.1s forwards}
+.guest .gorn{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;opacity:0;transition:opacity 1.2s ease 3.2s}
+#hero.in .guest .gorn{opacity:1}
+.guest .gorn i{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
+.guest .gorn i:last-child{background:linear-gradient(270deg,transparent,var(--gold))}
+.guest .gorn b{width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
 .host{font-size:21px;font-weight:500;color:var(--maroon);margin-top:6px}
 .inv{font-style:italic;color:var(--muted);font-size:18px;margin-top:6px}
 .nm-big{font-size:clamp(60px,17vw,104px);line-height:1;font-style:italic;font-weight:500;color:var(--maroon);margin-top:20px;text-shadow:0 1px 0 #fff,0 6px 24px rgba(163,18,31,.14)}
@@ -289,15 +302,6 @@ body.ready .hud{opacity:1;pointer-events:auto}
 .hudline b{font-family:var(--label);font-weight:400;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#e7cd9b;margin-right:6px}
 body.kn .hudline b{letter-spacing:.02em;text-transform:none;font-size:13px}
 .hudline i{font-style:normal;font-size:22px;color:var(--gold-l)}
-.qprog{display:flex;gap:6px;justify-content:center;margin:12px 0 16px}
-.qprog i{width:26px;height:3px;background:rgba(232,188,110,.3);transition:.4s}.qprog i.on{background:var(--gold-l)}
-.qq{font-size:21px;line-height:1.3;color:#fff2d4;min-height:3em}
-.qopts{display:grid;gap:10px;margin-top:14px}
-.qopts button{padding:13px 14px;border:1px solid rgba(232,188,110,.6);color:#fbe9c4;font-size:18px;text-align:left;transition:.3s;background:rgba(255,255,255,.03)}
-@media(hover:hover){.qopts button:hover{background:rgba(232,188,110,.15)}}
-.qopts button.ok{background:#2f6b3a;border-color:#2f6b3a;color:#fff}.qopts button.no{background:#7a1422;border-color:#a3121f;opacity:.7}
-.qopts button:disabled{cursor:default}
-.qres{text-align:center;padding:8px 0}.qres .big{font-size:40px;font-style:italic;color:var(--gold-l)}.qres p{margin:8px 0 18px;font-style:italic;color:#e4c795}
 
 .swstage{background:#FBF4E8;border:1px solid rgba(232,188,110,.6);padding:0 0 4px;cursor:pointer;-webkit-tap-highlight-color:transparent;overflow:hidden;border-radius:140px 140px 2px 2px}
 #swing{position:relative;max-width:340px;margin:0 auto;padding-top:26px;user-select:none;-webkit-user-select:none}
@@ -344,7 +348,7 @@ body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 .toast{bottom:max(16px,env(safe-area-inset-bottom))}
 .pill{height:44px;min-width:44px;justify-content:center}
 .btn{min-height:50px}
-.tabs button,.ev-h,.qopts button,.chip{min-height:48px}
+.tabs button,.ev-h,.chip{min-height:48px}
 .mapcard{position:relative}
 .mapcard iframe{pointer-events:none}
 .mapcard.on iframe{pointer-events:auto}
@@ -375,7 +379,8 @@ body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important}
   html{scroll-behavior:auto}
-  .ink path{animation-delay:0s!important;stroke-dashoffset:0;fill-opacity:1}
+  .ink path,.guest text{animation-delay:0s!important;stroke-dashoffset:0;fill-opacity:1}
+  .guest .gorn{opacity:1;transition:none}
 }
 
 /* ink-drawn calligraphy names */
@@ -431,7 +436,7 @@ body.kn .ink svg{width:calc(var(--w)*.8px)}
     <div class="label shree" data-t="ganesha">Om Shree Ganeshaya Namah</div>
     <div class="guest" id="guest"></div>
     <div>
-      <div class="host" data-t="hosts">Sri. Lokanath M R &amp; Smt. Sudha Lokanath</div>
+      <div class="host" data-t="hosts">Sri M. R. Lokanath &amp; Smt. Sudha Lokanath</div>
       <div class="inv" data-t="invite">cordially invite you to the wedding of their daughter</div>
     </div>
     <div>
@@ -517,12 +522,6 @@ body.kn .ink svg{width:calc(var(--w)*.8px)}
       <div class="swstage"><div id="swing" role="button" aria-label="Push the swing"><div class="beam"></div><div class="rope l"></div><div class="rope r"></div><img id="swingG" loading="lazy" decoding="async" src="assets/swing.webp" alt="Samruddhi and Nishanth on the oonjal" draggable="false"></div></div>
       <div class="hudline"><span><b data-t="pushes">Pushes</b> <i id="swN">0/10</i></span></div>
     </div>
-    <div class="gcard rv" id="quiz">
-      <h3 data-t="quizT">Tradition quiz</h3>
-      <div class="qprog" id="qProg"></div>
-      <div class="qq" id="qQ"></div>
-      <div class="qopts" id="qO"></div>
-    </div>
   </div>
 </section>
 
@@ -584,7 +583,7 @@ var T={
 en:{
  gateNames:'Samruddhi\n&\nNishanth',tap:'Tap to open',snd:'Music',
  ganesha:'Om Shree Ganeshaya Namah',
- hosts:'Sri. Lokanath M R & Smt. Sudha Lokanath',invite:'cordially invite you to the wedding of their daughter',
+ hosts:'Sri M. R. Lokanath & Smt. Sudha Lokanath',invite:'cordially invite you to the wedding of their daughter',
  bride:'Samruddhi',brideSur:'Lokanath',groom:'Nishanth',groomSur:'Chandrasekaran',with:'with',
  son:'son of Sri. Chandrasekaran & Smt. Kala Chandrasekaran',
  dates:'24 & 25 DECEMBER 2026',venueShort:'MLR Convention Centre, Bangalore',scroll:'Scroll',
@@ -595,23 +594,23 @@ en:{
  evLbl:'Functions & Ceremonies',evH:'Two days of celebration',thu:'Thursday',fri:'Friday',tip:'Tap a ceremony to read more',cal:'Add to calendar',
  venLbl:'Venue',venLoc:'JP Nagar, Bangalore',dir:'Get directions',
  rsLbl:'Your presence, our blessing',rsH:'Will you grace us?',rsName:'Your name',c24:'24 Dec',c25:'25 Dec',cBoth:'Both days',
- wa:'Confirm on WhatsApp',call:'Call the family',from:'With love,',famName:'M.R. Lokanath & Sudha Lokanath',
+ wa:'Confirm on WhatsApp',call:'Call the family',from:'With love,',famName:'M. R. Lokanath & Sudha Lokanath',
  bye:'We look forward to your presence and blessings.',fam:'Smt. Sudha Lokanath & M. R. Lokanath',
  hi:'Namaskara, ',
- hudT:'Blessings',q_open:'Open the doors',q_diya:'Light the five diyas',q_learn:'Explore 4 ceremonies',q_catch:'Catch 15 flowers',q_quiz:'Ace the tradition quiz',q_swing:'Push the oonjal 10 times',
+ hudT:'Blessings',q_open:'Open the doors',q_diya:'Light the five diyas',q_learn:'Explore 4 ceremonies',q_catch:'Catch 15 flowers',q_swing:'Push the oonjal 10 times',
  r0:'Guest',r1:'Well-wisher',r2:'Honoured guest',r3:'Blessed family',got:'Blessing given',all:'You have blessed the couple!',allSub:'Tap to receive your Aashirvad card',
  playLbl:'Play & bless the couple',playH:'A little fun before the feast',gameT:'Catch the flowers',gameD:'Slide the thali to catch marigolds and jasmine. Golden rings are worth 3. You have 25 seconds.',
  play:'Play',again:'Play again',score:'Score',best:'Best',time:'Time',gameGoal:'Catch 15 to bless the couple',gameWin:'Blessing given!',gameTry:'So close. Catch 15 to bless them.',
  swingT:'Push the Oonjal',swingD:'Tap the swing to rock the couple. Ten pushes send your blessing.',pushes:'Pushes',
- quizT:'Tradition quiz',quizWin:'Blessing given!',quizTry:'Get at least 2 right to bless the couple.',quizRetry:'Try again',
- certLbl:'A keepsake from us',certH:'Your Aashirvad Card',certLocked:'Give all 5 blessings to unlock your card',certName:'Your name',certDl:'Download card',certShare:'Share card',shareTxt:'Samruddhi & Nishanth are getting married, 24 & 25 Dec 2026. Here is my Aashirvad Card:',shareSaved:'Card saved. Attach it in WhatsApp.',certDef:'Guest',addPhoto:'Add your photo (optional)',rmPhoto:'Remove photo',
+ 
+ certLbl:'A keepsake from us',certH:'Your Aashirvad Card',certLocked:'Give all 4 blessings to unlock your card',certName:'Your name',certDl:'Download card',certShare:'Share card',shareTxt:'Samruddhi & Nishanth are getting married, 24 & 25 Dec 2026. Here is my Aashirvad Card:',shareSaved:'Card saved. Attach it in WhatsApp.',certDef:'Guest',addPhoto:'Add your photo (optional)',rmPhoto:'Remove photo',
  c1:'Aashirvad',cDear:'Dear ',c3:'thank you for blessing us',c4:'MLR Convention Centre, Bangalore',cLove:'With love,',
  wa:'',
 },
 kn:{
  gateNames:'ಸಮೃದ್ಧಿ\n&\nನಿಶಾಂತ್',tap:'ತೆರೆಯಲು ಒತ್ತಿ',snd:'ಸಂಗೀತ',
  ganesha:'ಓಂ ಶ್ರೀ ಗಣೇಶಾಯ ನಮಃ',
- hosts:'ಶ್ರೀ ಲೋಕನಾಥ್ ಎಂ. ಆರ್. ಮತ್ತು ಶ್ರೀಮತಿ ಸುಧಾ ಲೋಕನಾಥ್',invite:'ತಮ್ಮ ಸುಪುತ್ರಿಯ ವಿವಾಹಕ್ಕೆ ತಮ್ಮನ್ನು ಆದರದಿಂದ ಆಹ್ವಾನಿಸುತ್ತಾರೆ',
+ hosts:'ಶ್ರೀ ಎಂ. ಆರ್. ಲೋಕನಾಥ್ ಮತ್ತು ಶ್ರೀಮತಿ ಸುಧಾ ಲೋಕನಾಥ್',invite:'ತಮ್ಮ ಸುಪುತ್ರಿಯ ವಿವಾಹಕ್ಕೆ ತಮ್ಮನ್ನು ಆದರದಿಂದ ಆಹ್ವಾನಿಸುತ್ತಾರೆ',
  bride:'ಸಮೃದ್ಧಿ',brideSur:'ಲೋಕನಾಥ್',groom:'ನಿಶಾಂತ್',groomSur:'ಚಂದ್ರಶೇಖರನ್',with:'ಮತ್ತು',
  son:'ಶ್ರೀ ಚಂದ್ರಶೇಖರನ್ ಮತ್ತು ಶ್ರೀಮತಿ ಕಲಾ ಚಂದ್ರಶೇಖರನ್ ಅವರ ಸುಪುತ್ರ',
  dates:'24 ಮತ್ತು 25 ಡಿಸೆಂಬರ್ 2026',venueShort:'ಎಂ.ಎಲ್.ಆರ್. ಕನ್ವೆನ್ಷನ್ ಸೆಂಟರ್, ಬೆಂಗಳೂರು',scroll:'ಕೆಳಗೆ',
@@ -622,16 +621,16 @@ kn:{
  evLbl:'ಶುಭ ಕಾರ್ಯಕ್ರಮಗಳು',evH:'ಎರಡು ದಿನಗಳ ಸಂಭ್ರಮ',thu:'ಗುರುವಾರ',fri:'ಶುಕ್ರವಾರ',tip:'ಹೆಚ್ಚು ತಿಳಿಯಲು ಕಾರ್ಯಕ್ರಮವನ್ನು ಒತ್ತಿ',cal:'ಕ್ಯಾಲೆಂಡರ್‌ಗೆ ಸೇರಿಸಿ',
  venLbl:'ಸ್ಥಳ',venLoc:'ಜೆ.ಪಿ. ನಗರ, ಬೆಂಗಳೂರು',dir:'ದಾರಿ ನಕ್ಷೆ',
  rsLbl:'ತಮ್ಮ ಉಪಸ್ಥಿತಿ, ನಮ್ಮ ಭಾಗ್ಯ',rsH:'ತಾವು ಬರುವಿರಾ?',rsName:'ನಿಮ್ಮ ಹೆಸರು',c24:'24 ಡಿಸೆಂ',c25:'25 ಡಿಸೆಂ',cBoth:'ಎರಡೂ ದಿನ',
- wa:'ವಾಟ್ಸ್‌ಆ್ಯಪ್ ಮೂಲಕ ದೃಢಪಡಿಸಿ',call:'ಕರೆ ಮಾಡಿ',from:'ಪ್ರೀತಿಯಿಂದ,',famName:'ಎಂ.ಆರ್. ಲೋಕನಾಥ್ ಮತ್ತು ಸುಧಾ ಲೋಕನಾಥ್',
+ wa:'ವಾಟ್ಸ್‌ಆ್ಯಪ್ ಮೂಲಕ ದೃಢಪಡಿಸಿ',call:'ಕರೆ ಮಾಡಿ',from:'ಪ್ರೀತಿಯಿಂದ,',famName:'ಎಂ. ಆರ್. ಲೋಕನಾಥ್ ಮತ್ತು ಸುಧಾ ಲೋಕನಾಥ್',
  bye:'ತಾವು ಆಗಮಿಸಿ ವಧೂವರರನ್ನು ಆಶೀರ್ವದಿಸಬೇಕೆಂದು ಕೋರುತ್ತೇವೆ.',fam:'ಶ್ರೀಮತಿ ಸುಧಾ ಲೋಕನಾಥ್ ಮತ್ತು ಎಂ. ಆರ್. ಲೋಕನಾಥ್',
  hi:'ನಮಸ್ಕಾರ, ',
- hudT:'ಆಶೀರ್ವಾದ',q_open:'ಬಾಗಿಲು ತೆರೆಯಿರಿ',q_diya:'ಐದು ದೀಪ ಬೆಳಗಿಸಿ',q_learn:'4 ಕಾರ್ಯಕ್ರಮಗಳನ್ನು ತಿಳಿಯಿರಿ',q_catch:'15 ಹೂಗಳನ್ನು ಹಿಡಿಯಿರಿ',q_quiz:'ಸಂಪ್ರದಾಯ ರಸಪ್ರಶ್ನೆ ಗೆಲ್ಲಿರಿ',q_swing:'ಊಂಜಲ್ ಅನ್ನು 10 ಬಾರಿ ತೂಗಿ',
+ hudT:'ಆಶೀರ್ವಾದ',q_open:'ಬಾಗಿಲು ತೆರೆಯಿರಿ',q_diya:'ಐದು ದೀಪ ಬೆಳಗಿಸಿ',q_learn:'4 ಕಾರ್ಯಕ್ರಮಗಳನ್ನು ತಿಳಿಯಿರಿ',q_catch:'15 ಹೂಗಳನ್ನು ಹಿಡಿಯಿರಿ',q_swing:'ಊಂಜಲ್ ಅನ್ನು 10 ಬಾರಿ ತೂಗಿ',
  r0:'ಅತಿಥಿ',r1:'ಹಿತೈಷಿ',r2:'ಗೌರವಾನ್ವಿತ ಅತಿಥಿ',r3:'ಆಶೀರ್ವಾದ ಭಾಗ್ಯ',got:'ಆಶೀರ್ವಾದ ನೀಡಿದ್ದೀರಿ',all:'ನೀವು ವಧೂವರರನ್ನು ಆಶೀರ್ವದಿಸಿದ್ದೀರಿ!',allSub:'ನಿಮ್ಮ ಕಾರ್ಡ್ ಪಡೆಯಲು ಒತ್ತಿ',
  playLbl:'ಆಟವಾಡಿ, ವಧೂವರರನ್ನು ಆಶೀರ್ವದಿಸಿ',playH:'ಔತಣಕ್ಕೂ ಮುನ್ನ ಒಂದು ಸಣ್ಣ ಆಟ',gameT:'ಹೂ ಹಿಡಿಯಿರಿ',gameD:'ತಟ್ಟೆಯನ್ನು ಸರಿಸಿ ಚೆಂಡು ಹೂ ಮತ್ತು ಮಲ್ಲಿಗೆ ಹಿಡಿಯಿರಿ. ಚಿನ್ನದ ಉಂಗುರಕ್ಕೆ 3 ಅಂಕ. 25 ಸೆಕೆಂಡ್ ಸಮಯ.',
  play:'ಆಡಿ',again:'ಮತ್ತೆ ಆಡಿ',score:'ಅಂಕ',best:'ಉತ್ತಮ',time:'ಸಮಯ',gameGoal:'ಆಶೀರ್ವದಿಸಲು 15 ಹಿಡಿಯಿರಿ',gameWin:'ಆಶೀರ್ವಾದ ನೀಡಿದ್ದೀರಿ!',gameTry:'ಸ್ವಲ್ಪದರಲ್ಲಿ ತಪ್ಪಿತು. 15 ಹಿಡಿಯಿರಿ.',
  swingT:'ಊಂಜಲ್ ತೂಗಿ',swingD:'ವಧೂವರರನ್ನು ತೂಗಲು ಉಯ್ಯಾಲೆಯನ್ನು ಒತ್ತಿ. ಹತ್ತು ಬಾರಿ ತೂಗಿ ಆಶೀರ್ವದಿಸಿ.',pushes:'ತೂಗು',
- quizT:'ಸಂಪ್ರದಾಯ ರಸಪ್ರಶ್ನೆ',quizWin:'ಆಶೀರ್ವಾದ ನೀಡಿದ್ದೀರಿ!',quizTry:'ಆಶೀರ್ವದಿಸಲು ಕನಿಷ್ಠ 2 ಸರಿ ಉತ್ತರಿಸಿ.',quizRetry:'ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ',
- certLbl:'ನಮ್ಮ ಕಡೆಯಿಂದ ನೆನಪಿನ ಕಾಣಿಕೆ',certH:'ನಿಮ್ಮ ಆಶೀರ್ವಾದ ಕಾರ್ಡ್',certLocked:'ಕಾರ್ಡ್ ತೆರೆಯಲು ಎಲ್ಲಾ 5 ಆಶೀರ್ವಾದ ನೀಡಿ',certName:'ನಿಮ್ಮ ಹೆಸರು',certDl:'ಕಾರ್ಡ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ',certShare:'ಕಾರ್ಡ್ ಹಂಚಿಕೊಳ್ಳಿ',shareTxt:'ಸಮೃದ್ಧಿ ಮತ್ತು ನಿಶಾಂತ್ ಅವರ ವಿವಾಹ, 24 ಮತ್ತು 25 ಡಿಸೆಂಬರ್ 2026. ನನ್ನ ಆಶೀರ್ವಾದ ಕಾರ್ಡ್:',shareSaved:'ಕಾರ್ಡ್ ಉಳಿಸಲಾಗಿದೆ. ವಾಟ್ಸ್‌ಆ್ಯಪ್‌ನಲ್ಲಿ ಲಗತ್ತಿಸಿ.',certDef:'ಅತಿಥಿ',addPhoto:'ನಿಮ್ಮ ಫೋಟೋ ಸೇರಿಸಿ (ಐಚ್ಛಿಕ)',rmPhoto:'ಫೋಟೋ ತೆಗೆಯಿರಿ',
+ 
+ certLbl:'ನಮ್ಮ ಕಡೆಯಿಂದ ನೆನಪಿನ ಕಾಣಿಕೆ',certH:'ನಿಮ್ಮ ಆಶೀರ್ವಾದ ಕಾರ್ಡ್',certLocked:'ಕಾರ್ಡ್ ತೆರೆಯಲು ಎಲ್ಲಾ 4 ಆಶೀರ್ವಾದ ನೀಡಿ',certName:'ನಿಮ್ಮ ಹೆಸರು',certDl:'ಕಾರ್ಡ್ ಡೌನ್‌ಲೋಡ್ ಮಾಡಿ',certShare:'ಕಾರ್ಡ್ ಹಂಚಿಕೊಳ್ಳಿ',shareTxt:'ಸಮೃದ್ಧಿ ಮತ್ತು ನಿಶಾಂತ್ ಅವರ ವಿವಾಹ, 24 ಮತ್ತು 25 ಡಿಸೆಂಬರ್ 2026. ನನ್ನ ಆಶೀರ್ವಾದ ಕಾರ್ಡ್:',shareSaved:'ಕಾರ್ಡ್ ಉಳಿಸಲಾಗಿದೆ. ವಾಟ್ಸ್‌ಆ್ಯಪ್‌ನಲ್ಲಿ ಲಗತ್ತಿಸಿ.',certDef:'ಅತಿಥಿ',addPhoto:'ನಿಮ್ಮ ಫೋಟೋ ಸೇರಿಸಿ (ಐಚ್ಛಿಕ)',rmPhoto:'ಫೋಟೋ ತೆಗೆಯಿರಿ',
  c1:'ಆಶೀರ್ವಾದ',cDear:'ಪ್ರಿಯ ',c3:'ಆಶೀರ್ವದಿಸಿದ್ದಕ್ಕಾಗಿ ಧನ್ಯವಾದಗಳು',c4:'ಎಂ.ಎಲ್.ಆರ್. ಕನ್ವೆನ್ಷನ್ ಸೆಂಟರ್, ಬೆಂಗಳೂರು',cLove:'ಪ್ರೀತಿಯಿಂದ,',
  wa:'',
 }};
@@ -699,7 +698,16 @@ $('#langBtn').onclick=function(){lang=lang==='en'?'kn':'en';try{localStorage.set
 /* personalised greeting via ?to=Name */
 var guestName='';
 try{guestName=(new URLSearchParams(location.search).get('to')||'').slice(0,40)}catch(e){}
-function setGuest(){var g=$('#guest');g.textContent=guestName?T[lang].hi+guestName:''}
+function setGuest(){
+  var g=$('#guest');
+  if(!guestName){g.innerHTML='';return}
+  g.innerHTML='<div class="gh"><i></i><span></span><i></i></div><svg aria-hidden="true"><defs><linearGradient id="gsh" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0"><stop offset="0" stop-color="#7a1424"/><stop offset=".38" stop-color="#A3121F"/><stop offset=".5" stop-color="#D9A441"/><stop offset=".62" stop-color="#A3121F"/><stop offset="1" stop-color="#7a1424"/><animateTransform attributeName="gradientTransform" type="translate" from="-300 0" to="300 0" dur="6s" begin="3.4s" repeatCount="indefinite"/></linearGradient></defs><text y="0"></text></svg><div class="gorn"><i></i><b></b><i></i></div>';
+  $('.gh span',g).textContent=T[lang].hi.replace(/[,\s]+$/,'');
+  g.setAttribute('role','text');g.setAttribute('aria-label',T[lang].hi+guestName);
+  var svg=$('svg',g),tx=$('text',g),gr=$('linearGradient',g);tx.textContent=guestName;tx.style.fill='url(#gsh)';
+  function fit(){var L=Math.max(180,Math.ceil(tx.getComputedTextLength())+40);svg.setAttribute('viewBox','0 -50 '+L+' 90');svg.style.setProperty('--w',L+'px');tx.setAttribute('x',L/2);gr.setAttribute('x2',L);var a=$('animateTransform',gr);a.setAttribute('from',-L+' 0');a.setAttribute('to',L+' 0')}
+  fit();if(document.fonts&&document.fonts.load)document.fonts.load('56px "Great Vibes"',guestName).then(fit).catch(function(){});
+}
 if(guestName)$('#who').value=guestName;
 
 /* ================= toran (mango leaves + marigolds) ================= */
@@ -891,7 +899,7 @@ function renderInk(){
 function openGate(){
   if(gate.classList.contains('open'))return;
   gate.classList.add('open');playMusic();
-  setTimeout(function(){document.body.classList.remove('lock');document.body.classList.add('ready');$('#hero').classList.add('in');unlock('open');burst(innerWidth*.2,innerHeight*.2,26);burst(innerWidth*.8,innerHeight*.2,26)},900);
+  setTimeout(function(){document.body.classList.remove('lock');document.body.classList.add('ready');$('#hero').classList.add('in');unlock('open');burst(innerWidth*.2,innerHeight*.2,26);burst(innerWidth*.8,innerHeight*.2,26);if(guestName)setTimeout(function(){var r=$('#guest').getBoundingClientRect();if(r.top>0&&r.top<innerHeight)burst(r.left+r.width/2,r.top+r.height/2,24)},3000)},900);
   setTimeout(function(){gate.remove()},2100);
 }
 gate.addEventListener('click',openGate);
@@ -936,7 +944,7 @@ addEventListener('scroll',function(){var h=document.documentElement;pg.style.wid
 
 
 /* ================= blessings (quests) ================= */
-var QK=['open','diya','catch','quiz','swing'],Q={},seen={},tt;
+var QK=['open','diya','catch','swing'],Q={},seen={},tt;
 try{Q=JSON.parse(localStorage.getItem('sn-q')||'{}')}catch(e){}
 function nDone(){return QK.filter(function(k){return Q[k]}).length}
 function renderQuests(){
@@ -946,7 +954,7 @@ function renderQuests(){
   var ul=$('#qlist');ul.innerHTML='';
   QK.forEach(function(k){
     var li=document.createElement('li');li.className=Q[k]?'done':'';li.innerHTML='<i>✓</i><span></span>';$('span',li).textContent=t['q_'+k];
-    li.onclick=function(){var tg={diya:'#lamp',catch:'#game',quiz:'#quiz',swing:'#swing'}[k];if(tg){$('#hud').classList.remove('open');$(tg).scrollIntoView({behavior:'smooth',block:'center'})}};
+    li.onclick=function(){var tg={diya:'#lamp',catch:'#game',swing:'#swing'}[k];if(tg){$('#hud').classList.remove('open');$(tg).scrollIntoView({behavior:'smooth',block:'center'})}};
     ul.appendChild(li);
   });
   $('#cert').classList.toggle('locked',n<QK.length);
@@ -1014,34 +1022,6 @@ $('#gameBtn').onclick=function(){gsize();gc.style.touchAction='none';G.on=true;G
 function gmove(e){var r=gc.getBoundingClientRect();G.bx=Math.max(.1,Math.min(.9,(e.clientX-r.left)/r.width))}
 gc.addEventListener('pointermove',gmove);gc.addEventListener('pointerdown',gmove);
 addEventListener('resize',function(){if(!G.on)gsize()});gsize();
-
-/* ================= quiz ================= */
-var QZ=[
- {a:0,en:{q:'Which ceremony has the couple seated on a decorated swing?',o:['Oonjal','Nalangu','Kashi Yatra']},kn:{q:'ಅಲಂಕೃತ ಉಯ್ಯಾಲೆಯಲ್ಲಿ ವಧೂವರರು ಕುಳಿತುಕೊಳ್ಳುವ ಶಾಸ್ತ್ರ ಯಾವುದು?',o:['ಊಂಜಲ್','ನಲಂಗು','ಕಾಶೀ ಯಾತ್ರೆ']}},
- {a:1,en:{q:'In the Kashi Yatra, who persuades the groom to return?',o:['The priest','The bride\'s father','His friends']},kn:{q:'ಕಾಶೀ ಯಾತ್ರೆಯಲ್ಲಿ ವರನನ್ನು ಮನವೊಲಿಸಿ ಮರಳಿ ಕರೆತರುವವರು ಯಾರು?',o:['ಪುರೋಹಿತರು','ವಧುವಿನ ತಂದೆ','ವರನ ಸ್ನೇಹಿತರು']}},
- {a:1,en:{q:'How many steps does the couple take in the saptapadi?',o:['Five','Seven','Nine']},kn:{q:'ಸಪ್ತಪದಿಯಲ್ಲಿ ವಧೂವರರು ಇಡುವ ಹೆಜ್ಜೆಗಳು ಎಷ್ಟು?',o:['ಐದು','ಏಳು','ಒಂಬತ್ತು']}}
-];
-var qi=0,qs=0,qLock=false;
-function renderQuiz(){
-  var t=T[lang],pr=$('#qProg'),qq=$('#qQ'),qo=$('#qO');pr.innerHTML='';qo.innerHTML='';
-  QZ.forEach(function(_,i){var d=document.createElement('i');if(i<=qi)d.className='on';pr.appendChild(d)});
-  if(qi>=QZ.length){
-    qq.innerHTML='<div class="qres"><div class="big"></div><p></p><button class="btn gold"></button></div>';
-    $('.big',qq).textContent=qs+'/'+QZ.length;$('p',qq).textContent=qs>=2?t.quizWin:t.quizTry;$('button',qq).textContent=t.quizRetry;
-    $('button',qq).onclick=function(){qi=0;qs=0;renderQuiz()};return;
-  }
-  var d=QZ[qi][lang];qq.textContent=d.q;
-  d.o.forEach(function(o,i){
-    var b=document.createElement('button');b.textContent=o;
-    b.onclick=function(){
-      if(qLock)return;qLock=true;var ok=i===QZ[qi].a;
-      $$('#qO button').forEach(function(x,j){x.disabled=true;if(j===QZ[qi].a)x.classList.add('ok');else if(x===b)x.classList.add('no')});
-      if(ok){qs++;bell(SCALE[4])}
-      setTimeout(function(){qLock=false;qi++;if(qi>=QZ.length&&qs>=2){unlock('quiz');var r=$('#quiz').getBoundingClientRect();burst(r.left+r.width/2,r.top+80,50)}renderQuiz()},1000);
-    };
-    qo.appendChild(b);
-  });
-}
 
 /* ================= oonjal swing ================= */
 var sw={a:0,w:0,n:0,run:false,last:0};
@@ -1205,7 +1185,7 @@ if('serviceWorker' in navigator&&location.protocol!=='file:')addEventListener('l
 var WISH={en:['Sri M. R. Diwakar','Smt. Mythily & Sri S. Gururaj & Family','Smt. Malathi & Sri K. V. Srinivas & Family','Smt. Jyothi & Sri K. V. Muralidhar & Family','Smt. Suman & Sri Savithru'],
  kn:['ಶ್ರೀ ಎಂ. ಆರ್. ದಿವಾಕರ್','ಶ್ರೀಮತಿ ಮೈಥಿಲಿ ಮತ್ತು ಶ್ರೀ ಎಸ್. ಗುರುರಾಜ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಮಾಲತಿ ಮತ್ತು ಶ್ರೀ ಕೆ. ವಿ. ಶ್ರೀನಿವಾಸ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಜ್ಯೋತಿ ಮತ್ತು ಶ್ರೀ ಕೆ. ವಿ. ಮುರಳೀಧರ್ ಹಾಗೂ ಕುಟುಂಬ','ಶ್ರೀಮತಿ ಸುಮನ್ ಮತ್ತು ಶ್ರೀ ಸವಿತ್ರು']};
 function renderWishes(){var ul=$('#wishes');ul.innerHTML='';WISH[lang].forEach(function(n){var li=document.createElement('li');li.textContent=n;ul.appendChild(li)})}
-function onLang(){renderWishes();renderQuests();gOv();renderQuiz();drawCert()}
+function onLang(){renderWishes();renderQuests();gOv();drawCert()}
 var FL=["italic 500 40px 'Cormorant Garamond'","40px Marcellus","40px 'Tiro Devanagari Sanskrit'","60px 'Great Vibes'","40px 'Noto Serif Kannada'"];
 function ensureFonts(){
   if(!(document.fonts&&document.fonts.load))return Promise.resolve();
