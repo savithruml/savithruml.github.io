@@ -165,7 +165,7 @@ body.kn #gate .medal .nm{font-family:'Noto Serif Kannada',serif;font-weight:600;
 .guest .gh i:last-child{background:linear-gradient(270deg,transparent,var(--gold))}
 body.kn .guest .gh{letter-spacing:.02em;text-transform:none;font-size:15px}
 .guest svg{display:block;margin:4px auto 0;width:min(88vw,var(--w));height:auto;overflow:visible;filter:drop-shadow(0 4px 12px rgba(163,18,31,.12))}
-.guest text{font-family:'Great Vibes','Noto Serif Kannada',cursive;font-size:56px;text-anchor:middle;fill-opacity:0;stroke:var(--gold-d);stroke-width:1.1;stroke-linejoin:round;stroke-dasharray:420;stroke-dashoffset:420}
+.guest text{font-family:'Great Vibes','Noto Serif Kannada',cursive;font-size:38px;text-anchor:middle;fill-opacity:0;stroke:var(--gold-d);stroke-width:1.1;stroke-linejoin:round;stroke-dasharray:420;stroke-dashoffset:420}
 #hero.in .guest text{animation:inkdraw 2.2s cubic-bezier(.45,.05,.35,1) 1.4s forwards,inkfill 1s ease 3.1s forwards}
 .guest .gorn{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;opacity:0;transition:opacity 1.2s ease 3.2s}
 #hero.in .guest .gorn{opacity:1}
@@ -705,8 +705,8 @@ function setGuest(){
   $('.gh span',g).textContent=T[lang].hi.replace(/[,\s]+$/,'');
   g.setAttribute('role','text');g.setAttribute('aria-label',T[lang].hi+guestName);
   var svg=$('svg',g),tx=$('text',g),gr=$('linearGradient',g);tx.textContent=guestName;tx.style.fill='url(#gsh)';
-  function fit(){var L=Math.max(180,Math.ceil(tx.getComputedTextLength())+40);svg.setAttribute('viewBox','0 -50 '+L+' 90');svg.style.setProperty('--w',L+'px');tx.setAttribute('x',L/2);gr.setAttribute('x2',L);var a=$('animateTransform',gr);a.setAttribute('from',-L+' 0');a.setAttribute('to',L+' 0')}
-  fit();if(document.fonts&&document.fonts.load)document.fonts.load('56px "Great Vibes"',guestName).then(fit).catch(function(){});
+  function fit(){var L=Math.max(180,Math.ceil(tx.getComputedTextLength())+28);svg.setAttribute('viewBox','0 -34 '+L+' 60');svg.style.setProperty('--w',L+'px');tx.setAttribute('x',L/2);gr.setAttribute('x2',L);var a=$('animateTransform',gr);a.setAttribute('from',-L+' 0');a.setAttribute('to',L+' 0')}
+  fit();if(document.fonts&&document.fonts.load)document.fonts.load('38px "Great Vibes"',guestName).then(fit).catch(function(){});
 }
 if(guestName)$('#who').value=guestName;
 
