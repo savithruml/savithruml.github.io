@@ -780,12 +780,12 @@ var lit=0;
 })();
 function light(d){
   if(d.classList.contains('lit'))return;
-  d.classList.add('lit');lit++;tickSnd();
+  d.classList.add('lit');lit++;
   $$('#count i').forEach(function(c,i){c.classList.toggle('on',i<lit)});
   $('#lamp').style.setProperty('--glow',lit/5);
   var r=d.getBoundingClientRect();burst(r.left+r.width/2,r.top+r.height*.3,8,true);
   if(lit===5){
-    setTimeout(function(){$('#bless').classList.add('show');burst(innerWidth/2,innerHeight*.3,70);chime()},500);
+    setTimeout(function(){$('#bless').classList.add('show');burst(innerWidth/2,innerHeight*.3,70)},500);
     $('.hint',$('#lamp')).style.opacity=0;unlock('diya');
   }
 }
@@ -817,34 +817,11 @@ function loop(){
   if(P.length)requestAnimationFrame(loop);else{run=false;cx.clearRect(0,0,innerWidth,innerHeight)}
 }
 
-/* ================= sound: background music + bell sfx ================= */
+/* ================= sound: background music only ================= */
 var AC=null,sndOn=true,MV=.13,bgm=new Audio('assets/music.mp3'),fade=null,started=false;
 try{if(localStorage.getItem('sn-snd')==='0')sndOn=false}catch(e){}
 bgm.loop=true;bgm.preload='none';bgm.volume=0;
 function ctx(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}return AC}
-var REV=null,SCALE=[523.25,587.33,659.25,783.99,880,1046.5,1174.66,1318.5];
-function rev(){
-  if(REV)return REV;var n=AC.sampleRate*2.2,buf=AC.createBuffer(2,n,AC.sampleRate);
-  for(var c=0;c<2;c++){var d=buf.getChannelData(c);for(var i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3.2)}
-  var cv=AC.createConvolver();cv.buffer=buf;var w=AC.createGain();w.gain.value=.55;cv.connect(w).connect(AC.destination);REV=cv;return cv;
-}
-/* soft chime: mellow near-harmonic partials, gentle attack, airy reverb tail */
-function bell(f,vol){
-  if(!sndOn||!ctx())return;if(AC.state==='suspended')AC.resume();
-  if(f<500)f*=2;
-  var t=AC.currentTime,out=AC.createGain();out.gain.value=(vol||1)*.2;out.connect(AC.destination);out.connect(rev());
-  [[1,1,1.9],[2.005,.28,1.2],[3.01,.1,.7],[4.2,.04,.4],[6.01,.05,.9],[8.02,.03,.6]].forEach(function(p,i){
-    var o=AC.createOscillator(),g=AC.createGain();o.type='sine';o.frequency.value=f*p[0];
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.2*p[1],t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+p[2]);
-    o.connect(g).connect(out);o.start(t);o.stop(t+p[2]+.1);
-  });
-}
-function tickSnd(){
-  if(!sndOn||!ctx())return;if(AC.state==='suspended')AC.resume();var t=AC.currentTime;
-  var o=AC.createOscillator(),g=AC.createGain();o.type='triangle';o.frequency.setValueAtTime(1500,t);o.frequency.exponentialRampToValueAtTime(900,t+.05);
-  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.05,t+.004);g.gain.exponentialRampToValueAtTime(.0001,t+.07);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+.09);
-}
-function chime(){[0,1,2,3,4,5,6,7].forEach(function(i){setTimeout(function(){bell(SCALE[i]*(i>4?1:.5),.8)},i*140)})}
 var cur=0,bgmG=null;
 /* iPhones ignore audio.volume, so music is routed through a Web Audio gain node, which they do honour */
 function wireBgm(){if(bgmG||!ctx())return;try{var g=AC.createGain();g.gain.value=0;AC.createMediaElementSource(bgm).connect(g);g.connect(AC.destination);bgmG=g;bgm.volume=1}catch(e){bgmG=null}}
@@ -870,7 +847,7 @@ function syncSnd(){$('#w1').style.opacity=sndOn?1:.15}
 $('#sndBtn').onclick=function(){
   sndOn=!sndOn;try{localStorage.setItem('sn-snd',sndOn?'1':'0')}catch(e){}
   syncSnd();
-  if(sndOn){playMusic();bell(660)}else fadeTo(0,function(){bgm.pause()});
+  if(sndOn){playMusic()}else fadeTo(0,function(){bgm.pause()});
 };
 document.addEventListener('visibilitychange',function(){if(!started||!sndOn)return;if(document.hidden)bgm.pause();else{cur=0;var p=bgm.play();if(p&&p.catch)p.catch(function(){});fadeTo(MV,null,3)}});
 syncSnd();
@@ -964,8 +941,8 @@ function toast(h,sub,fn){var e=$('#toast');e.innerHTML='<small></small><span></s
 function unlock(k){
   if(Q[k])return;Q[k]=1;try{localStorage.setItem('sn-q',JSON.stringify(Q))}catch(e){}
   renderQuests();var t=T[lang],n=nDone();
-  if(n===QK.length){setTimeout(function(){toast(t.all,t.allSub,function(){$('#cert').scrollIntoView({behavior:'smooth'});$('#toast').classList.remove('show')});burst(innerWidth/2,innerHeight*.3,110);chime()},700)}
-  else setTimeout(function(){toast(t.got+' · '+n+'/'+QK.length,t['q_'+k]);burst(60,40,14,true);if(k!=='diya')bell(SCALE[2],.6)},k==='open'?2600:300);
+  if(n===QK.length){setTimeout(function(){toast(t.all,t.allSub,function(){$('#cert').scrollIntoView({behavior:'smooth'});$('#toast').classList.remove('show')});burst(innerWidth/2,innerHeight*.3,110)},700)}
+  else setTimeout(function(){toast(t.got+' · '+n+'/'+QK.length,t['q_'+k]);burst(60,40,14,true)},k==='open'?2600:300);
 }
 $('#hudBtn').onclick=function(){var h=$('#hud'),o=h.classList.toggle('open');this.setAttribute('aria-expanded',o)};
 document.addEventListener('click',function(e){if(!e.target.closest('#hud'))$('#hud').classList.remove('open')});
@@ -1006,7 +983,7 @@ function gloop(ts){
   var bx=G.bx*G.W,by=G.H-34;
   for(var i=G.items.length-1;i>=0;i--){
     var it=G.items[i];it.y+=it.v*dt;it.a+=it.w*dt;
-    if(it.y>by-12&&it.y<by+16&&Math.abs(it.x-bx)<46){G.sc+=it.k===3?3:1;$('#gScore').textContent=G.sc;burst(gc.getBoundingClientRect().left+it.x,gc.getBoundingClientRect().top+it.y,6,true);if(it.k===3)bell(SCALE[6],.6);G.items.splice(i,1);continue}
+    if(it.y>by-12&&it.y<by+16&&Math.abs(it.x-bx)<46){G.sc+=it.k===3?3:1;$('#gScore').textContent=G.sc;burst(gc.getBoundingClientRect().left+it.x,gc.getBoundingClientRect().top+it.y,6,true);G.items.splice(i,1);continue}
     if(it.y>G.H+30)G.items.splice(i,1);
   }
   $('#gTime').textContent=Math.max(0,Math.ceil(G.left));gdraw();
@@ -1034,7 +1011,7 @@ function swFrame(ts){
 $('#swing').addEventListener('click',function(e){
   sw.w+=(sw.w>=0?1:-1)*(sw.n===0?30:26);sw.w=Math.max(-70,Math.min(70,sw.w));
   if(!sw.run){sw.run=true;sw.last=performance.now();requestAnimationFrame(swFrame)}
-  sw.n++;$('#swN').textContent=Math.min(sw.n,10)+'/10';bell(SCALE[(sw.n-1)%5]*.5,.7);burst(e.clientX,e.clientY,5,true);
+  sw.n++;$('#swN').textContent=Math.min(sw.n,10)+'/10';burst(e.clientX,e.clientY,5,true);
   if(sw.n===10){unlock('swing');burst(e.clientX,e.clientY,40)}
 });
 
