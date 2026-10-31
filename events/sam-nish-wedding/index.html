@@ -165,9 +165,9 @@ body.kn #gate .medal .nm{font-family:'Noto Serif Kannada',serif;font-weight:600;
 .guest .gh i{width:36px;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
 .guest .gh i:last-child{background:linear-gradient(270deg,transparent,var(--gold))}
 body.kn .guest .gh{letter-spacing:.02em;text-transform:none;font-size:15px}
-.guest svg{display:block;margin:4px auto 0;width:min(88vw,var(--w));height:auto;overflow:visible;filter:drop-shadow(0 4px 12px rgba(163,18,31,.12))}
-.guest text{font-family:'Cormorant Garamond','Noto Serif Kannada',serif;font-weight:600;font-size:31px;letter-spacing:.02em;text-anchor:middle;fill-opacity:0;stroke:var(--gold-d);stroke-width:.7;stroke-linejoin:round;stroke-dasharray:420;stroke-dashoffset:420}
-#hero.in .guest text{animation:inkdraw 2.2s cubic-bezier(.45,.05,.35,1) 1.4s forwards,inkfill 1s ease 3.1s forwards}
+.guest .gn{font-family:var(--serif);font-weight:600;font-size:31px;letter-spacing:.02em;line-height:1.25;margin:4px auto 0;padding:0 14px;max-width:92vw;overflow-wrap:anywhere;color:#7a1424;text-shadow:none;text-transform:capitalize;opacity:0;transform:translateY(8px)}
+#hero.in .guest .gn{animation:gnIn 1.5s ease 1.4s forwards}
+@keyframes gnIn{to{opacity:1;transform:none}}
 .guest .gorn{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:6px;opacity:0;transition:opacity 1.2s ease 3.2s}
 #hero.in .guest .gorn{opacity:1}
 .guest .gorn i{width:60px;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
@@ -380,7 +380,8 @@ body{-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
 @media (prefers-reduced-motion:reduce){
   *{animation-duration:.01s!important;animation-iteration-count:1!important;transition-duration:.01s!important}
   html{scroll-behavior:auto}
-  .ink path,.guest text{animation-delay:0s!important;stroke-dashoffset:0;fill-opacity:1}
+  .ink path{animation-delay:0s!important;stroke-dashoffset:0;fill-opacity:1}
+  .guest .gn{animation:none!important;opacity:1;transform:none}
   .guest .gorn{opacity:1;transition:none}
 }
 
@@ -702,12 +703,10 @@ try{guestName=(new URLSearchParams(location.search).get('to')||'').slice(0,40)}c
 function setGuest(){
   var g=$('#guest');
   if(!guestName){g.innerHTML='';return}
-  g.innerHTML='<div class="gh"><i></i><span></span><i></i></div><svg aria-hidden="true"><defs><linearGradient id="gsh" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="300" y2="0"><stop offset="0" stop-color="#7a1424"/><stop offset=".38" stop-color="#A3121F"/><stop offset=".5" stop-color="#D9A441"/><stop offset=".62" stop-color="#A3121F"/><stop offset="1" stop-color="#7a1424"/><animateTransform attributeName="gradientTransform" type="translate" from="-300 0" to="300 0" dur="6s" begin="3.4s" repeatCount="indefinite"/></linearGradient></defs><text y="0"></text></svg><div class="gorn"><i></i><b></b><i></i></div>';
+  g.innerHTML='<div class="gh"><i></i><span></span><i></i></div><div class="gn"></div><div class="gorn"><i></i><b></b><i></i></div>';
   $('.gh span',g).textContent=T[lang].hi.replace(/[,\s]+$/,'');
+  $('.gn',g).textContent=guestName;
   g.setAttribute('role','text');g.setAttribute('aria-label',T[lang].hi+guestName);
-  var svg=$('svg',g),tx=$('text',g),gr=$('linearGradient',g);tx.textContent=guestName;tx.style.fill='url(#gsh)';
-  function fit(){var L=Math.max(180,Math.ceil(tx.getComputedTextLength())+28);svg.setAttribute('viewBox','0 -34 '+L+' 60');svg.style.setProperty('--w',L+'px');tx.setAttribute('x',L/2);gr.setAttribute('x2',L);var a=$('animateTransform',gr);a.setAttribute('from',-L+' 0');a.setAttribute('to',L+' 0')}
-  fit();if(document.fonts&&document.fonts.load)document.fonts.load('600 31px "Cormorant Garamond"',guestName).then(fit).catch(function(){});
 }
 if(guestName)$('#who').value=guestName;
 
@@ -819,17 +818,13 @@ function loop(){
 }
 
 /* ================= sound: background music only ================= */
-var AC=null,sndOn=true,MV=.13,bgm=new Audio('assets/music.mp3'),fade=null,started=false;
+var sndOn=true,MV=1,bgm=new Audio('assets/music.mp3?v=2'),fade=null,started=false;
 try{if(localStorage.getItem('sn-snd')==='0')sndOn=false}catch(e){}
 bgm.loop=true;bgm.preload='none';bgm.volume=0;
-function ctx(){if(!AC){try{AC=new (window.AudioContext||window.webkitAudioContext)()}catch(e){}}return AC}
-var cur=0,bgmG=null;
-/* iPhones ignore audio.volume, so music is routed through a Web Audio gain node, which they do honour */
-function wireBgm(){if(bgmG||!ctx())return;try{var g=AC.createGain();g.gain.value=0;AC.createMediaElementSource(bgm).connect(g);g.connect(AC.destination);bgmG=g;bgm.volume=1}catch(e){bgmG=null}}
-function setVol(v){v=Math.max(0,Math.min(1,v));if(bgmG)bgmG.gain.value=v;else bgm.volume=v}
-/* master level (cur) is faded slowly; a second envelope fades the loop's tail out and its head in so the repeat is seamless */
-function applyVol(){var d=bgm.duration,e=1;if(d&&isFinite(d)){var ct=bgm.currentTime;e=Math.max(0,Math.min(1,ct/3,(d-ct)/4))}setVol(cur*e)}
-setInterval(applyVol,100);
+var cur=0;
+/* plain <audio> only: routing through Web Audio made iPhones drift in speed. The file itself is mastered quiet with the loop's head/tail fades baked in; where the browser honours audio.volume (not iPhones) the start/stop fades use it */
+function setVol(v){bgm.volume=Math.max(0,Math.min(1,v))}
+function applyVol(){setVol(cur)}
 function fadeTo(v,done,secs){
   clearInterval(fade);
   var from=cur,t0=Date.now(),ms=(secs||(v>cur?5:2.5))*1000;
@@ -840,7 +835,7 @@ function fadeTo(v,done,secs){
   },50);
 }
 function playMusic(){
-  if(!sndOn)return;started=true;wireBgm();if(AC&&AC.state==='suspended')AC.resume();
+  if(!sndOn)return;started=true;
   var p=bgm.play();if(p&&p.catch)p.catch(function(){});
   fadeTo(MV);
 }
