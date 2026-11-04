@@ -689,9 +689,9 @@ function applyLang(){
 }
 $('#langBtn').onclick=function(){lang=lang==='en'?'kn':'en';try{localStorage.setItem('sn-lang',lang)}catch(e){}applyLang()};
 
-/* personalised greeting via ?to=Name */
+/* personalised greeting via ?to=Name (also Savi_and_Suman, Savi-and-Suman, Savi%20%26%20Suman) */
 var guestName='';
-try{guestName=(new URLSearchParams(location.search).get('to')||'').slice(0,40)}catch(e){}
+try{guestName=(new URLSearchParams(location.search).get('to')||'').replace(/_+/g,' ').replace(/[\s-]+and[\s-]+/gi,' & ').replace(/\s+/g,' ').trim().slice(0,40)}catch(e){}
 function setGuest(){
   var g=$('#guest');
   if(!guestName){g.innerHTML='';return}
