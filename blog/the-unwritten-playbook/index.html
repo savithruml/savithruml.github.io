@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The unwritten playbook</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta property="og:title" content="The unwritten playbook" />
+    <meta property="og:description" content="Nobody hands you the rules. You pick them up from the wreckage of things you tried." />
+    <meta property="og:image" content="https://savithruml.github.io/blog/the-unwritten-playbook/images/og-image.png" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://savithruml.github.io/blog/the-unwritten-playbook/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="The unwritten playbook" />
+    <meta name="twitter:description" content="Nobody hands you the rules. You pick them up from the wreckage of things you tried." />
+    <meta name="twitter:image" content="https://savithruml.github.io/blog/the-unwritten-playbook/images/og-image.png" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --bg: #0a0a0a;
+            --text: #b0b0b0;
+            --heading: #f0f0f0;
+            --subheading: #ddd;
+            --meta: #555;
+            --em: #888;
+            --strong: #ddd;
+            --border: #181818;
+            --border-bright: #555;
+            --author-name: #f0f0f0;
+            --list-marker: #444;
+            --footer-text: #f0f0f0;
+            --copyright: #888;
+            --toggle-bg: #222;
+            --toggle-color: #f0f0f0;
+            --img-opacity: 0.9;
+            --img-bg: transparent;
+            --x-bg: #000;
+            --x-border: #333;
+        }
+
+        [data-theme="light"] {
+            --bg: #fafafa;
+            --text: #444;
+            --heading: #111;
+            --subheading: #222;
+            --meta: #888;
+            --em: #666;
+            --strong: #222;
+            --border: #e0e0e0;
+            --border-bright: #ccc;
+            --author-name: #111;
+            --list-marker: #aaa;
+            --footer-text: #222;
+            --copyright: #888;
+            --toggle-bg: #e8e8e8;
+            --toggle-color: #222;
+            --img-opacity: 1;
+            --img-bg: #f0f0f0;
+            --x-bg: #f0f0f0;
+            --x-border: #ccc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.85;
+            font-size: 17px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .header {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 2rem;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.3;
+            color: var(--heading);
+            margin-bottom: 0.8rem;
+        }
+        .meta { color: var(--text); font-size: 0.85rem; }
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 1.5rem 1.5rem 5rem;
+        }
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 2.5rem 0 0.8rem;
+            color: var(--subheading);
+        }
+        p { margin-bottom: 1.3rem; }
+        strong { color: var(--strong); }
+        em { color: var(--em); }
+        a { color: var(--strong); }
+        .author-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.2rem;
+        }
+        .author-card img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .author-card .author-name {
+            color: var(--author-name);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .author-card .author-name:hover { text-decoration: underline; }
+        .blog-img {
+            width: 100%;
+            border-radius: 8px;
+            margin: 2rem 0;
+            opacity: var(--img-opacity);
+            background: var(--img-bg);
+            transition: opacity 0.3s;
+        }
+        .separator {
+            border: none;
+            border-top: 1px solid var(--border-bright);
+            margin: 0 0 1.5rem;
+        }
+        .social-footer {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+            text-align: center;
+        }
+        .social-footer .copyright {
+            color: var(--copyright);
+            font-size: 0.75rem;
+        }
+        .blog-footer-text {
+            text-align: center;
+            margin: 3rem 0 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .blog-footer-text p {
+            color: var(--footer-text);
+            font-size: 0.8rem;
+            margin: 0;
+        }
+        .share-section {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            text-align: center;
+        }
+        .share-section p {
+            color: var(--text);
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .share-btn:hover { opacity: 0.85; }
+        .share-btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .share-btn.x { background: var(--x-bg); color: var(--toggle-color); border: 1px solid var(--x-border); }
+        .share-btn.whatsapp { background: #25D366; color: #fff; }
+        .share-btn.linkedin { background: #0A66C2; color: #fff; }
+        .theme-toggle {
+            background: var(--toggle-bg);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: background 0.3s;
+            color: var(--toggle-color);
+            position: absolute;
+            top: 3rem;
+            right: 1.5rem;
+        }
+        .theme-toggle:hover { opacity: 0.8; }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.6rem; }
+            body { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button>
+        <h1>The unwritten playbook</h1>
+        <p class="meta">November 19, 2026</p>
+        <div class="author-card">
+            <img src="images/dp.jpeg" alt="Savithru Lokanath">
+            <div class="author-info">
+                <a href="https://savithruml.github.io/" class="author-name">Savithru Lokanath</a>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+
+        <hr class="separator">
+
+        <p>Nobody hands you a playbook when you start out. There's no PDF titled <em>"How to Actually Succeed in Tech"</em> that your manager emails on day one. You just show up, start shipping code, and slowly realize that the stuff that separates people who grow from people who plateau has almost nothing to do with technical ability.</p>
+
+        <p>I've been on both sides of the table. I've been the new engineer who didn't know when to speak up. And I've been the person across the table, reviewing resumes, running interviews, deciding who gets the next project. What follows isn't theory. It's scar tissue. Lessons I picked up the hard way, from working on teams that built things at ridiculous scale, and from watching the people who made it look easy.</p>
+
+        <p>If you're early in your career, or even mid-career and feeling stuck, this might save you a few bruises.</p>
+
+        <h2>Break things. Then don't break them again.</h2>
+
+        <img src="images/fail-fast.png" alt="Glass shattering in frozen time" class="blog-img">
+
+        <p>There's a phrase that gets thrown around in tech: <em>fail fast</em>. It sounds like permission to be reckless. It's not. It's permission to be <strong>brave</strong>.</p>
+
+        <p>The best engineers I've worked with aren't the ones who never break anything. They're the ones who break things <em>early</em>, when the blast radius is small, and then build the scar tissue so they never break that same thing again. The first mistake is tuition. The second is a choice.</p>
+
+        <p>Some environments punish failure harshly. I get that. If you're working on firmware for a medical device or deploying safety-critical systems, you don't get to "move fast and break things." The stakes are real. But even in those environments, the principle holds. You build fast prototypes in sandboxes. You spike before you commit. You find the landmines on the map before you walk the field.</p>
+
+        <p>The engineers who stall out are the ones so afraid of getting it wrong that they never ship anything at all. They polish drafts forever. They wait for certainty that never arrives. Meanwhile, the person at the next desk shipped a rough version, got feedback, iterated, and is now three versions ahead.</p>
+
+        <p><strong>The lesson:</strong> failure isn't the enemy. Repeated failure is. Break things once, learn aggressively, and move forward with better instincts.</p>
+
+        <h2>Be the weird one in the room</h2>
+
+        <img src="images/curiosity.png" alt="A figure at the edge of an uncharted map" class="blog-img">
+
+        <p>I've noticed a pattern. The people who end up doing the most interesting work are the ones who were doing something slightly off-script. They weren't following the standard career template. They were tinkering with something on the side that nobody asked them to tinker with.</p>
+
+        <p>When everyone on your team is learning the same framework, building the same CRUD apps, reading the same blog posts — you're competing on the same axis as everyone else. That's a crowded race. The edge comes from curiosity that takes you somewhere nobody else went.</p>
+
+        <p>With AI, this has gotten absurdly accessible. You can prototype something in an afternoon that would have taken a team weeks five years ago. You can build a working demo of an idea before your standup tomorrow morning. The barrier to exploring a weird idea isn't time or skill anymore. It's <em>willingness</em>.</p>
+
+        <p>The intern who built a side project using a tool nobody on the team had heard of? That's the person who gets remembered. Not because the project was production-ready, but because it showed something that no resume can: <strong>genuine curiosity</strong>.</p>
+
+        <p>Don't just do what your peers are doing. Do what your peers aren't brave enough to try.</p>
+
+        <h2>Grab the wheel</h2>
+
+        <img src="images/ownership.png" alt="A hand reaching for the wheel of a ship" class="blog-img">
+
+        <p>Here's something that separates junior engineers from senior ones, and it has nothing to do with years of experience: <strong>ownership</strong>.</p>
+
+        <p>A junior engineer waits to be told what to do. A senior engineer sees what needs doing and does it. That's the whole difference. It's not about title or tenure. I've seen interns with more ownership instinct than people with a decade of experience.</p>
+
+        <p>When something is broken and nobody's assigned to fix it — fix it. When a document is out of date and everyone keeps complaining — update it. When the team needs a decision and everyone's looking around the room waiting for someone else to speak — speak.</p>
+
+        <p>There's a specific kind of career gravity that pulls people upward, and it has nothing to do with asking for promotions. It's the accumulated weight of moments where you stepped up when you didn't have to. People notice. Managers notice. And when it's time to staff the next high-visibility project, the person who's been quietly taking ownership is the first name on the list.</p>
+
+        <p>Don't wait for the tap on the shoulder. Just start.</p>
+
+        <h2>Be useful, not impressive</h2>
+
+        <img src="images/humility.png" alt="One hand pulling another up from darkness" class="blog-img">
+
+        <p>Tech has an ego problem. There's a certain archetype: the brilliant jerk. The 10x engineer who writes beautiful code but makes everyone around them feel small. Teams tolerate them because they ship, but they leave a trail of people who quietly update their resumes.</p>
+
+        <p>Here's what I've learned: <strong>helpfulness compounds faster than brilliance.</strong></p>
+
+        <p>The engineer who stays late to help a teammate debug a gnarly issue. The senior who takes 30 minutes to explain a concept instead of just fixing it themselves. The person who writes the onboarding doc that nobody asked for but everyone needed. These people build something that no amount of raw talent can replicate: trust.</p>
+
+        <p>And trust is the real currency. It's what gets you pulled into the important rooms. Not because you're the smartest person, but because people know you'll make the room better.</p>
+
+        <p>Offer help. Be humble. There's no version of a long career in tech where being a jerk ages well.</p>
+
+        <h2>Own the crater</h2>
+
+        <p>Everyone makes mistakes. Everyone. The CEO who approved that bad acquisition. The staff engineer who pushed a config change that took down production. The intern who accidentally emailed the entire company. Mistakes are not optional. They're structural.</p>
+
+        <p>What matters — the <em>only</em> thing that matters — is what you do next.</p>
+
+        <p>The people who own their mistakes earn something that perfection never can: <strong>credibility</strong>. When you stand up in a postmortem and say <em>"I caused this, here's what happened, here's what I've done so it won't happen again"</em>, something shifts. People stop seeing the mistake and start seeing the character.</p>
+
+        <p>To err is human. But to own it publicly, learn from it viscerally, and build systems so it can't recur? That's how you earn the kind of trust that promotions are built on.</p>
+
+        <p>The engineers who hide their mistakes get caught eventually. And when they do, the cover-up costs more than the original error ever would have. Own the crater. Fill it in. Build something on top of it.</p>
+
+        <h2>Play the game, not the score</h2>
+
+        <p>There's a temptation in any career to optimize for metrics. Promotions per year. Salary jumps. Title inflation. LinkedIn impressions. The <em>score</em>.</p>
+
+        <p>The problem with playing the score is that it makes you fragile. You start choosing projects based on visibility instead of interest. You avoid risky bets because they might not pay off in the next review cycle. You stop learning and start performing.</p>
+
+        <p>The people who build the most remarkable careers are the ones who got so absorbed in the <em>game</em> — the actual work, the craft, the problem-solving — that the score took care of itself. They didn't chase promotions. They got promoted because they were clearly operating at the next level and everybody could see it.</p>
+
+        <p>Focus on getting better. Do work you're proud of. Solve problems that genuinely excite you. The scoreboard updates on its own when you're actually playing well.</p>
+
+        <h2>Be the navigator, not the ballast</h2>
+
+        <img src="images/navigator.png" alt="Rally co-driver view through a windshield at night" class="blog-img">
+
+        <p>If you've ever watched rally racing, you know the driver doesn't win alone. There's a co-driver in the passenger seat reading pace notes at inhuman speed: <em>"Left four, tightens, don't cut, right two over crest, sixty, left three into hairpin."</em> The driver's hands are on the wheel, but the navigator is the reason they don't fly off a cliff.</p>
+
+        <p>That's what good team members do. When someone is leading a project, they don't need a passenger. They need a <strong>navigator</strong>. Someone who's looking ahead, calling out risks, flagging the next corner before the team hits it.</p>
+
+        <p>This means being vocal. If you see a problem coming, say so. If you disagree with a technical decision, speak up <em>before</em> it ships, not after it fails. If someone asks for feedback, give real feedback — not a polite nod that helps nobody.</p>
+
+        <p>As someone who's been in the driver's seat many times, I can tell you: the worst thing in a team isn't someone who pushes back. It's someone who says nothing. Dead weight in a rally car doesn't just slow you down. It gets you both off the road.</p>
+
+        <p>Be the person who says <em>"sharp left in 200 meters."</em> Even if the driver doesn't love hearing it. Especially then.</p>
+
+        <h2>The playbook writes itself</h2>
+
+        <p>None of this is groundbreaking. That's the point. The difference between people who grow and people who plateau isn't secret knowledge. It's <strong>consistency</strong>. It's doing these small things over and over until they stop being effort and start being instinct.</p>
+
+        <p>Fail fast, but don't repeat. Stay curious when it's easier to coast. Take ownership before you're asked. Help people without keeping score. Own your mistakes louder than your wins. Play the game, not the scoreboard. And for the love of all things good, be a navigator.</p>
+
+        <p>The playbook isn't written in any book. It's written in the scar tissue of trying, failing, recalibrating, and showing up again tomorrow.</p>
+
+        <p>That's the whole trick. There is no trick.</p>
+
+        <div class="blog-footer-text">
+            <p>No playbook, just wreckage reassembled into wisdom. Ship it. 🚀</p>
+        </div>
+
+    </div>
+
+    <div class="share-section">
+        <p>Support a claw, share this post</p>
+        <div class="share-buttons">
+            <a class="share-btn x" href="https://x.com/intent/tweet?url=https://savithruml.github.io/blog/the-unwritten-playbook/&text=The%20unwritten%20playbook" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                Post
+            </a>
+            <a class="share-btn whatsapp" href="https://wa.me/?text=The%20unwritten%20playbook%20%E2%80%94%20https://savithruml.github.io/blog/the-unwritten-playbook/" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Share
+            </a>
+            <a class="share-btn linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https://savithruml.github.io/blog/the-unwritten-playbook/" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                Share
+            </a>
+        </div>
+    </div>
+
+    <div style="height:2rem;"></div>
+
+    <div class="social-footer">
+        <p class="copyright">Savithru Lokanath &copy; 2026</p>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', next === 'dark' ? '' : 'light');
+            if (next === 'dark') html.removeAttribute('data-theme');
+            localStorage.setItem('theme', next);
+            updateToggleIcon(next);
+        }
+
+        function updateToggleIcon(theme) {
+            const btn = document.querySelector('.theme-toggle');
+            btn.textContent = theme === 'light' ? '☀️' : '🌙';
+        }
+
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            if (saved === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+            updateToggleIcon(saved);
+        })();
+    </script>
+</body>
+</html>
