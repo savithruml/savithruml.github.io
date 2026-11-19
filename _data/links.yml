@@ -3,6 +3,15 @@
 - url: "/blog/pace-notes/"
   description: "Pace notes"
 
+- url: "/blog/the-second-brain-problem/"
+  description: "The second brain problem"
+
+- url: "/blog/the-inherited-context/"
+  description: "The inherited context"
+
+- url: "/blog/the-toolkit/"
+  description: "The toolkit"
+
 - url: "/blog/a-signed-handshake/"
   description: "A signed handshake"
 

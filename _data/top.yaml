@@ -9,9 +9,6 @@
 - url: "/blog/the-inherited-context/"
   description: "The inherited context"
 
-- url: "/apps/surge/"
-  description: "Surge: A GPU datacenter tycoon game"
-
 - url: "/blog/the-toolkit/"
   description: "The toolkit"
 
