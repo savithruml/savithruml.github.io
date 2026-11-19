@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pace notes</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <meta property="og:title" content="Pace notes" />
+    <meta property="og:description" content="Nobody hands you the rules. You pick them up from the wreckage of things you tried." />
+    <meta property="og:image" content="https://savithruml.github.io/blog/pace-notes/images/og-image.png" />
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://savithruml.github.io/blog/pace-notes/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pace notes" />
+    <meta name="twitter:description" content="Nobody hands you the rules. You pick them up from the wreckage of things you tried." />
+    <meta name="twitter:image" content="https://savithruml.github.io/blog/pace-notes/images/og-image.png" />
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --bg: #0a0a0a;
+            --text: #b0b0b0;
+            --heading: #f0f0f0;
+            --subheading: #ddd;
+            --meta: #555;
+            --em: #888;
+            --strong: #ddd;
+            --border: #181818;
+            --border-bright: #555;
+            --author-name: #f0f0f0;
+            --list-marker: #444;
+            --footer-text: #f0f0f0;
+            --copyright: #888;
+            --toggle-bg: #222;
+            --toggle-color: #f0f0f0;
+            --img-opacity: 0.9;
+            --img-bg: transparent;
+            --x-bg: #000;
+            --x-border: #333;
+        }
+
+        [data-theme="light"] {
+            --bg: #fafafa;
+            --text: #444;
+            --heading: #111;
+            --subheading: #222;
+            --meta: #888;
+            --em: #666;
+            --strong: #222;
+            --border: #e0e0e0;
+            --border-bright: #ccc;
+            --author-name: #111;
+            --list-marker: #aaa;
+            --footer-text: #222;
+            --copyright: #888;
+            --toggle-bg: #e8e8e8;
+            --toggle-color: #222;
+            --img-opacity: 1;
+            --img-bg: #f0f0f0;
+            --x-bg: #f0f0f0;
+            --x-border: #ccc;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.85;
+            font-size: 17px;
+            transition: background 0.3s, color 0.3s;
+        }
+        .header {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 3rem 1.5rem 2rem;
+            position: relative;
+        }
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.3;
+            color: var(--heading);
+            margin-bottom: 0.8rem;
+        }
+        .meta { color: var(--text); font-size: 0.85rem; }
+        .container {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 1.5rem 1.5rem 5rem;
+        }
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 2.5rem 0 0.8rem;
+            color: var(--subheading);
+        }
+        p { margin-bottom: 1.3rem; }
+        strong { color: var(--strong); }
+        em { color: var(--em); }
+        a { color: var(--strong); }
+        .author-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 1.2rem;
+        }
+        .author-card img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .author-card .author-name {
+            color: var(--author-name);
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .author-card .author-name:hover { text-decoration: underline; }
+        .blog-img {
+            width: 100%;
+            border-radius: 8px;
+            margin: 2rem 0;
+            opacity: var(--img-opacity);
+            background: var(--img-bg);
+            transition: opacity 0.3s;
+        }
+        .separator {
+            border: none;
+            border-top: 1px solid var(--border-bright);
+            margin: 0 0 1.5rem;
+        }
+        .social-footer {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 1.5rem 3rem;
+            text-align: center;
+        }
+        .social-footer .copyright {
+            color: var(--copyright);
+            font-size: 0.75rem;
+        }
+        .blog-footer-text {
+            text-align: center;
+            margin: 3rem 0 1rem;
+            padding: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        .blog-footer-text p {
+            color: var(--footer-text);
+            font-size: 0.8rem;
+            margin: 0;
+        }
+        .share-section {
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            text-align: center;
+        }
+        .share-section p {
+            color: var(--text);
+            font-size: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+        .share-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 0.8rem;
+            flex-wrap: wrap;
+        }
+        .share-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+        .share-btn:hover { opacity: 0.85; }
+        .share-btn svg { width: 16px; height: 16px; fill: currentColor; }
+        .share-btn.x { background: var(--x-bg); color: var(--toggle-color); border: 1px solid var(--x-border); }
+        .share-btn.whatsapp { background: #25D366; color: #fff; }
+        .share-btn.linkedin { background: #0A66C2; color: #fff; }
+        .theme-toggle {
+            background: var(--toggle-bg);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            transition: background 0.3s;
+            color: var(--toggle-color);
+            position: absolute;
+            top: 3rem;
+            right: 1.5rem;
+        }
+        .theme-toggle:hover { opacity: 0.8; }
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.6rem; }
+            body { font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">🌙</button>
+        <h1>Pace notes</h1>
+        <p class="meta">November 19, 2026</p>
+        <div class="author-card">
+            <img src="images/dp.jpeg" alt="Savithru Lokanath">
+            <div class="author-info">
+                <a href="https://savithruml.github.io/" class="author-name">Savithru Lokanath</a>
+            </div>
+        </div>
+    </div>
+    <div class="container">
+
+        <hr class="separator">
+
+        <p>In rally racing, the co-driver reads pace notes to the driver at inhuman speed: <em>"Left four, tightens, don't cut, right two over crest."</em> The driver can't see past the crest. The co-driver can't steer. Together, they go flat out on a road neither could take alone.</p>
+
+        <p>Nobody hands you pace notes for a career. You write them yourself, from watching how the best operators work, and from the scar tissue of getting it wrong. These are mine. Six notes for the road.</p>
+
+        <h2>Break things. Then don't break them again.</h2>
+
+        <img src="images/fail-fast.png" alt="Glass shattering in frozen time" class="blog-img">
+
+        <p>SpaceX blows up rockets on purpose. Not because they're careless, but because every explosion is a data point. The Starship program iterates at a pace that makes traditional aerospace look glacial, because they treat each failure as tuition paid in full.</p>
+
+        <p>The real skill is knowing <em>where</em> failure is cheap, and moving your failures there. Fail in a sketch before a prototype. Fail in a prototype before production. Fail in front of one reviewer before a customer. Some decisions are two-way doors: try it, measure it, reverse it. Move fast on those. Others are one-way: a public commitment, a shipped product, a promise. Slow down on those.</p>
+
+        <p>The first mistake is tuition. The second is a choice.</p>
+
+        <h2>Be the weird one in the room</h2>
+
+        <img src="images/curiosity.png" alt="A figure at the edge of an uncharted map" class="blog-img">
+
+        <p>Steve Jobs dropped out of college and sat in on a calligraphy class. Zero career value. Zero ROI. Years later, it became the reason the Macintosh had beautiful typography. He connected dots nobody else could because he wandered into rooms nobody else bothered with.</p>
+
+        <p>When everyone around you is learning the same things, building the same projects, reading the same posts, you're racing on a crowded track. The edge comes from curiosity that takes you somewhere nobody else went. With AI, a working prototype can take an evening. The barrier to exploring a weird idea isn't skill anymore. It's <em>willingness</em>.</p>
+
+        <p>Don't just do what your peers are doing. Do what they aren't brave enough to try.</p>
+
+        <h2>Grab the wheel</h2>
+
+        <img src="images/ownership.png" alt="A hand reaching for the wheel of a ship" class="blog-img">
+
+        <p>Jensen Huang built NVIDIA with a flat org: roughly forty direct reports, no layers of middle management filtering reality. The expectation? <strong>Everyone owns their domain completely.</strong> You own it, you run it, you answer for it.</p>
+
+        <p>One person waits to be told what to do. Another sees what needs doing and does it. That's the whole gap, and it has nothing to do with seniority. When something is broken and nobody's assigned, fix it. When a process is outdated, update it. When the room needs a decision, speak.</p>
+
+        <p>Early in your career, ownership means owning your project end to end. Later, it means owning outcomes, not tasks. A task is done when it's closed. An outcome is done when the problem is gone.</p>
+
+        <h2>Be useful, not impressive</h2>
+
+        <img src="images/humility.png" alt="One hand pulling another up from darkness" class="blog-img">
+
+        <p>The brilliant jerk archetype: exceptional work, but everyone around them feels small. Teams tolerate them because they deliver. They also leave a trail of people quietly updating their resumes.</p>
+
+        <p><strong>Helpfulness compounds faster than brilliance.</strong> The person who stays to help a teammate through a hard problem. The one who explains a concept instead of just fixing it. These people build something raw talent can't replicate: <strong>trust</strong>. Trust gets you into the important rooms. Not because you're the smartest, but because you make the room better.</p>
+
+        <p>Tech is a smaller world than it looks. The intern you helped today might be reading your resume a few years from now. Your reputation travels further than your work.</p>
+
+        <h2>Own the crater</h2>
+
+        <p>The config change that broke production. The migration that corrupted a table. The email that went to the entire company. Everyone's been there. Mistakes aren't optional, they're structural.</p>
+
+        <p>The instinct is to go quiet, fix it on the side, or point at someone else. That instinct is the fastest way to lose trust. The alternative fits in three sentences: <em>"That was me. Here's what happened. Here's what I'm doing so it doesn't happen again."</em></p>
+
+        <p>If you're interviewing and someone asks about a mistake, they're not grading the mistake. They're listening for the sentence after it. <em>"It was the other team's fault"</em> ends the conversation. <em>"Here's what I changed afterwards"</em> starts a good one.</p>
+
+        <p>To err is human. Owning it is how you grow.</p>
+
+        <h2>Play the game, not the score</h2>
+
+        <p>There's a temptation in any career to optimize for metrics. Promotions per year. Salary jumps. Title inflation. LinkedIn impressions. The <em>score</em>.</p>
+
+        <p>Playing the score makes you fragile. You pick projects for visibility instead of interest. You dodge risky bets. You stop learning and start performing.</p>
+
+        <p>The iPod wasn't born from a spreadsheet. It was born from someone who cared about the experience of listening to music more than hitting revenue targets. Jobs was obsessed with the craft. The score followed.</p>
+
+        <p>Do work you're proud of. Solve problems that genuinely excite you. The scoreboard updates on its own.</p>
+
+        <h2>Be the navigator, not the ballast</h2>
+
+        <img src="images/navigator.png" alt="Rally co-driver view through a windshield at night" class="blog-img">
+
+        <p>If you've ever watched rally racing, you know the driver doesn't win alone. There's a co-driver in the passenger seat reading pace notes at inhuman speed: <em>"Left four, tightens, don't cut, right two over crest, sixty, left three into hairpin."</em> The driver's hands are on the wheel, but the navigator is the reason they don't fly off a cliff.</p>
+
+        <p>That's what good team members do. They don't ride along. They navigate. They call out risks and flag the next corner before the team hits it.</p>
+
+        <p>Good calls are like good pace notes: early, because a warning after the corner is just commentary. Specific, because <em>"p99 latency doubles past five thousand requests"</em> beats <em>"I'm worried about performance."</em> And calm, because a calm call gets acted on while a panicked one gets argued with.</p>
+
+        <p>Dead weight in a rally car doesn't just slow you down. It gets everyone off the road. Fresh eyes often catch what everyone else stopped noticing. You don't need seniority to call a corner. You just need to have seen it.</p>
+
+        <h2>The recce</h2>
+
+        <p>Before a rally, crews drive each stage slowly. It's called the recce, and it's when the pace notes get written, so that at full speed nobody's guessing what's over the crest.</p>
+
+        <p>Fail fast, somewhere cheap, and never the same way twice. Own mistakes early and out loud. Grab the wheel before you're asked. Help without keeping score. Play the game, not the scoreboard. Call the corners.</p>
+
+        <p>Read them while it's slow. You'll want them at speed.</p>
+
+        <div class="blog-footer-text">
+            <p>See you at the next corner. 🏁</p>
+        </div>
+
+    </div>
+
+    <div class="share-section">
+        <p>Support a claw, share this post</p>
+        <div class="share-buttons">
+            <a class="share-btn x" href="https://x.com/intent/tweet?url=https://savithruml.github.io/blog/pace-notes/&text=Pace%20notes" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                Post
+            </a>
+            <a class="share-btn whatsapp" href="https://wa.me/?text=Pace%20notes%20%E2%80%94%20https://savithruml.github.io/blog/pace-notes/" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+                Share
+            </a>
+            <a class="share-btn linkedin" href="https://www.linkedin.com/sharing/share-offsite/?url=https://savithruml.github.io/blog/pace-notes/" target="_blank">
+                <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                Share
+            </a>
+        </div>
+    </div>
+
+    <div style="height:2rem;"></div>
+
+    <div class="social-footer">
+        <p class="copyright">Savithru Lokanath &copy; 2026</p>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const current = html.getAttribute('data-theme');
+            const next = current === 'light' ? 'dark' : 'light';
+            html.setAttribute('data-theme', next === 'dark' ? '' : 'light');
+            if (next === 'dark') html.removeAttribute('data-theme');
+            localStorage.setItem('theme', next);
+            updateToggleIcon(next);
+        }
+
+        function updateToggleIcon(theme) {
+            const btn = document.querySelector('.theme-toggle');
+            btn.textContent = theme === 'light' ? '☀️' : '🌙';
+        }
+
+        (function() {
+            const saved = localStorage.getItem('theme') || 'dark';
+            if (saved === 'light') {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+            updateToggleIcon(saved);
+        })();
+    </script>
+</body>
+</html>
